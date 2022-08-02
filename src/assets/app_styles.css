@@ -1,0 +1,13 @@
+@font-face {
+    font-family: "Tajwal";
+    src: local("Tajwal"), url(../fonts/Tajawal-Medium.ttf) format("truetype");
+}
+@font-face {
+    font-family: "Cairo";
+    src: local("Cairo"), url(../fonts/Cairo-Regular.ttf) format("truetype");
+}
+
+@font-face {
+    font-family: "GemunuLibre";
+    src: local("GemunuLibre"), url(../fonts/GemunuLibre-Medium.ttf) format("truetype");
+}
