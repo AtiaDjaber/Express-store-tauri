@@ -50,7 +50,8 @@ import Client from "./views/client/Client.vue";
 import snackBarModule from "./store/snackBarModule";
 import loginModule from "@/store/loginModule";
 import settingModule from "./store/settingModule";
-
+import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
+import { relaunch } from "@tauri-apps/api/process";
 @Component({ components: { Sidebar, UserInfo, Client } })
 export default class App extends Vue {
   drawer = null;
@@ -72,6 +73,20 @@ export default class App extends Vue {
 
   created() {
     // settingModule.getSettings();
+  }
+  async checkUpdate() {
+    try {
+      const { shouldUpdate, manifest } = await checkUpdate();
+      debugger;
+      if (shouldUpdate) {
+        // display dialog
+        await installUpdate();
+        // install complete, restart app
+        await relaunch();
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 </script>
