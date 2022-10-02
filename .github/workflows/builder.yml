@@ -2,14 +2,14 @@ name: "publish"
 on:
   push:
     branches:
-      - release
+      - main
 
 jobs:
   publish-tauri:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-20.04, windows-latest]
+        platform: [ windows-latest]
 
     runs-on: ${{ matrix.platform }}
     steps:
