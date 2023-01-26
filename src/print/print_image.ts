@@ -51,334 +51,334 @@ export default class PrintImage {
   //   });
   // }
 
-  // static buildHeader(doc: any, facture: any, setting: Setting, type: string) {
-  //   const width = doc.internal.pageSize.getWidth();
-  //   let name;
-  //   if (type == "زبون") {
-  //     name =
-  //       (facture.client != null ? facture.client.name : "بيع مباشر") +
-  //       " : " +
-  //       "الزيون ";
-  //   }
-  //   if (type == "مورد") {
-  //     name =
-  //       (facture.fournisseur != null
-  //         ? facture.fournisseur.name
-  //         : "شراء مباشر") +
-  //       " : " +
-  //       "المورد ";
-  //   }
-  //   if (type == "مخزن") {
-  //     name =
-  //       (facture.depot != null ? facture.depot.name : "شراء مباشر") +
-  //       " : " +
-  //       "المخزن";
-  //   }
-  //   // doc.addImage("/public/logo.png", width - 30, 0, 20, 20);
-  //   // doc.line(width / 2, 10, width / 2, 20);
-  //   doc.autoTable({
-  //     head: [
-  //       [
-  //         type == "زبون"
-  //           ? "فاتورة بيع"
-  //           : type == "مورد"
-  //           ? "فاتورة شراء"
-  //           : facture.type == "export"
-  //           ? "فاتورة تصدير"
-  //           : "فاتورة استيراد",
-  //         setting.name_store,
-  //       ],
-  //     ],
-  //     body: [
-  //       ["رقم الفاتورة : " + facture.id, setting.email + " : " + "الإيميل"],
-  //       [name, setting.tel + " : " + "الهاتف"],
-  //       [
-  //         "التاريخ : " + facture.created_at,
-  //         setting.address + " : " + "العنوان",
-  //       ],
-  //     ],
+  static buildHeader(doc: any, facture: any, setting: Setting, type: string) {
+    const width = doc.internal.pageSize.getWidth();
+    let name;
+    if (type == "زبون") {
+      name =
+        (facture.client != null ? facture.client.name : "بيع مباشر") +
+        " : " +
+        "الزيون ";
+    }
+    if (type == "مورد") {
+      name =
+        (facture.fournisseur != null
+          ? facture.fournisseur.name
+          : "شراء مباشر") +
+        " : " +
+        "المورد ";
+    }
+    if (type == "مخزن") {
+      name =
+        (facture.depot != null ? facture.depot.name : "شراء مباشر") +
+        " : " +
+        "المخزن";
+    }
+    // doc.addImage("/public/logo.png", width - 30, 0, 20, 20);
+    // doc.line(width / 2, 10, width / 2, 20);
+    doc.autoTable({
+      head: [
+        [
+          type == "زبون"
+            ? "فاتورة بيع"
+            : type == "مورد"
+            ? "فاتورة شراء"
+            : facture.type == "export"
+            ? "فاتورة تصدير"
+            : "فاتورة استيراد",
+          setting.name_store,
+        ],
+      ],
+      body: [
+        ["رقم الفاتورة : " + facture.id, setting.email + " : " + "الإيميل"],
+        [name, setting.tel + " : " + "الهاتف"],
+        [
+          "التاريخ : " + facture.created_at,
+          setting.address + " : " + "العنوان",
+        ],
+      ],
 
-  //     margin: { left: 0, right: 0, top: 5, bottom: 5, horizontal: 10 },
-  //     tableLineColor: 0x000000,
-  //     headStyles: {
-  //       cellWidth: width / 2 - 10,
-  //       fontStyle: "bold",
-  //       fillColor: "#FFFFFF",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0,
-  //       textColor: "#000000",
-  //       fontSize: 16,
-  //       font: "custom",
-  //       overflow: "linebreak",
-  //       halign: "center",
-  //     },
-  //     bodyStyles: {
-  //       cellWidth: width / 2 - 10,
-  //       fontSize: 12,
-  //       fontStyle: "normal",
-  //       fillColor: "#FFFFFF",
-  //       textColor: "#000000",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0,
-  //       font: "custom",
-  //       overflow: "linebreak",
-  //       halign: "right",
-  //     },
-  //     theme: "grid",
-  //     tableWidth: "auto",
-  //   } as UserOptions);
-  // }
+      margin: { left: 0, right: 0, top: 5, bottom: 5, horizontal: 10 },
+      tableLineColor: 0x000000,
+      headStyles: {
+        cellWidth: width / 2 - 10,
+        fontStyle: "bold",
+        fillColor: "#FFFFFF",
+        lineColor: "#000000", // Or gray [200, 200, 200]
+        lineWidth: 0,
+        textColor: "#000000",
+        fontSize: 16,
+        font: "custom",
+        overflow: "linebreak",
+        halign: "center",
+      },
+      bodyStyles: {
+        cellWidth: width / 2 - 10,
+        fontSize: 12,
+        fontStyle: "normal",
+        fillColor: "#FFFFFF",
+        textColor: "#000000",
+        lineColor: "#000000", // Or gray [200, 200, 200]
+        lineWidth: 0,
+        font: "custom",
+        overflow: "linebreak",
+        halign: "right",
+      },
+      theme: "grid",
+      tableWidth: "auto",
+    } as UserOptions);
+  }
 
-  // static buildFooterTransfer(
-  //   doc: any,
-  //   facture: any,
-  //   setting: Setting,
-  //   type: string
-  // ) {
-  //   doc.autoTable({
-  //     body: [
-  //       [
-  //         {
-  //           content: facture.montant,
-  //           colSpan: 2,
-  //           styles: { cellWidth: 40 },
-  //         },
-  //         {
-  //           content: "المجموع",
-  //           colSpan: 1,
-  //           rowSpan: 1,
-  //           styles: { cellWidth: 30 },
-  //         },
-  //         { content: facture.remark ?? "", styles: { halign: "right" } },
-  //         {
-  //           content: ": ملاحظة",
-  //           rowSpan: 1,
-  //           styles: { cellWidth: 23 },
-  //         },
-  //       ],
-  //     ],
+  static buildFooterTransfer(
+    doc: any,
+    facture: any,
+    setting: Setting,
+    type: string
+  ) {
+    doc.autoTable({
+      body: [
+        [
+          {
+            content: facture.montant,
+            colSpan: 2,
+            styles: { cellWidth: 40 },
+          },
+          {
+            content: "المجموع",
+            colSpan: 1,
+            rowSpan: 1,
+            styles: { cellWidth: 30 },
+          },
+          { content: facture.remark ?? "", styles: { halign: "right" } },
+          {
+            content: ": ملاحظة",
+            rowSpan: 1,
+            styles: { cellWidth: 23 },
+          },
+        ],
+      ],
 
-  //     margin: { horizontal: 10 },
-  //     bodyStyles: {
-  //       cellWidth: "auto",
-  //       fontSize: 12,
-  //       // fontStyle: "normal",
-  //       fillColor: "#FFFFFF",
-  //       textColor: "#000000",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0,
-  //       font: "custom",
-  //       overflow: "linebreak",
-  //       halign: "right",
-  //     },
-  //     theme: "grid",
-  //     tableWidth: "auto",
+      margin: { horizontal: 10 },
+      bodyStyles: {
+        cellWidth: "auto",
+        fontSize: 12,
+        // fontStyle: "normal",
+        fillColor: "#FFFFFF",
+        textColor: "#000000",
+        lineColor: "#000000", // Or gray [200, 200, 200]
+        lineWidth: 0,
+        font: "custom",
+        overflow: "linebreak",
+        halign: "right",
+      },
+      theme: "grid",
+      tableWidth: "auto",
 
-  //     // tableWidth: width / 3,
-  //     styles: { overflow: "hidden" },
-  //   } as UserOptions);
-  // }
-  // static buildFooter(doc: any, facture: any, setting: Setting, type: string) {
-  //   doc.autoTable({
-  //     body: [
-  //       [
-  //         {
-  //           content: facture.montant,
-  //           colSpan: 2,
-  //           styles: { cellWidth: 40 },
-  //         },
-  //         {
-  //           content: "المجموع",
-  //           colSpan: 1,
-  //           rowSpan: 1,
-  //           styles: { cellWidth: 30 },
-  //         },
-  //         { content: facture.remark ?? "", styles: { halign: "right" } },
-  //         {
-  //           content: ": ملاحظة",
-  //           rowSpan: 1,
-  //           styles: { cellWidth: 23 },
-  //         },
-  //       ],
+      // tableWidth: width / 3,
+      styles: { overflow: "hidden" },
+    } as UserOptions);
+  }
+  static buildFooter(doc: any, facture: any, setting: Setting, type: string) {
+    doc.autoTable({
+      body: [
+        [
+          {
+            content: facture.montant,
+            colSpan: 2,
+            styles: { cellWidth: 40 },
+          },
+          {
+            content: "المجموع",
+            colSpan: 1,
+            rowSpan: 1,
+            styles: { cellWidth: 30 },
+          },
+          { content: facture.remark ?? "", styles: { halign: "right" } },
+          {
+            content: ": ملاحظة",
+            rowSpan: 1,
+            styles: { cellWidth: 23 },
+          },
+        ],
 
-  //       [
-  //         {
-  //           content: facture.pay,
-  //           colSpan: 2,
-  //           styles: { cellWidth: 40 },
-  //         },
-  //         {
-  //           content: "الدفع",
-  //           styles: { cellWidth: 30 },
-  //         },
+        [
+          {
+            content: facture.pay,
+            colSpan: 2,
+            styles: { cellWidth: 40 },
+          },
+          {
+            content: "الدفع",
+            styles: { cellWidth: 30 },
+          },
 
-  //         {
-  //           content: facture.user.name,
-  //           styles: { halign: "right" },
-  //         },
-  //         {
-  //           content: ": المستخدم",
-  //           colSpan: 1,
-  //           styles: { cellWidth: 23 },
-  //         },
-  //       ],
-  //       [
-  //         { content: facture.remise, colSpan: 2 },
-  //         { content: "التخفيض", colSpan: 1 },
-  //         {
-  //           content: "",
-  //           colSpan: 2,
-  //           rowSpan: 2,
-  //           styles: { valign: "bottom", halign: "center", fontStyle: "bold" },
-  //         },
-  //       ],
-  //       [
-  //         { content: facture.rest, colSpan: 2, rowSpan: 1 },
-  //         { content: "الباقي", colSpan: 1, rowSpan: 1 },
-  //         // {
-  //         //   content: "",
-  //         //   colSpan: 1,
-  //         //   rowSpan: 1,
-  //         //   styles: { halign: "center", fontStyle: "bolditalic" },
-  //         // },
-  //       ],
-  //       [
-  //         {
-  //           content: setting.remark ?? "",
-  //           colSpan: 5,
-  //           rowSpan: 1,
-  //           styles: {
-  //             halign: "center",
-  //             fontStyle: "bold",
-  //             lineWidth: 0.3,
-  //             fontSize: 14,
-  //           },
-  //         },
-  //       ],
-  //     ],
+          {
+            content: facture.user.name,
+            styles: { halign: "right" },
+          },
+          {
+            content: ": المستخدم",
+            colSpan: 1,
+            styles: { cellWidth: 23 },
+          },
+        ],
+        [
+          { content: facture.remise, colSpan: 2 },
+          { content: "التخفيض", colSpan: 1 },
+          {
+            content: "",
+            colSpan: 2,
+            rowSpan: 2,
+            styles: { valign: "bottom", halign: "center", fontStyle: "bold" },
+          },
+        ],
+        [
+          { content: facture.rest, colSpan: 2, rowSpan: 1 },
+          { content: "الباقي", colSpan: 1, rowSpan: 1 },
+          // {
+          //   content: "",
+          //   colSpan: 1,
+          //   rowSpan: 1,
+          //   styles: { halign: "center", fontStyle: "bolditalic" },
+          // },
+        ],
+        [
+          {
+            content: setting.remark ?? "",
+            colSpan: 5,
+            rowSpan: 1,
+            styles: {
+              halign: "center",
+              fontStyle: "bold",
+              lineWidth: 0.3,
+              fontSize: 14,
+            },
+          },
+        ],
+      ],
 
-  //     margin: { horizontal: 10 },
-  //     bodyStyles: {
-  //       cellWidth: "auto",
-  //       fontSize: 12,
-  //       // fontStyle: "normal",
-  //       fillColor: "#FFFFFF",
-  //       textColor: "#000000",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0,
-  //       font: "custom",
-  //       overflow: "linebreak",
-  //       halign: "right",
-  //     },
-  //     theme: "grid",
-  //     tableWidth: "auto",
+      margin: { horizontal: 10 },
+      bodyStyles: {
+        cellWidth: "auto",
+        fontSize: 12,
+        // fontStyle: "normal",
+        fillColor: "#FFFFFF",
+        textColor: "#000000",
+        lineColor: "#000000", // Or gray [200, 200, 200]
+        lineWidth: 0,
+        font: "custom",
+        overflow: "linebreak",
+        halign: "right",
+      },
+      theme: "grid",
+      tableWidth: "auto",
 
-  //     // tableWidth: width / 3,
-  //     styles: { overflow: "hidden" },
-  //   } as UserOptions);
-  // }
+      // tableWidth: width / 3,
+      styles: { overflow: "hidden" },
+    } as UserOptions);
+  }
   // // Print facture A4 using pdfjs
   static async printFacturePdf(
     setting: Setting,
     facture: any,
     type?: string
   ): Promise<void> {
-  //   const doc: any = new jsPDF("p");
-  //   doc.addFileToVFS("arial.ttf", ConstantValues.Font);
-  //   doc.addFont("arial.ttf", "custom", "normal", "Identity-H");
-  //   doc.setFont("custom");
-  //   doc.setLanguage("ar-DZ");
-  //   // doc.viewerPreferences({ Direction: "R2L" });
-  //   // doc.setR2L(true);
-  //   doc.setFontSize(12);
-  //   const width = doc.internal.pageSize.getWidth();
+    const doc: any = new jsPDF("p");
+    doc.addFileToVFS("arial.ttf", ConstantValues.Font);
+    doc.addFont("arial.ttf", "custom", "normal", "Identity-H");
+    doc.setFont("custom");
+    doc.setLanguage("ar-DZ");
+    // doc.viewerPreferences({ Direction: "R2L" });
+    // doc.setR2L(true);
+    doc.setFontSize(12);
+    const width = doc.internal.pageSize.getWidth();
 
-  //   this.buildHeader(doc, facture, setting, type);
+    this.buildHeader(doc, facture, setting, type);
 
-  //   doc.autoTable({
-  //     columns: [
-  //       { dataKey: "total", header: "المبلغ" },
-  //       {
-  //         dataKey:
-  //           type == "زبون" || type == "مخزن" ? "sell_price" : "purchase_price",
-  //         header: "السعر",
-  //       },
-  //       { dataKey: "quantity", header: "الكمية" },
-  //       { dataKey: "name", header: "الصنف" },
-  //     ],
-  //     body:
-  //       type == "زبون"
-  //         ? (facture.sales as any)
-  //         : type == "مورد"
-  //         ? facture.purchases
-  //         : facture.transfers,
+    doc.autoTable({
+      columns: [
+        { dataKey: "total", header: "المبلغ" },
+        {
+          dataKey:
+            type == "زبون" || type == "مخزن" ? "sell_price" : "purchase_price",
+          header: "السعر",
+        },
+        { dataKey: "quantity", header: "الكمية" },
+        { dataKey: "name", header: "الصنف" },
+      ],
+      body:
+        type == "زبون"
+          ? (facture.sales as any)
+          : type == "مورد"
+          ? facture.purchases
+          : facture.transfers,
 
-  //     margin: { left: 5, right: 5, top: 0, bottom: 5, horizontal: 10 },
+      margin: { left: 5, right: 5, top: 0, bottom: 5, horizontal: 10 },
 
-  //     tableLineColor: 0x000000,
+      tableLineColor: 0x000000,
 
-  //     headStyles: {
-  //       cellWidth: "auto",
-  //       fontStyle: "bold",
-  //       fillColor: "#FFFFFF",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0,
+      headStyles: {
+        cellWidth: "auto",
+        fontStyle: "bold",
+        fillColor: "#FFFFFF",
+        lineColor: "#000000", // Or gray [200, 200, 200]
+        lineWidth: 0,
 
-  //       textColor: "#000000",
-  //       fontSize: 14,
-  //       font: "custom",
-  //       overflow: "linebreak",
-  //       halign: "right",
-  //     },
-  //     bodyStyles: {
-  //       cellWidth: "auto",
-  //       fontSize: 12,
-  //       fillColor: "#FFFFFF",
-  //       textColor: "#000000",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0,
-  //       font: "custom",
-  //       overflow: "linebreak",
-  //       halign: "right",
-  //     },
-  //     theme: "striped",
-  //     tableWidth: "auto",
-  //   } as UserOptions);
+        textColor: "#000000",
+        fontSize: 14,
+        font: "custom",
+        overflow: "linebreak",
+        halign: "right",
+      },
+      bodyStyles: {
+        cellWidth: "auto",
+        fontSize: 12,
+        fillColor: "#FFFFFF",
+        textColor: "#000000",
+        lineColor: "#000000", // Or gray [200, 200, 200]
+        lineWidth: 0,
+        font: "custom",
+        overflow: "linebreak",
+        halign: "right",
+      },
+      theme: "striped",
+      tableWidth: "auto",
+    } as UserOptions);
 
-  //   if (type == "مخزن") {
-  //     this.buildFooterTransfer(doc, facture, setting, type);
-  //   } else {
-  //     this.buildFooter(doc, facture, setting, type);
-  //   }
-  //   // const pageNumber = doc.internal.getNumberOfPages();
-  //   // doc.setPage(pageNumber);
+    if (type == "مخزن") {
+      this.buildFooterTransfer(doc, facture, setting, type);
+    } else {
+      this.buildFooter(doc, facture, setting, type);
+    }
+    // const pageNumber = doc.internal.getNumberOfPages();
+    // doc.setPage(pageNumber);
 
-  //   // doc.autoTable({
-  //   //   columns: [
-  //   //     { dataKey: "id", header: "ID" },
-  //   //     { dataKey: "name", header: "Name" },
-  //   //     { dataKey: "expenses", header: "Sum" },
-  //   //   ],
-  //   //   body: rows,
-  //   //   showHead: "firstPage",
-  //   //   styles: { overflow: "hidden" },
-  //   //   margin: { left: 107 },
-  //   // });
+    // doc.autoTable({
+    //   columns: [
+    //     { dataKey: "id", header: "ID" },
+    //     { dataKey: "name", header: "Name" },
+    //     { dataKey: "expenses", header: "Sum" },
+    //   ],
+    //   body: rows,
+    //   showHead: "firstPage",
+    //   styles: { overflow: "hidden" },
+    //   margin: { left: 107 },
+    // });
 
-  //   // doc.autoTable({
-  //   //   columns: [
-  //   //     { dataKey: "id", header: "ID" },
-  //   //     { dataKey: "name", header: "Name" },
-  //   //     { dataKey: "expenses", header: "Sum" },
-  //   //   ],
-  //   //   body: rows,
-  //   //   showHead: "firstPage",
-  //   //   styles: { overflow: "hidden" },
-  //   //   margin: { right: 107 },
-  //   // });
+    // doc.autoTable({
+    //   columns: [
+    //     { dataKey: "id", header: "ID" },
+    //     { dataKey: "name", header: "Name" },
+    //     { dataKey: "expenses", header: "Sum" },
+    //   ],
+    //   body: rows,
+    //   showHead: "firstPage",
+    //   styles: { overflow: "hidden" },
+    //   margin: { right: 107 },
+    // });
 
-  //   const date = new Date().getTime();
-  //   const blob = doc.output("blob");
+    const date = new Date().getTime();
+    const blob = doc.output("blob");
   //   const buffer = Buffer.from(await blob.arrayBuffer());
   //   const filePath = "facture/" + date + ".pdf";
   //   await new Promise((resolve, reject) =>
@@ -424,105 +424,105 @@ export default class PrintImage {
   //   });
   }
 
-  // static buildHeaderBon(
-  //   doc: any,
-  //   facture: any,
-  //   setting: Setting,
-  //   type: string
-  // ): void {
-  //   const width = doc.internal.pageSize.getWidth();
-  //   let name;
-  //   if (type == "زبون") {
-  //     name =
-  //       (facture.client != null ? facture.client.name : "") + " : " + "الزبون ";
-  //   }
-  //   if (type == "مورد") {
-  //     name =
-  //       (facture.fournisseur != null ? facture.fournisseur.name : "") +
-  //       " : " +
-  //       "المورد ";
-  //   }
-  //   if (type == "مخزن") {
-  //     name =
-  //       (facture.depot != null ? facture.depot.name : "") + " : " + "المخزن";
-  //   }
-  //   // doc.addImage("/public/logo.png", width - 30, 0, 20, 20);
-  //   // doc.line(width / 2, 10, width / 2, 20);
-  //   doc.autoTable({
-  //     body: [
-  //       [
-  //         {
-  //           content: setting.name_store ?? "",
-  //           colSpan: 4,
-  //           rowSpan: 1,
-  //           styles: {
-  //             halign: "center",
-  //             fontStyle: "bold",
-  //             lineWidth: [0.3],
-  //             // lineWidth: 0.3,
-  //             fontSize: 12,
-  //           },
-  //         },
-  //       ],
-  //       [
-  //         {
-  //           content: setting.address ?? "",
-  //           colSpan: 4,
-  //           rowSpan: 1,
-  //           styles: {
-  //             halign: "center",
-  //           },
-  //         },
-  //       ],
-  //       [
-  //         {
-  //           content: "Tel :" + setting.tel,
-  //           colSpan: 4,
+  static buildHeaderBon(
+    doc: any,
+    facture: any,
+    setting: Setting,
+    type: string
+  ): void {
+    const width = doc.internal.pageSize.getWidth();
+    let name;
+    if (type == "زبون") {
+      name =
+        (facture.client != null ? facture.client.name : "") + " : " + "الزبون ";
+    }
+    if (type == "مورد") {
+      name =
+        (facture.fournisseur != null ? facture.fournisseur.name : "") +
+        " : " +
+        "المورد ";
+    }
+    if (type == "مخزن") {
+      name =
+        (facture.depot != null ? facture.depot.name : "") + " : " + "المخزن";
+    }
+    // doc.addImage("/public/logo.png", width - 30, 0, 20, 20);
+    // doc.line(width / 2, 10, width / 2, 20);
+    doc.autoTable({
+      body: [
+        [
+          {
+            content: setting.name_store ?? "",
+            colSpan: 4,
+            rowSpan: 1,
+            styles: {
+              halign: "center",
+              fontStyle: "bold",
+              lineWidth: [0.3],
+              // lineWidth: 0.3,
+              fontSize: 12,
+            },
+          },
+        ],
+        [
+          {
+            content: setting.address ?? "",
+            colSpan: 4,
+            rowSpan: 1,
+            styles: {
+              halign: "center",
+            },
+          },
+        ],
+        [
+          {
+            content: "Tel :" + setting.tel,
+            colSpan: 4,
 
-  //           styles: { halign: "center" },
-  //         },
-  //       ],
-  //       [
-  //         {
-  //           content: setting.email,
-  //           colSpan: 4,
-  //           styles: { halign: "center" },
-  //         },
-  //       ],
-  //       [
-  //         {
-  //           content: type == "زبون" ? "وصل بيع" : "وصل شراء",
-  //           colSpan: 4,
-  //           rowSpan: 1,
-  //           styles: {
-  //             halign: "center",
-  //             fontStyle: "bold",
-  //             fontSize: 11,
-  //           },
-  //         },
-  //       ],
-  //     ],
-  //     margin: { horizontal: 1, top: 2, bottom: 0 },
-  //     bodyStyles: {
-  //       cellWidth: "auto",
-  //       fontSize: 9,
-  //       // fontStyle: "normal",
-  //       fillColor: "#FFFFFF",
-  //       textColor: "#000000",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0,
-  //       font: "custom",
-  //       cellPadding: { horizontal: 0, vertical: 1 },
-  //       overflow: "linebreak",
-  //       halign: "right",
-  //     },
-  //     theme: "grid",
-  //     tableWidth: "auto",
+            styles: { halign: "center" },
+          },
+        ],
+        [
+          {
+            content: setting.email,
+            colSpan: 4,
+            styles: { halign: "center" },
+          },
+        ],
+        [
+          {
+            content: type == "زبون" ? "وصل بيع" : "وصل شراء",
+            colSpan: 4,
+            rowSpan: 1,
+            styles: {
+              halign: "center",
+              fontStyle: "bold",
+              fontSize: 11,
+            },
+          },
+        ],
+      ],
+      margin: { horizontal: 1, top: 2, bottom: 0 },
+      bodyStyles: {
+        cellWidth: "auto",
+        fontSize: 9,
+        // fontStyle: "normal",
+        fillColor: "#FFFFFF",
+        textColor: "#000000",
+        lineColor: "#000000", // Or gray [200, 200, 200]
+        lineWidth: 0,
+        font: "custom",
+        cellPadding: { horizontal: 0, vertical: 1 },
+        overflow: "linebreak",
+        halign: "right",
+      },
+      theme: "grid",
+      tableWidth: "auto",
 
-  //     // tableWidth: width / 3,
-  //     styles: { overflow: "hidden" },
-  //   } as UserOptions);
-  // }
+      // tableWidth: width / 3,
+      styles: { overflow: "hidden" },
+    } as UserOptions);
+  }
 
   static async printBon(
     setting: Setting,
