@@ -2,13 +2,13 @@
   <v-container align="center" fluid fill-height>
     <v-row class="justify-center">
       <v-col cols="6">
-        <!-- <lottie-animation
-            path="load.json"
-            :width="370"
-            :height="370"
-            :loop="false"
-            :speed="0.6"
-        /> -->
+        <lottie-animation
+          path="load.json"
+          :width="370"
+          :height="370"
+          :loop="false"
+          :speed="0.6"
+        />
         <!--        :loop="true"-->
         <!--        :autoPlay="true"-->
         <!--        :loopDelayMin="2.5"-->
@@ -34,7 +34,7 @@
               <!--                width="500px"-->
               <!--                src="@/assets/name.png"-->
               <!--              ></v-img>-->
-              <h2 style="color: #275aa5">LOGIN PAGE</h2>
+              <h2 style="color: #275aa5">تسجيل الدخول</h2>
             </v-card-title>
             <v-card-text>
               <v-col cols="12">
@@ -91,6 +91,7 @@ import { Component, Ref, Vue } from "vue-property-decorator";
 import snackBarModule from "@/store/snackBarModule";
 import LottieAnimation from "lottie-vuejs/src/LottieAnimation.vue";
 import PrintImage from "@/print/print_image";
+import settingModule from "@/store/settingModule";
 
 @Component({ components: { LottieAnimation } })
 export default class Login extends Vue {
@@ -102,20 +103,18 @@ export default class Login extends Vue {
 
   created() {
     this.user.email = "atia@gmail.com";
-    this.user.password = "atiadjaber19931993";
+    this.user.password = "adminadmin";
   }
-
-  print() {
-    PrintImage.print(document.getElementById("facture"));
-  }
-
   onClick() {
-    this.print();
+
     if (this.form.validate()) {
       loginModule
         .login(this.user)
         .then((x) => {
           if (x) {
+            
+            settingModule.getSettings();
+
             (this as any).$router.push("/").catch(() => undefined);
           }
         })
@@ -161,3 +160,4 @@ export default class Login extends Vue {
   background-color: #f6f7ff;
 }
 </style>
+

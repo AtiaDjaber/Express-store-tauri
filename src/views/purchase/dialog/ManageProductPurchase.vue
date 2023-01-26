@@ -5,15 +5,16 @@
         <v-btn
           :disabled="mutableExpenseAction == 2"
           color="primary"
-          elevation="5"
+          large
+          elevation="1"
         >
           إضافة صنف
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
-    <v-card v-if="dialog">
-      <v-card-title class="light-blue darken-4 white--text">
+    <v-card v-if="dialog" color="plain">
+      <v-card-title class="primary--text font-weight-bold">
         <span> اضافة صنف للسلة</span>
       </v-card-title>
       <v-divider></v-divider>
@@ -21,57 +22,60 @@
         <v-container>
           <v-row class="mt-1">
             <v-text-field
-              color="blue darken-2"
-              dense
               label="الصنف"
               placeholder="البحث باسم الصنف"
+              hint="البحث باسم الصنف"
               required
               append-icon="fa-search"
-              outlined
+              solo
+              flat
               v-model="search.name"
               clearable
             ></v-text-field>
           </v-row>
 
-          <v-data-table
-            class="mb-n3"
-            :headers="headersProducts"
-            :items="liststock"
-            single-select
-            dense
-            :server-items-length="count"
-            :items-per-page="10"
-            @update:options="paginate"
-            :footer-props="{
-              'items-per-page-options': [10, 10],
-              'show-current-page': true,
-              'show-first-last-page': true,
-              'page-text': 'رقم الصفحة',
-              'items-per-page-text': 'عدد الأسطر',
-            }"
+          <v-card outlined>
+            <v-data-table
+              class="mb-n3"
+              :headers="headersProducts"
+              :items="liststock"
+              single-select
+              :server-items-length="count"
+              :items-per-page="10"
+              @update:options="paginate"
+              :footer-props="{
+                'items-per-page-options': [10, 10],
+                'show-current-page': true,
+                'show-first-last-page': true,
+                'page-text': 'رقم الصفحة',
+                'items-per-page-text': 'عدد الأسطر',
+              }"
+            >
+              <template v-slot:[`item.actions`]="{ item }">
+                <v-row class="my-1">
+                  <v-btn
+                    color="green"
+                    class="mr-2"
+                    small
+                    outlined
+                    fab
+                    elevation="0"
+                    @click="addToCart(item)"
+                  >
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </v-row>
+              </template>
+            </v-data-table></v-card
           >
-            <template v-slot:[`item.actions`]="{ item }">
-              <v-row class="my-1">
-                <v-btn
-                  color="green"
-                  class="mr-2"
-                  small
-                  outlined
-                  rounded
-                  elevation="0"
-                  @click="addToCart(item)"
-                >
-                  <v-icon>mdi-plus</v-icon>
-                </v-btn>
-              </v-row>
-            </template>
-          </v-data-table>
         </v-container>
       </v-card-text>
       <v-divider></v-divider>
 
       <v-card-actions class="justify-end">
-        <v-btn outlined block color="grey darken-1" @click="close">إلغاء</v-btn>
+        <v-btn outlined large block color="red darken-1" @click="close"
+          >إلغاء</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -175,7 +179,7 @@ export default class ManageProductPurchase extends Vue {
   }
 
   getProducts(search?: Search): void {
-    this.apiStock
+    stockApi
       .getStock(search)
       .then((response) => {
         this.liststock = [];

@@ -1,7 +1,7 @@
 <template>
-  <v-tabs v-model="tab">
-    <v-tab :key="0"> الفواتير </v-tab>
-    <v-tab :key="1"> الدفع </v-tab>
+  <v-tabs v-model="tab" centered fixed-tabs background-color="transparent">
+    <v-tab :key="0"> <v-icon class="mx-2">mdi-receipt</v-icon> الفواتير </v-tab>
+    <v-tab :key="1"> <v-icon class="mx-2">mdi-cash</v-icon> المدفوعات</v-tab>
     <v-tabs-items v-model="tab">
       <v-tab-item key="0">
         <fournisseur-facture-view></fournisseur-facture-view>

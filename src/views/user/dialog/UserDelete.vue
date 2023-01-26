@@ -2,7 +2,7 @@
   <v-dialog v-model="dialog" persistent max-width="450">
     <template v-slot:activator="{ on, attrs }">
       <div v-bind="attrs" v-on="on">
-        <v-btn rounded small outlined color="red">
+        <v-btn fab small outlined color="red">
           <v-icon>fa-trash</v-icon>
         </v-btn>
       </div>

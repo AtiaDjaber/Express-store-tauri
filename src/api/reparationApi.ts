@@ -1,23 +1,22 @@
 import User from "@/classes/user";
 import HttpClient from "./httpClient";
 import clientModule from "@/store/clientModule";
+import axiosModule from "@/store/axiosModule";
 
-export default class reparationApi extends HttpClient {
-  public constructor() {
-    super(process.env.VUE_APP_API_URL as string);
-  }
+export default class reparationApi  {
+  
 
   public async getRep(id?: number, page?: string): Promise<any> {
     console.log("the id is = " + id);
     // console.log("moduleid = " + clientModule.client.id);
 
-    return await this.instance.get(
+    return await axiosModule.instance.get(
       "api/reparations?client_id=" + id + "&page=" + page
     );
   }
 
   //   public async getRep(): Promise<any> {
   //     // console.log("the id is = " + id)
-  //   return await this.instance.get("api/reparations");
+  //   return await axiosModule.instance.get("api/reparations");
   // }
 }

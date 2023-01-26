@@ -1,15 +1,15 @@
 <template>
-  <v-tabs icons-and-text v-model="tab">
+  <v-tabs v-model="tab" background-color="transparent">
     <v-tab :key="0">
+      <v-icon class="mx-2">mdi-shape-outline</v-icon>
       الأصناف
-      <v-icon class="mb-2">mdi-shape-outline</v-icon>
     </v-tab>
-    <v-tab  :key="1">
+    <v-tab :key="1">
+      <v-icon class="mx-2">mdi-arrow-up-bold-circle-outline</v-icon>
       الصادرات
-      <v-icon class="mb-2">mdi-arrow-up-bold-circle-outline</v-icon>
     </v-tab>
     <v-tab :key="2">
-      الواردات      <v-icon class="mb-2">mdi-arrow-down-bold-circle-outline</v-icon>
+      <v-icon class="mx-2">mdi-arrow-down-bold-circle-outline</v-icon>الواردات
     </v-tab>
 
     <v-tabs-items v-model="tab">
@@ -27,14 +27,22 @@
 </template>
 
 <script>
-import {Component, Vue} from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import ClientPayment from "@/views/client/ClientPayment";
 import Reparation from "@/views/client/ReparatoinView";
 import ProductDepotView from "./ProductDepotView";
 import FactureImportView from "@/views/depot/FactureImportView";
 import FactureExportView from "@/views/depot/FactureExportView";
 
-@Component({components: {FactureExportView, FactureImportView, ClientPayment, ProductDepotView, Reparation}})
+@Component({
+  components: {
+    FactureExportView,
+    FactureImportView,
+    ClientPayment,
+    ProductDepotView,
+    Reparation,
+  },
+})
 export default class DepotDetail extends Vue {
   tab = 0;
 

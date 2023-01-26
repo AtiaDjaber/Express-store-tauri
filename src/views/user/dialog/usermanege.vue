@@ -1,19 +1,20 @@
 <template>
-  <v-dialog v-model="dialog" scrollable max-width="550">
+  <v-dialog v-model="dialog" scrollable max-width="700">
     <template v-slot:activator="{ on, attrs }">
       <div class="mr-2" v-bind="attrs" v-on="on">
         <v-btn
           :disabled="mutableExpenseAction == 2 && !userobj.id"
           color="primary"
-          elevation="5"
+          large
+          elevation="2"
         >
           اضافة مستخدم
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
-    <v-card v-if="dialog">
-      <v-card-title class="light-blue darken-4 white--text">
+    <v-card v-if="dialog" color="plain">
+      <v-card-title class="font-weight-bold">
         <span v-if="mutableExpenseAction == 1"> مستخدم جديد</span>
         <span v-else> تعديل معلومات المستخدم</span>
       </v-card-title>
@@ -27,11 +28,12 @@
                 <v-text-field
                   v-model="userobj.name"
                   color="blue darken-2"
-                  dense
                   label="اسم المستخدم"
+                  hint="اسم المستخدم"
                   placeholder="المستخدم"
                   required
-                  outlined
+                  solo
+                  flat
                   clearable
                   :rules="vuser.name"
                 ></v-text-field>
@@ -40,42 +42,44 @@
                 <v-text-field
                   v-model="userobj.tel"
                   placeholder="أدخل رقم الهاتف"
+                  hint="أدخل رقم الهاتف"
                   required
                   label="رقم الهاتف"
-                  outlined
-                  dense
+                  solo
+                  flat
                   clearable
                   type="number"
                   :rules="vuser.mobile"
                 ></v-text-field>
               </v-col>
             </v-row>
-            <v-row class="mt-2">
+            <v-row class="mt-1">
               <v-col>
                 <!-- <span>اسم المصروف</span> -->
                 <v-text-field
                   v-model="userobj.email"
                   color="blue darken-2"
-                  dense
                   label="البريد الإلكتروني"
                   placeholder="ادخل البريد الإلكتروني"
                   required
-                  outlined
+                  hint="ادخل البريد الإلكتروني"
+                  solo
+                  flat
                   clearable
                   :rules="vuser.name"
                 ></v-text-field>
               </v-col>
-              <v-col>
+              <v-col v-if="mutableExpenseAction == 1">
                 <v-text-field
                   v-model="userobj.password"
                   color="blue darken-2"
-                  dense
                   label="كلمة المرور"
                   placeholder="أدخل كلمة المرور"
+                  hint="أدخل كلمة المرور"
                   required
                   type="password"
-                  outlined
-                  v-if="mutableExpenseAction == 1"
+                  solo
+                  flat
                   clearable
                 ></v-text-field>
               </v-col>
@@ -103,9 +107,6 @@
                   v-model="userobj.expense"
                 ></v-switch>
               </v-col>
-            </v-row>
-
-            <v-row class="mt-n2">
               <v-col>
                 <v-switch
                   inset
@@ -113,11 +114,28 @@
                   v-model="userobj.fournisseur"
                 ></v-switch>
               </v-col>
+            </v-row>
+
+            <v-row class="mt-n2">
               <v-col>
                 <v-switch
                   inset
                   label="مشتريات"
                   v-model="userobj.purchase"
+                ></v-switch>
+              </v-col>
+              <v-col>
+                <v-switch
+                  inset
+                  label="المنتجات"
+                  v-model="userobj.product"
+                ></v-switch>
+              </v-col>
+              <v-col>
+                <v-switch
+                  inset
+                  label="الفواتير"
+                  v-model="userobj.facture"
                 ></v-switch>
               </v-col>
             </v-row>
@@ -136,24 +154,6 @@
                   v-model="userobj.chart"
                 ></v-switch>
               </v-col>
-            </v-row>
-            <v-row class="mt-n2">
-              <v-col>
-                <v-switch
-                  inset
-                  label="الفواتير"
-                  v-model="userobj.facture"
-                ></v-switch>
-              </v-col>
-              <v-col>
-                <v-switch
-                  inset
-                  label="المنتجات"
-                  v-model="userobj.sale"
-                ></v-switch>
-              </v-col>
-            </v-row>
-            <v-row class="mt-n2">
               <v-col>
                 <v-switch
                   inset
@@ -162,20 +162,33 @@
                 ></v-switch>
               </v-col>
             </v-row>
+
+            <v-row class="mt-n2">
+              <v-col>
+                <v-switch
+                  inset
+                  label="تحويل بين المخازن"
+                  v-model="userobj.transfer"
+                ></v-switch>
+              </v-col>
+              <v-col>
+                <v-switch
+                  inset
+                  label="إعدادات"
+                  v-model="userobj.setting"
+                ></v-switch>
+              </v-col>
+              <v-col></v-col>
+            </v-row>
           </v-form>
         </v-container>
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions class="justify-end">
-        <v-btn text color="red darken-1" @click="close">إلغاء</v-btn>
-        <v-btn
-          text
-          color="green darken-1"
-          v-if="mutableExpenseAction == 1"
-          @click="manage"
-          >حفظ</v-btn
-        >
-        <v-btn text color="green darken-1" v-else @click="manage">تعديل</v-btn>
+        <v-btn outlined large color="red darken-1" @click="close">إلغاء</v-btn>
+        <v-btn large class="mx-6" color="primary" @click="manage">
+          {{ mutableExpenseAction == 1 ? "حفظ" : "تعديل" }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -212,6 +225,7 @@ export default class Manageexp extends Vue {
   userobj = {} as User;
   vuser = new VUser();
   original = {} as User;
+
   created() {
     this.mutableExpenseAction = this.userAction;
 
@@ -231,7 +245,7 @@ export default class Manageexp extends Vue {
   manage() {
     if (this.form.validate()) {
       if (this.mutableExpenseAction == 1) {
-        this.userobj.status = "wwww";
+        this.userobj.status = "active";
         this.Apiuser.saveUser(this.userobj)
           .then((result: any) => {
             let saved = ((result as any).data as any).data as User;

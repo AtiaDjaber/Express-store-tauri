@@ -3,8 +3,9 @@
     <v-row class="pa-3">
       <v-col cols="3">
         <v-text-field
-          outlined
-          dense
+          flat
+          solo
+          hint="البحث باسم الصنف او الباركود"
           append-icon="fa-search"
           clearable
           label="البحث باسم الصنف او الباركود"
@@ -13,13 +14,14 @@
       </v-col>
       <v-col cols="3">
         <v-autocomplete
-          :items="listfournisseurs"
+          :items="listFournisseurs"
           item-text="name"
           item-value="id"
           v-model="search.fournisseur_id"
-          outlined
+          flat
+          solo
+          hint="اكتب اسم المورد"
           hide-details
-          dense
           placeholder="اكتب اسم المورد"
           label="المورد"
           prepend-inner-icon="mdi-account-search"
@@ -33,14 +35,12 @@
       <!--          :items="items"-->
       <!--          label="النوع"-->
       <!--          outlined-->
-      <!--          dense-->
+      <!--          -->
       <!--        ></v-combobox>-->
       <!--      </v-col>-->
 
       <v-col>
         <c-date-picker
-          dense
-          outlined
           v-model="search.from"
           label="تاريخ البداية"
           clearable
@@ -50,8 +50,6 @@
 
       <v-col>
         <c-date-picker
-          dense
-          outlined
           @eventname="clearTo"
           v-model="search.to"
           label="تاريخ النهاية"
@@ -59,48 +57,82 @@
         ></c-date-picker>
       </v-col>
     </v-row>
+    <v-card outlined>
+      <v-data-table
+        :headers="Headers"
+        :items="listFactures"
+        single-select
+        @click:row="rowClick"
+        show-expand
+        class="elevation-0"
+        :server-items-length="count"
+        @update:options="paginate"
+        :footer-props="{
+          'items-per-page-options': [10, 10],
+          'show-current-page': true,
+          'show-first-last-page': true,
+          'page-text': 'رقم الصفحة',
+          'items-per-page-text': 'عدد الأسطر',
+        }"
+      >
+        <template v-slot:expanded-item="{ headers, item }">
+          <td :colspan="headers.length">
+            <div class="mt-3">
+              <v-alert color="primary" dense type="info" border="left" text>{{
+                item.remark ? item.remark : "لا توجد ملاحظة"
+              }}</v-alert>
+              <v-data-table
+                :headers="SaleHeaders"
+                :items="item.purchases"
+                single-select
+                item-key="name"
+                class="elevation-1 headers-grey mb-3"
+                color="red"
+                :items-per-page="-1"
+                hide-default-footer
+                :footer-props="{
+                  'items-per-page-options': [10, 10],
+                  'show-current-page': true,
+                  'show-first-last-page': true,
+                  'page-text': 'رقم الصفحة',
+                  'items-per-page-text': 'عدد الأسطر',
+                }"
+              >
+                <template v-slot:[`item.actions`]="{ item }">
+                  <v-row>
+                    <ReturnDialog
+                      source="purchase"
+                      :original="item"
+                    ></ReturnDialog>
+                  </v-row> </template
+              ></v-data-table>
+            </div>
+          </td>
+        </template>
 
-    <v-data-table
-      :headers="Headers"
-      :items="listhisory"
-      single-select
-      @click:row="rowClick"
-      show-expand
-      class="elevation-1"
-      :items-per-page="perPage"
-      :server-items-length="count"
-      @update:options="paginate"
-      :footer-props="{
-        'items-per-page-options': [10, 10],
-        'show-current-page': true,
-        'show-first-last-page': true,
-        'page-text': 'رقم الصفحة',
-        'items-per-page-text': 'عدد الأسطر',
-      }"
-    >
-      <template v-slot:expanded-item="{ headers, item }">
-        <td :colspan="headers.length">
-          <div class="mt-3">
-            <v-data-table
-              :headers="SaleHeaders"
-              :items="item.purchases"
-              single-select
-              item-key="name"
-              class="elevation-1 headers-grey mb-3"
-              color="red"
-              hide-default-footer
-              :footer-props="{
-                'items-per-page-options': [10, 10],
-                'show-current-page': true,
-                'show-first-last-page': true,
-                'page-text': 'رقم الصفحة',
-                'items-per-page-text': 'عدد الأسطر',
-              }"
-            ></v-data-table>
-          </div>
-        </td>
-      </template>
-    </v-data-table>
+        <template v-slot:[`item.actions`]="{ item }">
+          <v-row>
+            <v-btn
+              color="green"
+              small
+              class="ml-2"
+              outlined
+              fab
+              elevation="0"
+              @click="editFacture(item)"
+            >
+              <v-icon>mdi-pencil-outline</v-icon>
+            </v-btn>
+            <delete-dialog
+              :id="item.id"
+              :disabled="false"
+              :source="'FournisseurFacture'"
+            />
+            <print-component :item="item" type="مورد"></print-component>
+          </v-row>
+        </template>
+      </v-data-table>
+    </v-card>
   </div>
 </template>
 
@@ -114,9 +146,13 @@ import CDatePicker from "@/components/CDatePicker.vue";
 import FournisseurApi from "@/api/fournisseurApi";
 import FournisseurFacture from "@/classes/fournisseurFacture";
 import Fournisseur from "@/classes/fournisseur";
+import purchaseModule from "@/store/purchaseModule";
+import ReturnDialog from "@/components/custom_dialogs/ReturnDialog.vue";
+import fournisseurModule from "@/store/fournisseurModule";
+import PrintComponent from "@/components/PrintComponent.vue";
 
 @Component({
-  components: { DeleteDialog, CDatePicker },
+  components: { PrintComponent, DeleteDialog, CDatePicker, ReturnDialog },
 })
 export default class HistoryPurchaseView extends Vue {
   Headers = [
@@ -127,66 +163,90 @@ export default class HistoryPurchaseView extends Vue {
     { text: "الدفع", value: "pay" },
     { text: "الباقي", value: "rest" },
     { text: "تخفيض", value: "remise" },
-    { text: "ملاحظة", value: "remark" },
+    // { text: "ملاحظة", value: "remark" },
     { text: "تاريخ", value: "created_at" },
+    { text: "المستخدم", value: "user.name" },
+
+    { text: "", value: "actions" },
     { text: "", value: "data-table-expand" },
   ];
 
   SaleHeaders = [
-    { text: "#", value: "id", class: "grey lighten-4" },
-    { text: "الباركود", value: "barcode", class: "grey lighten-4" },
-    { text: "الصنف", value: "name", class: "grey lighten-4" },
-    { text: "الكمية", value: "quantity", class: "grey lighten-4" },
-    { text: "السعر", value: "purchase_price", class: "grey lighten-4" },
-    { text: "المبلغ الاجمالي", value: "total", class: "grey lighten-4" },
+    { text: "#", value: "id" },
+    { text: "الباركود", value: "barcode" },
+    { text: "الصنف", value: "name" },
+    { text: "الكمية", value: "quantity" },
+    { text: "السعر", value: "purchase_price" },
+    { text: "المبلغ الاجمالي", value: "total" },
+    { text: "العمليات", value: "actions" },
   ];
 
   search = new Search();
 
   count = 0;
-  private apiFournisseur = new FournisseurApi();
-  private api = new historyApi();
-  listhisory = [] as FournisseurFacture[];
-  selecthistory = {} as FournisseurFacture;
-  perPage = 0;
+
+  listFactures = [] as FournisseurFacture[];
+  selectHistory = {} as FournisseurFacture;
   selectedFournisseur = {} as Fournisseur;
-  listfournisseurs = [] as Fournisseur[];
+  listFournisseurs = [] as Fournisseur[];
   findfacture: any;
 
-  getapiFournisseur(url?: string) {
-    this.apiFournisseur.getAllFournisseurs(url).then((data) => {
-      this.listfournisseurs = data as Fournisseur[];
+  getFournisseurs(url?: string): void {
+    FournisseurApi.getAllFournisseurs(url).then((data) => {
+      this.listFournisseurs = data as Fournisseur[];
     });
   }
 
-  getapi(search?: Search) {
-    this.api.getFourinsseurFactures(search).then((data) => {
-      this.listhisory.length = 0;
+  getApi(): void {
+    historyApi.getFourinsseurFactures(this.search).then((data) => {
+      this.listFactures.length = 0;
       this.count = 0;
-      ((data as any).data as FournisseurFacture[]).forEach((s) => {
-        this.listhisory.push(s);
-      });
-      if (this.listhisory.length > 0) this.count = (data as any as any).total;
-      this.perPage = (data as any as any).per_page;
+      this.listFactures = (data as any).data as FournisseurFacture[];
+      if (this.listFactures.length > 0) this.count = (data as any).total;
     });
   }
 
-  created() {
-    this.getapiFournisseur();
+  created(): void {
+    this.getFournisseurs();
+    this.$root.$on("returnedPurchase", (facture: any) => {
+      this.listFactures?.splice(
+        this.listFactures?.indexOf(
+          this.listFactures?.find((s) => s.id == facture.id) ??
+            ({} as FournisseurFacture)
+        ),
+        1,
+        facture
+      );
+    });
+    this.$root.$on("updateFactures", (_: any) => {
+      console.log("received");
+      this.getApi();
+    });
+    this.$root.$on("deleteFournisseurFacture", (result: any) => {
+      fournisseurModule.fournisseur.montant = result.montant;
+      if (result) {
+        this.listFactures.splice(
+          this.listFactures.indexOf(
+            this.listFactures.find((c) => c.id == result.id) ?? ({} as any)
+          ),
+          1
+        );
+      }
+    });
   }
 
-  rowClick(item: any, row: any) {
+  rowClick(item: any, row: any): void {
     if (!row.isSelected) {
       row.select(true);
     }
   }
 
   @Watch("search", { deep: true })
-  searchbydate() {
-    this.getapi(this.search);
+  searchByDate(): void {
+    this.getApi();
   }
 
-  clearFrom() {
+  clearFrom(): void {
     this.search.from = "";
   }
 
@@ -196,7 +256,14 @@ export default class HistoryPurchaseView extends Vue {
 
   paginate(obj: any) {
     this.search.url = obj.page;
-    this.getapi(this.search);
+    // this.getApi();
+  }
+
+  editFacture(facture: FournisseurFacture): void {
+    let newFacture = Object.assign({}, facture);
+    purchaseModule.setFacture(newFacture);
+    this.$root.$emit("editFactureFournisseur", "");
+    // this.$router.push({path: "/purchase"});
   }
 }
 </script>

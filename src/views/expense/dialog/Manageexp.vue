@@ -3,18 +3,18 @@
     <template v-slot:activator="{ on, attrs }">
       <div class="mr-2" v-bind="attrs" v-on="on">
         <v-btn
-
           :disabled="mutableExpenseAction == 2 && !expenseobj.id"
           color="primary"
-          elevation="5"
+          large
+          elevation="1"
         >
-         إضافة مصروف
+          إضافة مصروف
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
-    <v-card v-if="dialog">
-      <v-card-title class="light-blue darken-4 white--text">
+    <v-card v-if="dialog" color="plain">
+      <v-card-title>
         <span v-if="mutableExpenseAction == 1"> مصروف جديد</span>
         <span v-else> تعديل معلومات المصروف</span>
       </v-card-title>
@@ -27,11 +27,12 @@
               <v-col>
                 <v-text-field
                   color="blue darken-2"
-                  dense
                   label="اسم المصروف"
                   placeholder="المصروف"
+                  hint="المصروف"
                   required
-                  outlined
+                  flat
+                  solo
                   clearable
                   v-model="expenseobj.name"
                   :rules="vexpense.name"
@@ -41,37 +42,64 @@
             <v-row class="mt-5">
               <v-col>
                 <v-text-field
-                  placeholder="السعر"
-                  label="  السعر"
+                  placeholder="المبلغ"
+                  label="المبلغ"
+                  hint="المبلغ"
                   required
-                  outlined
-                   type="number"
-                  dense
+                  flat
+                  solo
+                  type="number"
                   clearable
                   v-model="expenseobj.price"
                   :rules="vexpense.price"
                 ></v-text-field>
               </v-col>
+              <v-col cols="6" sm="6">
+                <c-date-picker
+                  v-model="expenseobj.date"
+                  hint="التاريخ "
+                  solo
+                  flat
+                  placeholder="التاريخ"
+                  clearable
+                ></c-date-picker>
+              </v-col>
             </v-row>
-
+            <v-row>
+              <v-col>
+                <v-autocomplete
+                  :items="listCategories"
+                  v-model="expenseobj.expense_category_id"
+                  item-text="name"
+                  item-value="id"
+                  flat
+                  solo
+                  placeholder="اختر الفئة"
+                  label="الفئة"
+                  hint="الفئة"
+                  clearable
+                  prepend-inner-icon="mdi-filter-outline"
+                ></v-autocomplete>
+              </v-col>
+            </v-row>
             <v-row class="mt-4">
               <v-col>
                 <v-text-field
                   placeholder="ملاحظة"
+                  hint="ملاحظة"
                   label="ملاحظة"
                   required
-                  outlined
-                  dense
+                  flat
+                  solo
                   clearable
                   v-model="expenseobj.remarque"
-                  
                 ></v-text-field>
                 <!-- <v-text-field
                   placeholder="التاريخ"
                   label="التاريخ"
                   required
                   outlined
-                  dense
+                  
                   clearable
                   v-model="expenseobj.date"
                   
@@ -86,15 +114,13 @@
       <v-card-actions class="justify-end">
         <v-btn text color="red darken-1" @click="close">إلغاء</v-btn>
         <v-btn
-        text
+          text
           color="green darken-1"
           v-if="mutableExpenseAction == 1"
           @click="manage"
           >حفظ
         </v-btn>
-        <v-btn text color="green darken-1" v-else @click="manage"
-          >تعديل
-        </v-btn>
+        <v-btn text color="green darken-1" v-else @click="manage">تعديل </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -107,8 +133,11 @@ import VExpense from "@/validation/vExpense";
 import expenseApi from "@/api/expenseApi";
 import SnackBarModule from "@/store/snackBarModule";
 import loginModule from "@/store/loginModule";
+import CategoryApi from "@/api/categoryApi";
+import Category from "@/classes/category";
+import CDatePicker from "@/components/CDatePicker.vue";
 
-@Component({ components: {} })
+@Component({ components: { CDatePicker } })
 export default class ManageDepot extends Vue {
   @Prop({ default: 0 }) expenseAction!: number;
   mutableExpenseAction = 0;
@@ -135,13 +164,31 @@ export default class ManageDepot extends Vue {
   // expenseobj = {} as Expense;
   vexpense = new VExpense();
 
-  Apiexpense = new expenseApi();
   expenseobj = {} as Expense;
   // vexpense = new VExpense();
   original = {} as Expense;
+
+  listCategories = [] as Category[];
+  getListCategories(): void {
+    CategoryApi.getCategories("expense_categories")
+      .then((response) => {
+        this.listCategories = response;
+      })
+      .catch((error) => {
+        SnackBarModule.setSnackbar({
+          text: error,
+          color: "error",
+          timeout: 2000,
+          show: true,
+          icon: "mdi-alert-outline",
+          x: "right",
+          y: "top",
+        });
+      });
+  }
   created() {
     this.mutableExpenseAction = this.expenseAction;
-
+    this.getListCategories();
     this.$root.$on("editexpense", (selectexpense: expense) => {
       this.expenseobj = Object.assign({}, selectexpense);
 
@@ -155,16 +202,16 @@ export default class ManageDepot extends Vue {
     this.expenseobj = {} as expense;
     this.mutableExpenseAction = 1;
     this.dialog = false;
-    
   }
   get currentUser() {
     return loginModule.getCurrentUser;
   }
   manage() {
-    this.expenseobj.user_id=this.currentUser.id;
+    this.expenseobj.user_id = this.currentUser.id;
     if (this.form.validate()) {
       if (this.mutableExpenseAction == 1) {
-        this.Apiexpense.saveExpense(this.expenseobj)
+        expenseApi
+          .saveExpense(this.expenseobj)
           .then((result: any) => {
             let saved = (result as any).data as expense;
             this.$root.$emit("createdExpense", saved);
@@ -190,7 +237,7 @@ export default class ManageDepot extends Vue {
             });
           });
       } else {
-        this.Apiexpense.updateExpense(this.expenseobj).then((result: any) => {
+        expenseApi.updateExpense(this.expenseobj).then((result: any) => {
           Object.assign(this.original, result.data);
           SnackBarModule.setSnackbar({
             text: "تم التعديل بنجاح",

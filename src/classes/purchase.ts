@@ -5,7 +5,7 @@ export default interface Purchase {
   barcode?: string;
   name?: string;
   product_id?: number;
-  facture_id?: number;
+  fournisseur_facture_id?: number;
   depot_id?: number;
   depot: Depot;
   fournisseur_id?: number;

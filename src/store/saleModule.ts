@@ -1,130 +1,134 @@
-import ClientApi from "@/api/clientApi";
-import {VuexModule, Module, Mutation, Action} from "vuex-class-modules";
+import { VuexModule, Module, Mutation, Action } from "vuex-class-modules";
 import store from ".";
 import Sale from "@/classes/sale";
-import Client from "@/classes/client";
 import Facture from "@/classes/facture";
 import SaleApi from "@/api/saleApi";
+import SnackBarModule from "@/store/snackBarModule";
 
-@Module({generateMutationSetters: true})
+@Module({ generateMutationSetters: true })
 class SaleModule extends VuexModule {
-    private api = new SaleApi();
-    facture = {
-        montant: 0, pay: 0, rest: 0, remise: 0,
-        sales: [],
-    } as Facture;
+  //   facture = this.emptyFacture();
+  cartList = [this.emptyFacture()] as Facture[];
 
-    // saleList = [] as Sale[];
-    // selectedClient = {montant: 0} as Client;
+  date = new Date();
+  currentCart = 0;
+  // saleList = [] as Sale[];
 
-    totalCredit = 0;
+  //   get getFacture() {
+  //     return this.facture;
+  //   }
 
-    // get getClient() {
-    //     return this.facture.client;
-    // }
+  changeSelectedCart(index: number): void {
+    this.currentCart = index;
+  }
 
-    // @Mutation
-    // calcule() {
-    //     this.facture.montant = 0;
-    //
-    //     this.facture.sales.forEach((prodct, index) => {
-    //         prodct.count = index + 1;
-    //         this.facture.montant = this.facture.montant + prodct.total;
-    //     });
-    //     this.facture.rest = Number(this.facture.montant) - Number(this.facture.pay);
-    //     this.totalCredit =
-    //         (Number(this.facture.montant) + Number((this.facture.client.montant) ?? 0));
-    // }
+  get getFacture() {
+    return this.cartList[this.currentCart];
+  }
 
-    get getFacture() {
-        return this.facture;
-    }
-
-
-    @Mutation
-    setFacture(facture: Facture) {
-        this.facture = facture;
-    }
-
-    // @Mutation
-    // setSales(sale: Sale[]) {
-    //     this.facture.sales = sale;
-    // }
-
-    // @Mutation
-    // setClient(client: Client) {
-    //     // debugger
-    //     // this.facture.client = client;
-    //     this.facture = {montant: 0, pay: 0, rest: 0, remise: 0, sales: [],client:client} as Facture;
-    // }
-
-    @Mutation
-    addItem(sale: Sale) {
-        const productNew = Object.assign({}, sale);
-        productNew.count = this.facture.sales.length + 1;
-
-        const index = this.facture.sales.findIndex(
-            (e) => e.product_id == productNew.product_id
-        );
-        if (index >= 0)
-            this.facture.sales[index].quantity = this.facture.sales[index].quantity + 1;
-        else {
-
-            this.facture.sales.push(productNew);
+  get getListFacture() {
+    return this.cartList;
+  }
+  getMax(): number {
+    let max = 1;
+    for (let i = 0; i < this.cartList.length; i++) {
+      for (let j = 0; j < this.cartList.length; j++) {
+        if (max < this.cartList[i].cartNumber) {
+          max = this.cartList[i].cartNumber;
         }
+      }
     }
+    return max + 1;
+  }
+  @Mutation
+  setFacture(facture: Facture) {
+    // this.cartList[this.currentCart] = facture;
+    this.cartList.push(
+      Object.assign(
+        { cartNumber: this.getMax(), cartName: "السلة" } as Facture,
+        facture
+      )
+    );
+    this.changeSelectedCart(this.cartList.length - 1);
+  }
 
-    // @Mutation
-    // removeItem(sale: Sale) {
-    //     const index = this.facture.sales.findIndex((e) => e.product_id == sale.product_id);
-    //     this.facture.sales.splice(index, 1);
-    // }
-    //
-    // @Mutation
-    // deleteItemById(saleId: Number) {
-    //     const index = this.facture.sales.findIndex((e) => e.id == saleId);
-    //     this.facture.sales.splice(index, 1);
-    // }
+  @Mutation
+  setCartList(cartList: any) {
+    this.cartList = cartList;
+  }
+  @Mutation
+  addItem(productNew: Sale) {
+    // const productNew = Object.assign({}, sale);
+    productNew.count = this.cartList[this.currentCart].sales.length + 1;
 
-    @Mutation
-    clearCart() {
-        this.facture.sales = [];
+    const index = this.cartList[this.currentCart].sales.findIndex(
+      (e) => e.product_id == productNew.product_id
+    );
+    if (index >= 0)
+      this.cartList[this.currentCart].sales[index].quantity =
+        this.cartList[this.currentCart].sales[index].quantity + 1;
+    else {
+      if (productNew.name != undefined) {
+        this.cartList[this.currentCart].sales.splice(0, 0, productNew);
+      }
+      this.checkQuantity(productNew);
     }
-
-    // @Mutation
-    // editItem(sale: Sale) {
-    //     const index = this.facture.sales.findIndex(
-    //         (e) => e.product_id == sale.product_id
-    //     );
-    //     console.log("combo");
-    //     console.log(sale)
-    //     this.facture.sales[index].type = sale.type;
-    //     this.facture.sales[index].duration = sale.duration;
-    //     this.facture.sales[index].quantity = sale.quantity;
-    //     this.facture.sales[index].total = Number(sale.duration) * Number(sale.quantity)
-    //         * Number(sale.type == "يوم" ? sale.priceRentDay : sale.priceRentHour);
-    //
-    //     // this.facture.montant = 0;
-    //     // this.facture.sales.forEach((prodct, index) => {
-    //     //     prodct.count = index + 1;
-    //     //     this.facture.montant = this.facture.montant + prodct.total;
-    //     // });
-    //     // this.facture.rest = Number(this.facture.montant) - Number(this.facture.pay);
-    //     // this.totalCredit =
-    //     //     (Number(this.facture.montant) + Number((this.facture.client.montant) ?? 0));
-    //
-    // }
-
-    deleteSale(id: number): Promise<any> {
-        return this.api.deleteSale(id).then((x) => x);
+  }
+  checkQuantity(sale: Sale) {
+    if (sale.product.quantity < 1) {
+      SnackBarModule.setSnackbar({
+        text: "الكمية غير متوفرة",
+        color: "error",
+        timeout: 2000,
+        show: true,
+        icon: "mdi-alert-outline",
+        x: "right",
+        y: "top",
+      });
     }
+    if (
+      sale.product.date_expire != null &&
+      new Date(sale.product.date_expire).getTime() - this.date.getTime() >= 0
+    ) {
+      SnackBarModule.setSnackbar({
+        text: "تحذير انتهت صلاحية المنتج",
+        color: "error",
+        timeout: 6000,
+        show: true,
+        icon: "mdi-alert-outline",
+        x: "left",
+        y: "top",
+      });
+    }
+  }
+  @Mutation
+  clearCart() {
+    this.cartList[this.currentCart].sales = [];
+  }
 
-    // newFacture() {
-    //     this.facture = {montant: 0, pay: 0, rest: 0, remise: 0, sales: []} as Facture;
-    // }
+  @Mutation
+  addNewFacture() {
+    this.cartList[this.currentCart] = this.emptyFacture();
+  }
+
+  emptyFacture(cartNumber = 1): Facture {
+    return {
+      montant: 0,
+      pay: 0,
+      rest: 0,
+      remise: 0,
+      sales: [],
+      cartName: "السلة",
+      cartNumber: cartNumber,
+    } as Facture;
+  }
+  @Action
+  deleteSale(id: number): Promise<any> {
+    return SaleApi.deleteSale(id).then((x) => x);
+  }
 }
 
 export default new SaleModule({
-    store: store,
-    name: "saleModule",
+  store: store,
+  name: "saleModule",
 });

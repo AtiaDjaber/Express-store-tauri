@@ -1,41 +1,41 @@
 <template>
   <div class="mt-3">
-    <v-row class="mr-1 mt-2">
-      <v-text-field
-          style="width: 20%"
-          outlined
-          dense
-          clearable
-          append-icon="fa-search"
-          label="  البحث باسم الصنف او الباركود"
-          v-model="search.name"
-      ></v-text-field>
+    <v-row class="mx-3 my-2">
       <v-spacer></v-spacer>
+      <v-text-field
+        solo
+        flat
+        clearable
+        append-icon="fa-search"
+        hint="  البحث باسم الصنف او الباركود"
+        placeholder="  البحث باسم الصنف او الباركود"
+        v-model="search.name"
+      ></v-text-field>
     </v-row>
     <v-data-table
-        :headers="FactureHeaders"
-        :items="liststock"
-        single-select
-        item-key="id"
-        :server-items-length="count"
-        @update:options="paginate"
-        @click:row="rowClick"
-        class="elevation-1 mt-3"
-        :items-per-page="10"
-        :footer-props="{
-          'items-per-page-options': [10, 10],
-          'show-current-page': true,
-          'show-first-last-page': true,
-          'page-text': 'رقم الصفحة',
-          'items-per-page-text': 'عدد الأسطر',
-        }"
+      :headers="FactureHeaders"
+      :items="liststock"
+      single-select
+      item-key="id"
+      :server-items-length="count"
+      @update:options="paginate"
+      @click:row="rowClick"
+      class="elevation-1 mt-3"
+      :items-per-page="10"
+      :footer-props="{
+        'items-per-page-options': [10, 10],
+        'show-current-page': true,
+        'show-first-last-page': true,
+        'page-text': 'رقم الصفحة',
+        'items-per-page-text': 'عدد الأسطر',
+      }"
     >
     </v-data-table>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Ref, Vue, Watch} from "vue-property-decorator";
+import { Component, Ref, Vue, Watch } from "vue-property-decorator";
 import clientPayment from "@/classes/clientPayment";
 import clientModule from "@/store/clientModule";
 import snackBarModule from "@/store/snackBarModule";
@@ -59,25 +59,25 @@ import Stocks from "@/classes/stock";
 import ProductDepot from "@/classes/product_depot";
 import stockApi from "@/api/stockApi";
 
-@Component({components: {DeleteDialog, CDatePicker, printe, printeDeatail}})
+@Component({ components: { DeleteDialog, CDatePicker, printe, printeDeatail } })
 export default class ProductDepotView extends Vue {
   FactureHeaders = [
-    {text: "الرقم", value: "product_id", class: "grey lighten-4" },
-    {text: "الباركود", value: "product.barcode", class: "grey lighten-4" },
-    {text: "الصنف", value: "product.name", class: "grey lighten-4" },
-    {text: "الكمية", value: "quantity", class: "grey lighten-4" },
-    {text: "سعر البيع", value: "sell_price", class: "grey lighten-4" },
-    {text: "تاريخ", value: "created_at", class: "grey lighten-4" },
+    { text: "الرقم", value: "product_id" },
+    { text: "الباركود", value: "product.barcode" },
+    { text: "الصنف", value: "product.name" },
+    { text: "الكمية", value: "quantity" },
+    { text: "سعر البيع", value: "sell_price" },
+    { text: "تاريخ", value: "created_at" },
     // {text: "", value: "actions"},
     // {text: "", value: "data-table-expand"},
   ];
 
   // SaleHeaders = [
-  //   {text: "الصنف", value: "name", class: "grey lighten-4"},
-  //   {text: "الكمية", value: "quantity", class: "grey lighten-4"},
-  //   {text: "السعر", value: "price", class: "grey lighten-4"},
-  //   {text: "سعر البيع", value: "sell_price", class: "grey lighten-4"},
-  //   {text: "المبلغ الاجمالي", value: "total", class: "grey lighten-4"},
+  //   {text: "الصنف", value: "name", },
+  //   {text: "الكمية", value: "quantity", },
+  //   {text: "السعر", value: "price", },
+  //   {text: "سعر البيع", value: "sell_price", },
+  //   {text: "المبلغ الاجمالي", value: "total", },
   // ];
   search = new Search();
 
@@ -103,7 +103,6 @@ export default class ProductDepotView extends Vue {
   nameDepot = "";
   index: any;
 
-
   created() {
     this.$root.$on("selectedDepot", (item: Depot) => {
       this.nameDepot = item.name;
@@ -115,34 +114,33 @@ export default class ProductDepotView extends Vue {
   private apiStock = new stockApi();
 
   getProductDepot(search?: Search): void {
-    this.apiStock
-        .getProductyDepot(search)
-        .then((response) => {
-          this.liststock = [];
-          this.count = 0;
+    stockApi
+      .getProductsDepot(search)
+      .then((response) => {
+        this.liststock = [];
+        this.count = 0;
 
-          if (response.status == 200) {
-            this.liststock = response.data.data as ProductDepot[];
-            this.count = response.data.total;
-          }
-        })
-        .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+        if (response.status == 200) {
+          this.liststock = response.data.data as ProductDepot[];
+          this.count = response.data.total;
+        }
+      })
+      .catch((error) => {
+        SnackBarModule.setSnackbar({
+          text: error,
+          color: "error",
+          timeout: 2000,
+          show: true,
+          icon: "mdi-alert-outline",
+          x: "right",
+          y: "top",
         });
+      });
   }
 
-  @Watch("search", {deep: true})
+  @Watch("search", { deep: true })
   changedDepot() {
-    if (this.search.depot_id)
-      this.getProductDepot(this.search)
+    if (this.search.depot_id) this.getProductDepot(this.search);
   }
 
   rowClick(item: any, row: any) {
@@ -158,12 +156,10 @@ export default class ProductDepotView extends Vue {
     }
   }
 
-
   paginate(obj: any) {
     this.search.url = obj.page;
 
-    if (this.search.depot_id)
-      this.getProductDepot(this.search);
+    if (this.search.depot_id) this.getProductDepot(this.search);
   }
 }
 </script>

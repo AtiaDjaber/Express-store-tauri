@@ -2,49 +2,63 @@
   <div class="pa-3">
     <v-row class="pa-3">
       <Usermanege :userAction="1" />
+      <PasswordReset></PasswordReset>
 
       <v-spacer></v-spacer>
-
     </v-row>
     <v-col>
-      <v-data-table
-        :headers="Headers"
-        :items="listuser"
-        single-select
-        @click:row="rowClick"
-        :server-items-length="count"
-        :items-per-page="10"
-        @update:options="paginate"
-        :footer-props="{
-          'items-per-page-options': [10, 10],
-          'show-current-page': true,
-          'show-first-last-page': true,
-          'page-text': 'رقم الصفحة',
-          'items-per-page-text': 'عدد الأسطر',
-        }"
-      >
-        <template v-slot:[`item.actions`]="{ item }">
-          <v-row>
-            <v-btn
-              color="green"
-              class="ml-2"
-              small
-              outlined
-              rounded
-              elevation="0"
-              @click="edituser(item)"
-            >
-              <v-icon>mdi-pencil-outline</v-icon>
-            </v-btn>
+      <v-card outlined>
+        <v-data-table
+          :headers="Headers"
+          :items="listuser"
+          single-select
+          @click:row="rowClick"
+          :server-items-length="count"
+          :items-per-page="10"
+          @update:options="paginate"
+          :footer-props="{
+            'items-per-page-options': [10, 10],
+            'show-current-page': true,
+            'show-first-last-page': true,
+            'page-text': 'رقم الصفحة',
+            'items-per-page-text': 'عدد الأسطر',
+          }"
+        >
+          <template v-slot:[`item.actions`]="{ item }">
+            <v-row>
+              <v-btn
+                color="green"
+                class="ml-2"
+                small
+                outlined
+                fab
+                elevation="0"
+                @click="edituser(item)"
+              >
+                <v-icon>mdi-pencil-outline</v-icon>
+              </v-btn>
 
-            <DeleteDialog
-              :id="item.id"
-              :disabled="false"
-              :source="'UserView.vue'"
-            />
-          </v-row>
-        </template>
-      </v-data-table>
+              <DeleteDialog
+                :id="item.id"
+                :disabled="false"
+                :source="'UserView.vue'"
+              />
+
+              <v-btn
+                color="primary"
+                class="mr-2"
+                small
+                outlined
+                fab
+                elevation="0"
+                @click="resetUser(item)"
+              >
+                <v-icon>mdi-lock-outline</v-icon>
+              </v-btn>
+            </v-row>
+          </template>
+        </v-data-table></v-card
+      >
     </v-col>
   </div>
 </template>
@@ -56,8 +70,8 @@ import userApi from "@/api/userApi";
 import User from "@/classes/user";
 import DeleteDialog from "@/components/custom_dialogs/DeleteDialog.vue";
 import printe from "@/views/printe/PrinteViews.vue";
-
-@Component({ components: { Usermanege, DeleteDialog,printe } })
+import PasswordReset from "@/views/user/dialog/PasswordReset.vue";
+@Component({ components: { Usermanege, DeleteDialog, printe, PasswordReset } })
 export default class Users extends Vue {
   Headers = [
     { text: "الاسم", value: "name" },
@@ -77,7 +91,6 @@ export default class Users extends Vue {
   @Prop() data!: User[];
 
   getUsers(pageNumber: string): void {
-
     this.api
       .getUser(pageNumber)
       .then((response) => {
@@ -164,6 +177,10 @@ export default class Users extends Vue {
 
   edituser(edited: any) {
     this.$root.$emit("edituser", edited);
+  }
+
+  resetUser(edited: any) {
+    this.$root.$emit("reset_password", edited);
   }
 
   paginate(obj: any) {

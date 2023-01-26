@@ -1,25 +1,26 @@
 <template>
   <div class="pa-3">
-    <v-row class="pa-3">
+    <v-row class="pa-2">
       <v-col cols="1">
-        <Manegeexp :expenseAction="1"/>
+        <Manegeexp :expenseAction="1" />
       </v-col>
       <!--      <v-col cols="1">-->
       <!--        <Print />-->
       <!--      </v-col>-->
 
       <v-spacer></v-spacer>
+      <manage-type-expense resource="expense_categories"></manage-type-expense>
       <v-col cols="4">
         <v-text-field
-            color="blue darken-2"
-            dense
-            label="اسم المصروف"
-            placeholder="البحث باسم المصروف"
-            required
-            append-icon="fa-search"
-            outlined
-            v-model="search.name"
-            clearable
+          color="blue darken-2"
+          hint="اسم المصروف"
+          placeholder="البحث باسم المصروف"
+          required
+          append-icon="fa-search"
+          flat
+          solo
+          v-model="search.name"
+          clearable
         ></v-text-field>
       </v-col>
 
@@ -28,8 +29,8 @@
       <!--        <v-icon right>mdi-printer</v-icon>-->
       <!--      </v-btn>-->
     </v-row>
-
-    <v-data-table
+    <v-card outlined>
+      <v-data-table
         :headers="Headers"
         :items="listexpense"
         @click:row="rowClick"
@@ -38,39 +39,40 @@
         :items-per-page="perPage"
         @update:options="paginate"
         :footer-props="{
-        'items-per-page-options': [10, 10],
-        'show-current-page': true,
-        'show-first-last-page': true,
-        'page-text': 'رقم الصفحة',
-        'items-per-page-text': 'عدد الأسطر',
-      }"
-    >
-      <template v-slot:[`item.actions`]="{ item }">
-        <v-row>
-          <v-btn
+          'items-per-page-options': [10, 10],
+          'show-current-page': true,
+          'show-first-last-page': true,
+          'page-text': 'رقم الصفحة',
+          'items-per-page-text': 'عدد الأسطر',
+        }"
+      >
+        <template v-slot:[`item.actions`]="{ item }">
+          <v-row>
+            <v-btn
               color="green"
               class="ml-2"
               small
               outlined
-              rounded
+              fab
               elevation="0"
               @click="editexpense(item)"
-          >
-            <v-icon>mdi-pencil-outline</v-icon>
-          </v-btn>
-          <DeleteDialog
+            >
+              <v-icon>mdi-pencil-outline</v-icon>
+            </v-btn>
+            <DeleteDialog
               :id="item.id"
               :disabled="false"
               :source="'ExpenseView.vue'"
-          />
-        </v-row>
-      </template>
-    </v-data-table>
+            />
+          </v-row>
+        </template>
+      </v-data-table>
+    </v-card>
   </div>
 </template>
 
 <script lang="ts">
-import {Vue, Component, Watch} from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import expense from "@/classes/expense";
 import expenseApi from "@/api/expenseApi";
 import Expense from "@/classes/expense";
@@ -79,35 +81,37 @@ import Manegeexp from "@/views/expense/dialog/Manageexp.vue";
 // import TimeFormatService from "@/service/timeFormatService";
 import DeleteDialog from "@/components/custom_dialogs/DeleteDialog.vue";
 import Search from "@/classes/search";
+import ManageTypeExpense from "./dialog/ManageTypeExpense.vue";
 
 @Component({
-  components: {DeleteDialog, Manegeexp},
+  components: { DeleteDialog, Manegeexp, ManageTypeExpense },
 })
 export default class ExpenseView extends Vue {
   Headers = [
-    {text: "المصروف", value: "name", class: "grey lighten-4"},
-    {text: "السعر", value: "price", class: "grey lighten-4"},
-    {text: "التاريخ", value: "created_at", class: "grey lighten-4"},
-    {text: "ملاحظة", value: "remarque", class: "grey lighten-4"},
-    {text: "المستخدم", value: "user.name", class: "grey lighten-4"},
-    {text: "", value: "actions", class: "grey lighten-4"},
+    { text: "المصروف", value: "name" },
+    { text: "المبلغ", value: "price" },
+    { text: "ملاحظة", value: "remarque" },
+    { text: "الفئة", value: "expense_category.name" },
+    { text: "المستخدم", value: "user.name" },
+    { text: "التاريخ", value: "date" },
+
+    { text: "", value: "actions" },
   ];
 
   count = 0;
-  private api = new expenseApi();
   listexpense = [] as Expense[];
   selectexpense = {} as Expense;
   perPage = 0;
 
   search = new Search();
 
-  @Watch("search", {deep: true})
+  @Watch("search", { deep: true })
   onChange() {
     this.getapi(this.search);
   }
 
   getapi(search?: Search) {
-    this.api.getExpenses(search).then((data) => {
+    expenseApi.getExpenses(search).then((data) => {
       console.log(data);
       this.listexpense.length = 0;
       this.count = 0;
@@ -125,8 +129,6 @@ export default class ExpenseView extends Vue {
   }
 
   created() {
-    // this.getapi();
-
     this.$root.$on("createdExpense", (expense: Expense) => {
       //  this.expense.date="2017-01-01 00:00:00";
       this.listexpense.unshift(expense);
@@ -135,11 +137,10 @@ export default class ExpenseView extends Vue {
     this.$root.$on("deletedexpenseid", (deletedexpenseid: number) => {
       if (deletedexpenseid) {
         this.listexpense.splice(
-            this.listexpense.indexOf(
-                this.listexpense.find((c) => c.id == deletedexpenseid) ??
-                ({} as Expense)
-            ),
-            1
+          this.listexpense.indexOf(
+            this.listexpense.find((c) => c.id == deletedexpenseid)
+          ),
+          1
         );
       }
     });
@@ -147,13 +148,13 @@ export default class ExpenseView extends Vue {
     this.$root.$on("updateExpense", (updateExpense: Expense) => {
       if (updateExpense) {
         this.listexpense?.splice(
-            this.listexpense?.indexOf(
-                this.listexpense?.find((s) => s.id == updateExpense.id) ??
-                ({} as Expense)
-            ),
+          this.listexpense?.indexOf(
+            this.listexpense?.find((s) => s.id == updateExpense.id) ??
+              ({} as Expense)
+          ),
 
-            1,
-            updateExpense
+          1,
+          updateExpense
         );
       }
     });
@@ -181,14 +182,13 @@ export default class ExpenseView extends Vue {
 
   paginate(obj: any) {
     this.search.url = obj.page;
-    this.getapi(this.search);
   }
 
   /////////////////////////////////////////
 }
 </script>
 <style scoped>
-::v-deep tr.v-data-table__selected {
+/* ::v-deep tr.v-data-table__selected {
   background: #c7e0f5 !important;
-}
+} */
 </style>

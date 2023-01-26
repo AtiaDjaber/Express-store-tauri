@@ -18,17 +18,16 @@
           </h4> -->
           <v-row class="">
             <v-img
-                v-if="previewImage!=null"
-                class="mb-10 ml-15"
-                contain
-                height="80px"
-                width="80px"
-                :src="previewImage"
+              v-if="previewImage != null"
+              class="mb-10 ml-15"
+              contain
+              height="80px"
+              width="80px"
+              :src="previewImage"
             ></v-img>
             <h4 class="mb-2 ml-16" style="text-align: center">
               {{ this.setting.name_store }}
             </h4>
-
           </v-row>
           <v-row class="mt-n10">
             <v-col cols="7"> <h4 class="mr-2">العنوان</h4></v-col>
@@ -173,18 +172,16 @@ export default class PrinteViews extends Vue {
     this.getSettingData();
   }
 
-
   previewImage = null;
   setting = {} as Setting;
   settingApi = new SettingApi();
 
   getSettingData() {
-    this.settingApi.getSetting().then((res) => {
-      this.setting = res.data;
-      if (this.setting.logo != null)
-        this.previewImage = (process.env.VUE_APP_API_URL as string) + (res.data as Setting).logo;
-
-    });
+    // this.settingApi.getSetting().then((res) => {
+    //   this.setting = res.data;
+    //   if (this.setting.logo != null)
+    //     this.previewImage = (process.env.VUE_APP_API_URL as string) + (res.data as Setting).logo;
+    // });
   }
 }
 </script>

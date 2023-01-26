@@ -39,7 +39,6 @@ class clientModule extends VuexModule {
   }
 
   getClientPaymentsById(id: number, page: any): Promise<ClientPayment[]> {
-
     return this.api.getClientPaymentsById(id, page).then((x) => x);
   }
 
@@ -48,15 +47,15 @@ class clientModule extends VuexModule {
     return this.api.addPayment(payment).then((x) => Object.assign({}, x));
   }
 
-  getClientfactursById(id: number, page: any): Promise<any> {
-    return this.api.getClientFactures(id, page).then((x) => x);
+  getClientfactursById(seacrh: Search): Promise<any> {
+    return this.api.getClientFactures(seacrh).then((x) => x);
   }
 
   deleteFacture(id: number): Promise<any> {
     return this.api.deleteFacture(id).then((x) => x);
   }
 
-  clientitem={} as Client;
+  clientitem = {} as Client;
 
   @Mutation
   setClient(item: Client) {

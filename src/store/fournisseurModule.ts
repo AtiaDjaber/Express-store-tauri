@@ -3,9 +3,7 @@ import Fournisseur from "@/classes/Fournisseur";
 import { VuexModule, Module, Mutation, Action } from "vuex-class-modules";
 import store from ".";
 import FournisseurPayment from "@/classes/FournisseurPayment";
-import Group from "@/classes/group";
 import Search from "@/classes/search";
-import Facture from "@/classes/facture";
 // import Fournisseur from "@/classes/Fournisseur";
 
 @Module({ generateMutationSetters: true })
@@ -54,8 +52,8 @@ class fournisseurModule extends VuexModule {
     return this.api.addPayment(payment).then((x) => Object.assign({}, x));
   }
 
-  getFournisseurfactursById(id: number, page: any): Promise<any> {
-    return this.api.getFournisseurfacturesById(id, page).then((x) => x);
+  getFournisseurfactursById(search: Search): Promise<any> {
+    return this.api.getFournisseurfacturesById(search).then((x) => x);
   }
 
   deleteFacture(id: number): Promise<any> {

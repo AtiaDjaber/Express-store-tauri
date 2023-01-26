@@ -1,38 +1,121 @@
 import Stock from "@/classes/stock";
-import HttpClient from "./httpClient";
 import Search from "@/classes/search";
+import axiosModule from "@/store/axiosModule";
+import Favorite from "@/classes/favorite";
+import axios from "axios";
+import Damage from "@/classes/damage";
 
-export default class stockApi extends HttpClient {
-  public constructor() {
-    super(process.env.VUE_APP_API_URL as string);
+export default class stockApi {
+  static async getStock(search?: Search): Promise<any> {
+    return await axiosModule.instance.get("api/products?" + search.toFilter());
+  }
+  static async getAllStock(search?: Search): Promise<any> {
+    return await axiosModule.instance.get(
+      "api/products/all?" + search.toFilter()
+    );
   }
 
-  public async getStock(search?: Search): Promise<any> {
-    return await this.instance.get("api/products?" + search.toFilter());
+  static async getProductsDepot(search?: Search): Promise<any> {
+    return await axiosModule.instance.get(
+      "api/product_depot?" + search.toFilter()
+    );
   }
 
-  public async getProductyDepot(search?: Search): Promise<any> {
-    return await this.instance.get("api/product_depot?" + search.toFilter());
+  static async getBarcode(resource = "products"): Promise<any> {
+    return await axiosModule.instance.get(
+      "api/product/generate?table=" + resource
+    );
   }
 
-  async saveStock(stock: Stock): Promise<any> {
-    return await this.instance.post("api/product/add", stock);
+  static async saveStock(stock: Stock): Promise<any> {
+    return await axiosModule.instance.post("api/product/add", stock);
   }
 
-  async saveManyStock(stock: Stock[]): Promise<any> {
-    return await this.instance.post("api/product/add_many", stock);
+  static async saveManyStock(stock: Stock[]): Promise<any> {
+    return await axiosModule.instance.post("api/product/add_many", stock);
   }
-  
 
-  deleteStock(id: number) {
-    
-    const deleteStock = this.instance
+  static deleteStock(id: number) {
+    const deleteStock = axiosModule.instance
       .delete<any>("api/product/" + id)
       .then((x) => x.data);
     return deleteStock;
   }
 
-  async updateStock(stock: Stock) {
-    return this.instance.put<Stock>("api/product/put", stock);
+  static async updateStock(stock: Stock) {
+    return axiosModule.instance.put<Stock>("api/product/put", stock);
+  }
+
+  static async getFav(): Promise<any> {
+    return await axiosModule.instance.get("api/favorites");
+  }
+
+  static async saveFav(favorite: Favorite): Promise<any> {
+    return await axiosModule.instance.post("api/favorite/add", favorite);
+  }
+  static async updateFav(favorite: Favorite) {
+    return axiosModule.instance.put("api/favorite/put", favorite);
+  }
+
+  static async attachProductToFavorite(favorite: Favorite, stock: Stock) {
+    return axiosModule.instance.post(
+      "api/favorite/add-product/" + favorite.id + "/" + stock.id,
+      {}
+    );
+  }
+
+  static async detachProductFromFavorite(favorite: Favorite, stock: Stock) {
+    return axiosModule.instance.post(
+      "api/favorite/remove-product/" + favorite.id + "/" + stock.id,
+      {}
+    );
+  }
+
+  static async uploadImage(formData: FormData) {
+    console.log(formData);
+    const res = await axios
+      .post(
+        (process.env.VUE_APP_API_URL as string) + "api/product/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+        }
+      )
+      .catch((e) => {
+        console.log(e);
+      });
+    return res;
+  }
+
+  static deleteFavorite(id: number) {
+    const deleteStock = axiosModule.instance
+      .delete("api/favorite/" + id)
+      .then((x) => x.data);
+    return deleteStock;
+  }
+
+  static async getDamages(search?: Search): Promise<any> {
+    return await axiosModule.instance.get("api/damages?" + search.toFilter());
+  }
+
+  static deleteDamage(id: number) {
+    const deleted = axiosModule.instance
+      .delete("api/damages/" + id)
+      .then((x) => x.data);
+    return deleted;
+  }
+
+  static async saveDamage(damage: Damage): Promise<any> {
+    return await axiosModule.instance.post("api/damage/add", damage);
+  }
+
+  static deleteBarcode(id: number) {
+    const deleted = axiosModule.instance
+      .delete("api/barcode/" + id)
+      .then((x) => x.data);
+    return deleted;
   }
 }

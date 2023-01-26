@@ -4,12 +4,13 @@ export default class Search {
   from?: string = null;
   to?: string;
   client_id?: number = null;
+  box_id?: number = null;
   fournisseur_id?: number = null;
   depot_id?: number = null;
   isPresent?: boolean;
   type?: string = null;
 
-  public toFilter() {
+  public toFilter(): string {
     return (
       "page=" +
       (this.url ? this.url : "1") +
@@ -26,7 +27,9 @@ export default class Search {
       "&type=" +
       (this.type ? this.type : "export") +
       "&depot_id=" +
-      (this.depot_id ? this.depot_id : "")
+      (this.depot_id ? this.depot_id : "") +
+      "&box_id=" +
+      (this.box_id ? this.box_id : "")
     );
   }
 }

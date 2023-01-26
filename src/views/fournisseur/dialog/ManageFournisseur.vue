@@ -5,29 +5,23 @@
         <v-btn
           :disabled="mutableTeacherAction == 2 && !fournisseur.id"
           dark
-          :fab="buttonSahpe"
+          large
+          :fab="isFab"
           class="mx-3"
           color="primary"
-          :small="buttonSahpe == true ? true : false"
+          :small="isFab"
           elevation="3"
         >
-          {{ !buttonSahpe ? "إضافة مورد" : "" }}
+          {{ !isFab ? "إضافة مورد" : "" }}
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
-    <v-card v-if="dialog">
-      <v-card-title class="light-blue darken-4">
-        <span
-          style="font-size: 20px; color: white"
-          v-if="mutableTeacherAction == 1"
-          class="mr-5 mb-1"
-        >
-          مورد جديد</span
-        >
-        <span style="font-size: 20px; color: white" v-else>
-          تعديل معلومات المورد</span
-        >
+    <v-card v-if="dialog" color="plain">
+      <v-card-title class="primary--text font-weight-bold">
+        <span style="font-size: 20px" class="mr-5 mb-1">
+          {{ mutableTeacherAction == 1 ? "مورد جديد" : "تعديل معلومات المورد" }}
+        </span>
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text>
@@ -37,8 +31,9 @@
               <v-col class=""
                 ><v-text-field
                   label="الإسم الكامل"
-                  outlined
-                  dense
+                  hint="الإسم الكامل"
+                  flat
+                  solo
                   v-model="fournisseur.name"
                   :rules="vTeacher.firstname"
                 ></v-text-field
@@ -46,9 +41,10 @@
               <v-col class=""
                 ><v-text-field
                   label="المبلغ"
-                  outlined
+                  hint="المبلغ"
+                  solo
+                  flat
                   type="number"
-                  dense
                   v-model="fournisseur.montant"
                   :rules="vTeacher.price"
                 ></v-text-field
@@ -59,8 +55,9 @@
               <v-col class=""
                 ><v-text-field
                   label="رقم الهاتف"
-                  outlined
-                  dense
+                  hint="رقم الهاتف"
+                  solo
+                  flat
                   type="number"
                   v-model="fournisseur.mobile"
                   :rules="vTeacher.mobile"
@@ -69,8 +66,9 @@
               <v-col class=""
                 ><v-text-field
                   label="البريد الإلكتروني"
-                  outlined
-                  dense
+                  hint="البريد الإلكتروني"
+                  solo
+                  flat
                   v-model="fournisseur.email"
                 ></v-text-field
               ></v-col>
@@ -79,8 +77,9 @@
               <v-col cols=""
                 ><v-text-field
                   label="العنوان"
-                  outlined
-                  dense
+                  hint="العنوان"
+                  solo
+                  flat
                   v-model="fournisseur.address"
                   :rules="vTeacher.address"
                 ></v-text-field
@@ -89,16 +88,14 @@
           </v-form>
         </v-container>
       </v-card-text>
-      <v-card-actions class="justify-end">
-        <v-btn text color="red darken-1" @click="close">إلغاء</v-btn>
-        <v-btn
-          text
-          color="green darken-1"
-          v-if="mutableTeacherAction === 1"
-          @click="manage"
-          >حفظ</v-btn
+      <v-divider></v-divider>
+      <v-card-actions class="justify-end my-1">
+        <v-btn outlined large class="mx-4" color="red darken-1" @click="close"
+          >إلغاء</v-btn
         >
-        <v-btn text color="green darken-1" v-else @click="manage">تعديل</v-btn>
+        <v-btn class="mx-4" large color="primary" @click="manage">
+          {{ mutableTeacherAction === 1 ? "حفظ" : "تعديل" }}</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -116,7 +113,7 @@ import Fournisseur from "@/classes/fournisseur";
 @Component({ components: { CDatePicker } })
 export default class ManageFournisseur extends Vue {
   @Prop({ default: 0 }) teacherAction!: number;
-  @Prop({ default: false }) buttonSahpe!: boolean;
+  @Prop({ default: false }) isFab!: boolean;
   mutableTeacherAction = 0;
   @Ref() form: any;
   @Ref() menu!: any;

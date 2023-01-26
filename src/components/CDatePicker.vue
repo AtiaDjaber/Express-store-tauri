@@ -15,13 +15,17 @@
         v-model="date"
         :label="label"
         :outlined="outlined"
-        prepend-inner-icon="mdi-calendar"
+        solo
+        flat
+        append-icon="mdi-calendar"
+        :background-color="color"
         :dense="dense"
         v-bind="attrs"
         v-on="on"
         :rules="rules"
         :readonly="readonly"
         :placeholder="placeholder"
+        :hint="placeholder"
         :clearable="clearable"
         @click:clear="trigger"
       ></v-text-field>
@@ -33,7 +37,6 @@
       picker-date=""
       scrollable
       locale="AR-dz"
-      
     >
     </v-date-picker>
   </v-menu>
@@ -53,6 +56,7 @@ export default class CDatePicker extends Vue {
   @Model("changeValue") readonly value!: unknown;
   @Ref() input!: unknown;
   @Prop() rules!: unknown[];
+  @Prop({ default: "" }) color!: string;
   @Prop({ default: "" }) label!: string;
   @Prop({ default: "" }) placeholder!: string;
   @Prop({ default: false }) dense!: boolean;
@@ -76,8 +80,8 @@ export default class CDatePicker extends Vue {
     this.value ? (this.date = this.value as string) : (this.date = "");
   }
 
-  trigger(){
-    this.$emit("eventname",null)
+  trigger() {
+    this.$emit("eventname", null);
   }
 }
 </script>

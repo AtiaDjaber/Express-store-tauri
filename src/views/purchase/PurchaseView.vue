@@ -10,10 +10,10 @@
           v-model="facture.fournisseur_id"
           item-text="name"
           item-value="id"
-          outlined
+          solo
+          flat
           :disabled="facture.id != null"
           hide-details
-          dense
           placeholder="اكتب اسم المورد"
           label="المورد"
           prepend-inner-icon="mdi-account-search"
@@ -25,13 +25,21 @@
         <span> {{ facture.id ? "الفاتورة  # " + facture.id : "" }}</span>
       </v-col>
       <v-spacer></v-spacer>
-      <v-btn class="ml-2 mt-3" dark color="red " @click="clearCart()">
+      <v-btn
+        class="ml-2 mt-3"
+        large
+        outlined
+        dark
+        color="red "
+        @click="clearCart()"
+      >
         تنظيف السلة
         <v-icon right>mdi-delete-outline</v-icon>
       </v-btn>
       <v-btn
         class="ml-2 mt-3"
         dark
+        large
         color="red "
         v-show="facture.id != null"
         @click="addNewFacture"
@@ -42,8 +50,11 @@
       <v-btn
         class="ml-2 mt-3"
         color="green darken-1"
+        large
         style="color: white"
-        :disabled="facture.fournisseur_id == null"
+        :disabled="
+          facture.fournisseur_id == null || facture.purchases.length < 2
+        "
         @click="saveFacture()"
       >
         حفظ الفاتورة
@@ -62,122 +73,170 @@
     </v-row>
     <v-row no-gutters></v-row>
 
-    <v-data-table
-      :headers="Headers"
-      :items="facture.purchases"
-      @click:row="rowClick"
-      hide-default-footer
-      fixed-header
-      height="550px"
-      item-key="product_id"
-      :items-per-page="-1"
-      single-select
-    >
-      <template v-slot:item.quantity="{ item }">
-        <v-text-field
-          style="width: 70%"
-          dense
-          label="الكمية"
-          flat
-          solo
-          hide-details
-          type="number"
-          v-model="item.quantity"
-          @input="editItem(item)"
-        ></v-text-field>
-      </template>
+    <div v-resize="onResize">
+      <v-data-table
+        :headers="Headers"
+        :items="facture.purchases"
+        @click:row="rowClick"
+        hide-default-footer
+        fixed-header
+        :height="windowSize.y - 310"
+        item-key="count"
+        :items-per-page="-1"
+        single-select
+      >
+        <template v-slot:item.barcode="{ item, index }">
+          <v-text-field
+            style="width: auto"
+            label="الباركود"
+            flat
+            solo
+            dense
+            clearable
+            hide-details
+            @keyup="onChangeBarcode(item, index)"
+            v-model="item.barcode"
+          ></v-text-field>
+        </template>
 
-      <template v-slot:item.purchase_price="{ item }">
-        <v-text-field
-          style="width: 70%"
-          dense
-          label="سعر البيع"
-          flat
-          solo
-          hide-details
-          type="number"
-          v-model="item.purchase_price"
-          @input="editItem(item)"
-        ></v-text-field>
-      </template>
-      <template v-slot:item.price="{ item }">
-        <v-text-field
-          style="width: 70%"
-          dense
-          label="سعر البيع"
-          flat
-          solo
-          hide-details
-          type="number"
-          v-model="item.price"
-          @input="editItem(item)"
-        ></v-text-field>
-      </template>
+        <template v-slot:[`item.name`]="{ item }">
+          <v-text-field
+            style="width: auto"
+            label="اسم الصنف"
+            flat
+            solo
+            dense
+            clearable
+            hide-details
+            v-model="item.name"
+          ></v-text-field>
+        </template>
 
-      <template v-slot:[`item.actions`]="{ item }">
-        <v-row>
-          <!--         v-if="item.id==null"-->
-          <v-btn @click="deleteItem(item)" rounded outlined small color="red">
-            <v-icon>mdi-trash-can-outline</v-icon>
-          </v-btn>
-          <!--          <delete-dialog v-else :id="item.id" :source="'SALE'"/>-->
-        </v-row>
-      </template>
-    </v-data-table>
+        <template v-slot:item.quantity="{ item, index }">
+          <v-text-field
+            style="width: 150px"
+            label="الكمية"
+            flat
+            dense
+            class="centered-input"
+            solo
+            hide-details
+            type="number"
+            hide-spin-buttons
+            v-model="item.quantity"
+            @input="editItem(item, index)"
+          >
+            <template v-slot:append>
+              <v-icon @click="item.quantity++">mdi-plus</v-icon>
+            </template>
+            <template v-slot:prepend-inner>
+              <v-icon @click="item.quantity--">mdi-minus</v-icon>
+            </template>
+          </v-text-field>
+        </template>
+        <template v-slot:item.price="{ item, index }">
+          <v-text-field
+            style="width: 70%"
+            label="سعر البيع"
+            flat
+            dense
+            solo
+            hide-details
+            type="number"
+            v-model="item.price"
+            @input="editItem(item, index)"
+          ></v-text-field>
+        </template>
 
+        <template v-slot:item.purchase_price="{ item, index }">
+          <v-text-field
+            style="width: 70%"
+            label="سعر الشراء"
+            flat
+            solo
+            dense
+            hide-details
+            type="number"
+            v-model="item.purchase_price"
+            @input="editItem(item, index)"
+          ></v-text-field>
+        </template>
+
+        <template v-slot:[`item.actions`]="{ item, index }">
+          <v-row>
+            <!--         v-if="item.id==null"-->
+            <v-btn
+              @click="deleteItem(item, index)"
+              fab
+              outlined
+              small
+              color="red"
+            >
+              <v-icon>mdi-trash-can-outline</v-icon>
+            </v-btn>
+            <!--          <delete-dialog v-else :id="item.id" :source="'SALE'"/>-->
+          </v-row>
+        </template>
+      </v-data-table>
+    </div>
     <v-col>
-      <v-footer padless color="white">
-        <v-row class="">
-          <v-col cols="2">
-            <v-text-field
-              outlined
-              dense
-              readonly
-              v-model="facture.montant"
-              append-icon="mdi-search"
-              label="مبلغ الفاتورة  "
-            ></v-text-field>
-          </v-col>
-          <v-col cols="2">
-            <v-text-field
-              outlined
-              dense
-              type="number"
-              v-model="facture.remise"
-              append-icon="mdi-percent"
-              label="تخفيض"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="2">
-            <v-text-field
-              outlined
-              dense
-              type="number"
-              v-model="facture.pay"
-              append-icon="mdi-cash"
-              label="الدفع "
-            ></v-text-field>
-          </v-col>
-          <v-col cols="2">
-            <v-text-field
-              outlined
-              dense
-              readonly
-              v-model="getRest"
-              label="الباقي"
-            ></v-text-field>
-          </v-col>
-          <v-col>
-            <v-text-field
-              outlined
-              dense
-              v-model="facture.remark"
-              append-icon="mdi-pencil"
-              label="ملاحظة"
-            ></v-text-field>
-          </v-col>
-        </v-row>
-      </v-footer>
+      <!-- <v-footer padless color="white"> -->
+      <v-row class="">
+        <v-col cols="2">
+          <v-text-field
+            solo
+            flat
+            readonly
+            v-model="facture.montant"
+            append-icon="mdi-search"
+            label="مبلغ الفاتورة  "
+            hint="مبلغ الفاتورة"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-text-field
+            solo
+            flat
+            type="number"
+            v-model="facture.remise"
+            append-icon="mdi-percent"
+            hint="تخفيض"
+            label="تخفيض"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-text-field
+            solo
+            flat
+            type="number"
+            v-model="facture.pay"
+            append-icon="mdi-cash"
+            hint="الدفع"
+            label="الدفع "
+          ></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-text-field
+            solo
+            flat
+            readonly
+            v-model="getRest"
+            hint="الباقي"
+            label="الباقي"
+          ></v-text-field>
+        </v-col>
+        <v-col>
+          <v-text-field
+            flat
+            solo
+            hint="ملاحظة"
+            v-model="facture.remark"
+            append-icon="mdi-pencil"
+            label="ملاحظة"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <!-- </v-footer> -->
     </v-col>
 
     <v-overlay :value="loading">
@@ -278,13 +337,16 @@
 import { Vue, Component, Watch } from "vue-property-decorator";
 import ManageProductPurchase from "@/views/purchase/dialog/ManageProductPurchase.vue";
 import Fournisseur from "@/classes/fournisseur";
-import fournisseurApi from "@/api/fournisseurApi";
+import FournisseurApi from "@/api/fournisseurApi";
 import purchaseModule from "@/store/purchaseModule";
 import FournisseurFacture from "@/classes/fournisseurFacture";
 import FournisseurFactureApi from "@/api/fournisseurFactureApi";
 import Purchase from "@/classes/purchase";
 import VueBarcode from "vue-barcode";
-import html2canvas, { Options } from "html2canvas";
+// import html2canvas, { Options } from "html2canvas";
+// import * as electron from "electron";
+// import * as fs from "fs";
+// import { exec } from "child_process";
 import SnackBarModule from "@/store/snackBarModule";
 import fournisseur from "@/classes/fournisseur";
 import depotApi from "@/api/depotApi";
@@ -293,6 +355,7 @@ import { Setting } from "@/classes/setting";
 import SettingApi from "@/api/setting_api";
 import settingModule from "@/store/settingModule";
 import PrintImage from "@/print/print_image";
+import Decoded from "@/helper/decode";
 
 @Component({
   components: {
@@ -303,13 +366,13 @@ import PrintImage from "@/print/print_image";
 export default class PurchaseView extends Vue {
   Headers = [
     { text: "#", value: "count" },
-    // { text: "باركود", value: "barcode" },
+    { text: "باركود", value: "barcode" },
     { text: "الصنف", value: "name" },
     { text: "الكمية", value: "quantity" },
     { text: "سعر الشراء", value: "purchase_price" },
     { text: "سعر البيع", value: "price" },
-
     { text: "المبلغ الإجمالي", value: "total" },
+
     { text: "", value: "actions" },
   ];
 
@@ -329,7 +392,7 @@ export default class PurchaseView extends Vue {
 
   loading = false;
   count = 0;
-  private api = new fournisseurApi();
+  // private api = new fournisseurApi();
   perPage = 0;
 
   get getRest() {
@@ -344,12 +407,7 @@ export default class PurchaseView extends Vue {
     );
   }
 
-  editItem(purchase: Purchase) {
-    console.log(purchase);
-    const index = this.facture.purchases.findIndex(
-      (e) => e.product_id == purchase.product_id
-    );
-
+  editItem(purchase: Purchase, index: number): void {
     this.facture.purchases[index].quantity = purchase.quantity;
     this.facture.purchases[index].price = purchase.price;
     this.facture.purchases[index].purchase_price = purchase.purchase_price;
@@ -357,10 +415,25 @@ export default class PurchaseView extends Vue {
       Number(purchase.quantity) * Number(purchase.purchase_price);
   }
 
-  created() {
+  emptyRow(): void {
+    this.facture.purchases.push({
+      count: this.facture.purchases.length + 1,
+      total: 0.0,
+      price: 0.0,
+      quantity: 0,
+      purchase_price: 0.0,
+    } as Purchase);
+  }
+
+  created(): void {
+    this.emptyRow();
+
     this.$root.$on("createdClient", (newClient: fournisseur) => {
       this.listFournisseur.unshift(newClient);
       this.facture.fournisseur = newClient;
+    });
+    this.$root.$on("editFactureFournisseur", (_: any) => {
+      this.facture = purchaseModule.getFacture;
     });
     this.facture = purchaseModule.getFacture;
     this.$root.$on("deletedSaleId", (saleId: number) => {
@@ -376,6 +449,14 @@ export default class PurchaseView extends Vue {
     this.calcule();
   }
 
+  @Watch("facture.purchases", { deep: true, immediate: true })
+  onFillRow() {
+    const indexEmpty = this.facture.purchases.findIndex((e) => e.name == null);
+    if (indexEmpty < 0) {
+      this.emptyRow();
+    }
+  }
+
   selectedSale = {} as Purchase;
 
   calcule() {
@@ -387,14 +468,14 @@ export default class PurchaseView extends Vue {
 
     this.facture.montant = 0;
 
-    this.facture.purchases.forEach((prodct, index) => {
-      prodct.count = index + 1;
+    this.facture.purchases.forEach((product, index) => {
+      product.count = index + 1;
       this.facture.montant =
-        Number(this.facture.montant) + Number(prodct.total);
+        Number(this.facture.montant) + Number(product.total);
     });
   }
 
-  public addNewFacture() {
+  public addNewFacture(): void {
     purchaseModule.setFacture({
       montant: 0,
       pay: 0,
@@ -406,6 +487,12 @@ export default class PurchaseView extends Vue {
     this.facture = purchaseModule.getFacture;
     // }, 20);
   }
+  onChangeBarcode(item: any, index: number): void {
+    //  &'èèàààéà&&à"
+    console.log(item);
+    item.barcode = Decoded.DecodedBarcode(item.barcode);
+    this.facture.purchases[index].barcode = item.barcode;
+  }
 
   get setting() {
     return settingModule.getSetting;
@@ -413,23 +500,24 @@ export default class PurchaseView extends Vue {
 
   clearCart() {
     purchaseModule.clearCart();
+    this.emptyRow();
   }
 
-  saveFacture() {
+  saveFacture(): void {
     this.loading = true;
 
     this.apiFacture
       .saveFacture(this.facture)
       .then((res) => {
-        console.log(res);
-
         this.facture = res["data"];
-        this.loading = false;
-        setTimeout(() => {
-          PrintImage.print(document.getElementById("facture") as HTMLElement);
-          this.addNewFacture();
-        }, 50);
+        let copyFacture = Object.assign({}, this.facture);
 
+        // PrintImage.print(document.getElementById("facture") as HTMLElement);
+        this.addNewFacture();
+        this.loading = false;
+        PrintImage.printFacturePdf(this.setting, copyFacture as any, "مورد");
+
+        this.$root.$emit("updateFactures", "");
         SnackBarModule.setSnackbar({
           text: "تم إضافة الفاتورة بنجاح",
           color: "success",
@@ -456,23 +544,27 @@ export default class PurchaseView extends Vue {
 
   listFournisseur = [] as Fournisseur[];
 
-  getapi(url?: string) {
-    this.api.getAllFournisseurs(url).then((data) => {
+  getapi(url?: string): void {
+    FournisseurApi.getAllFournisseurs(url).then((data) => {
       this.listFournisseur = data as Fournisseur[];
     });
   }
 
-  deleteItem(purchase: Purchase) {
-    const index = this.facture.purchases.findIndex(
-      (e) => e.product_id == purchase.product_id
-    );
+  deleteItem(purchase: Purchase, index: number): void {
+    // const index = this.facture.purchases.findIndex(
+    //   (e) => e.product_id == purchase.product_id
+    // );
     this.facture.purchases.splice(index, 1);
   }
 
   clearAll() {
     // purchaseModule.clearCart();
   }
+  windowSize = { x: 0, y: 0 };
 
+  onResize() {
+    this.windowSize = { x: window.innerWidth, y: window.innerHeight };
+  }
   rowClick(item: any, row: any) {
     if (!row.isSelected) {
       row.select(true);
@@ -482,6 +574,45 @@ export default class PurchaseView extends Vue {
       this.selectedSale = {} as Purchase;
     }
   }
+
+  // printFacture() {
+  //   let factureElement = document.getElementById(
+  //     "facturePurchase"
+  //   ) as HTMLElement;
+  //   html2canvas(factureElement, {
+  //     allowTaint: false,
+  //     scale: 4,
+  //     logging: true,
+  //     imageTimeout: 0,
+  //     useCORS: true,
+  //     onclone(doc, html) {
+  //       doc.getElementById("facturePurchase").style.display = "block";
+  //     },
+  //   }).then(async function (canvas) {
+  //     const remote = electron.remote;
+  //     const blob: any = await new Promise((resolve) =>
+  //       canvas.toBlob((blob) => resolve(blob), "image/jpg")
+  //     );
+  //     const buffer = new Buffer(await blob.arrayBuffer());
+  //     let date = new Date().getTime();
+
+  //     let filePath = "facture/" + date + ".png";
+  //     await new Promise((resolve, reject) =>
+  //       fs.writeFile(filePath, buffer, "binary", (err) => {
+  //         electron.shell.openPath(fs.realpath.name);
+
+  //         let printCmd = exec(
+  //           ".\\SumatraPDF.exe -silent -print-to-default -print-settings landscape " +
+  //             filePath
+  //         );
+
+  //         printCmd.stdout.on("data", (data: any) =>
+  //           console.log(`print data: ${data}`)
+  //         );
+  //       })
+  //     );
+  //   });
+  // }
 }
 </script>
 <style scoped>
@@ -514,5 +645,9 @@ export default class PurchaseView extends Vue {
   background-color: #0d47a1;
   border-color: #f54c14;
   text-decoration: none;
+}
+
+::v-deep .centered-input input {
+  text-align: center;
 }
 </style>

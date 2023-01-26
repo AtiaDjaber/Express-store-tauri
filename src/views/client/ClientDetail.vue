@@ -1,11 +1,11 @@
 <template>
-  <v-tabs v-model="tab">
-    <v-tab :key="0"> الفواتير</v-tab>
-    <v-tab :key="1"> الدفع</v-tab>
+  <v-tabs v-model="tab" background-color="transparent">
+    <v-tab :key="0"><v-icon class="mx-2">mdi-receipt</v-icon> الفواتير</v-tab>
+    <v-tab :key="1"><v-icon class="mx-2">mdi-cash</v-icon> المدفوعات</v-tab>
     <!--    <v-tab :key="2"> التعويض </v-tab>-->
     <v-tabs-items v-model="tab">
       <v-tab-item key="0">
-        <FacturePaymentView></FacturePaymentView>
+        <FactureClientView></FactureClientView>
       </v-tab-item>
       <v-tab-item key="1">
         <ClientPayment></ClientPayment>
@@ -16,12 +16,12 @@
 </template>
 
 <script>
-import {Component, Vue} from "vue-property-decorator";
-import FacturePaymentView from "@/views/client/FacturePaymentView";
+import { Component, Vue } from "vue-property-decorator";
+import FactureClientView from "@/views/client/FactureClientView";
 import ClientPayment from "@/views/client/ClientPayment";
 import Reparation from "@/views/client/ReparatoinView";
 
-@Component({components: {ClientPayment, FacturePaymentView, Reparation}})
+@Component({ components: { ClientPayment, FactureClientView, Reparation } })
 export default class ClientDetail extends Vue {
   tab = 0;
 

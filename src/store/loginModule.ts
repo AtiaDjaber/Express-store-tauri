@@ -8,6 +8,7 @@ import {
 import store from "@/store";
 import LoginService from "@/service/loginService";
 import User from "@/classes/user";
+import axiosModule from "./axiosModule";
 
 @Module
 export class LoginModule extends VuexModule {
@@ -26,15 +27,21 @@ export class LoginModule extends VuexModule {
   login(user: User): Promise<User | null> {
     return this._service.login(user).then((x) => {
       if (x) {
-        
         x.chart = x.chart + "" === "1";
         x.facture = x.facture + "" === "1";
         x.client = x.client + "" === "1";
         x.expense = x.expense + "" === "1";
         x.user = x.user + "" === "1";
+        x.depot = x.depot + "" === "1";
+        x.purchase = x.purchase + "" === "1";
+        x.fournisseur = x.fournisseur + "" === "1";
+        x.sale = x.sale + "" === "1";
+        x.product = x.product + "" === "1";
+        x.transfer = x.transfer + "" === "1";
         x.password = undefined;
-        
+
         this.setUser(JSON.stringify(x));
+        axiosModule.setAxiosToken();
 
         return x;
       }
@@ -62,6 +69,7 @@ export class LoginModule extends VuexModule {
   get isLogin() {
     return this.isLoggedIn;
   }
+
   get getCurrentUser() {
     return JSON.parse(this._user!);
   }

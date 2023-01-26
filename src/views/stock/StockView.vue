@@ -9,28 +9,58 @@
         تصدير اكسل
         <v-icon>mdi-plus</v-icon>
       </v-btn> -->
-      </col>
-      <v-col cols="2"></v-col>
+      <!-- <v-col cols="2"></v-col> -->
+      <v-spacer></v-spacer>
+      <manage-type-expense resource="categories"></manage-type-expense>
       <v-col cols="4">
         <v-text-field
-          outlined
-          dense
+          solo
+          flat
           clearable
+          :value="search.name"
           append-icon="fa-search"
-          label="  البحث باسم الصنف او الباركود"
-          v-model="search.name"
+          @keyup="onChangeBarcode"
+          @click:clear="clearInput"
+          hint="  البحث باسم الصنف او الباركود"
+          placeholder="  البحث باسم الصنف او الباركود"
         ></v-text-field>
       </v-col>
+      <!-- <v-btn @click="show = !show">asds</v-btn> -->
       <!-- <v-col cols="1"><v-btn @click="ExportFile">export</v-btn></v-col> -->
+      <v-btn
+        fab
+        tile
+        class="mt-3 me-2"
+        height="47"
+        width="47"
+        elevation="0"
+        :loading="isSelecting"
+        @click="handleFileImport"
+      >
+        <v-icon color="grey darken-1">mdi-upload</v-icon>
+      </v-btn>
 
-      <!-- <v-col cols="2" class="mt-n2">
-        <v-file-input @change="selectedFile" label="File input"></v-file-input>
+      <input
+        type="file"
+        @change="selectedFile"
+        ref="uploader"
+        style="display: none"
+      />
+
+      <!-- <v-col cols="1" class="mt-n2">
+        <v-file-input
+          ref="uploader"
+          hide-input
+          @change="selectedFile"
+        ></v-file-input>
       </v-col> -->
     </v-row>
+    <v-card outlined>
       <v-data-table
         :headers="Headers"
         :items="liststock"
         single-select
+        translate="yes"
         @click:row="rowClick"
         :server-items-length="count"
         @update:options="paginate"
@@ -50,7 +80,7 @@
               small
               class="ml-2"
               outlined
-              rounded
+              fab
               elevation="0"
               @click="editstock(item)"
             >
@@ -66,6 +96,7 @@
           </v-chip>
         </template>
       </v-data-table>
+    </v-card>
   </div>
 </template>
 <script lang="ts">
@@ -79,58 +110,67 @@ import DeleteDialog from "@/components/custom_dialogs/DeleteDialog.vue";
 import Search from "@/classes/search";
 import Depot from "@/classes/depot";
 import writeXlsxFile from "write-excel-file";
+import Decoded from "@/helper/decode";
+import ManageTypeExpense from "../expense/dialog/ManageTypeExpense.vue";
 
-@Component({ components: { Stockmanege, DeleteDialog } })
+@Component({ components: { Stockmanege, DeleteDialog, ManageTypeExpense } })
 export default class StockView extends Vue {
   Headers = [
-    { text: "باركود", value: "barcode", class: "grey lighten-4" },
-    { text: "الصنف", value: "name", class: "grey lighten-4" },
-    { text: " الكمية", value: "quantity", class: "grey lighten-4" },
-    { text: "سعر الشراء", value: "price", class: "grey lighten-4" },
-    { text: "سعر البيع", value: "sell_price", class: "grey lighten-4" },
-    { text: " كمية التنبيه", value: "quantity_alert", class: "grey lighten-4" },
-    { text: "", value: "actions", class: "grey lighten-4" },
+    // { text: "باركود", value: "barcode" },
+    { text: "الصنف", value: "name" },
+    { text: " الكمية", value: "quantity" },
+    { text: "سعر الشراء", value: "price" },
+    { text: "سعر البيع", value: "sell_price" },
+    { text: " كمية التنبيه", value: "quantity_alert" },
+    { text: " صلاحية المنتج", value: "date_expire" },
+    { text: " الفئة", value: "category.name" },
+    { text: "", value: "actions" },
   ];
 
   count = 0;
   original = "";
-  private api = new stockApi();
+  // private api = new stockApi();
   liststock = [] as Stocks[];
   selectstock = {} as Stocks;
   listDepots = [] as Depot[];
   search = new Search();
   listExecel = [] as Stocks[];
-  Execel;
+  Execel: any;
 
-  DATA_ROW_1 = [
-    {
-      type: Number,
-      value: 12,
-    },
-    {
-      type: String,
-      value: "مطرقة",
-    },
-    {
-      type: Number,
-      value: 142432,
-    },
-    {
-      type: Number,
-      value: 132322,
-    },
-    {
-      type: Number,
-      value: 166322,
-    },
-    {
-      type: Number,
-      value: 5431322,
-    },
-    // {
-    //   value:this.liststock,
-    // }
-  ];
+  onChangeBarcode(text: any): void {
+    //  &'èèàààéà&&à"
+    this.search.name = Decoded.DecodedBarcode(text.target.value);
+  }
+
+  // DATA_ROW_1 = [
+  //   {
+  //     type: Number,
+  //     value: 12,
+  //   },
+  //   {
+  //     type: String,
+  //     value: "مطرقة",
+  //   },
+  //   {
+  //     type: Number,
+  //     value: 142432,
+  //   },
+  //   {
+  //     type: Number,
+  //     value: 132322,
+  //   },
+  //   {
+  //     type: Number,
+  //     value: 166322,
+  //   },
+  //   {
+  //     type: Number,
+  //     value: 5431322,
+  //   },
+  //   // {
+  //   //   value:this.liststock,
+  //   // }
+  // ];
 
   //  objects = [
   //   {
@@ -141,63 +181,90 @@ export default class StockView extends Vue {
   //   }
   //   ]
   // data= [this.HEADER_ROW,this.objects];
+  show = true;
+  // schema = [
+  //   {
+  //     column: "باركود",
+  //     type: Number,
+  //     value: (Stocks) => Stocks.barcode,
+  //   },
+  //   {
+  //     column: "الصنف",
+  //     type: String,
+  //     value: (Stocks) => Stocks.name,
+  //   },
+  //   {
+  //     column: "الكمية",
+  //     type: Number,
+  //     value: (Stocks) => Stocks.quantity,
+  //   },
+  //   {
+  //     column: "سعر الشراء",
+  //     type: String,
+  //     value: (Stocks) => Stocks.price,
+  //   },
+  //   {
+  //     column: "سعر البيع",
+  //     type: String,
+  //     value: (Stocks) => Stocks.sell_price,
+  //   },
+  //   {
+  //     column: "كمية التنبيه",
+  //     type: Number,
+  //     value: (Stocks) => Stocks.quantity_alert,
+  //   },
+  // ];
 
-  schema = [
-    {
-      column: "باركود",
-      type: Number,
-      value: (Stocks) => Stocks.barcode,
-    },
-    {
-      column: "الصنف",
-      type: String,
-      value: (Stocks) => Stocks.name,
-    },
-    {
-      column: "الكمية",
-      type: Number,
-      value: (Stocks) => Stocks.quantity,
-    },
-    {
-      column: "سعر الشراء",
-      type: String,
-      value: (Stocks) => Stocks.price,
-    },
-    {
-      column: "سعر البيع",
-      type: String,
-      value: (Stocks) => Stocks.sell_price,
-    },
-    {
-      column: "كمية التنبيه",
-      type: Number,
-      value: (Stocks) => Stocks.quantity_alert,
-    },
-  ];
+  clearInput(): void {
+    this.search.name = "";
+  }
+  isSelecting = false;
+  handleFileImport() {
+    this.isSelecting = true;
+    console.log(this.$refs);
+    // After obtaining the focus when closing the FilePicker, return the button state to normal
+    window.addEventListener(
+      "focus",
+      () => {
+        this.isSelecting = false;
+      },
+      { once: false }
+    );
 
-  selectedFile(file: any) {
-    // readXlsxFile(file).then((rows) => {
-    //   rows.shift();
-    //   for (let index = 0; index < rows.length; index++) {
-    //     this.Execel = {
-    //       name: rows[index].at(2),
-    //       price: rows[index].at(6),
-    //       sell_price: rows[index].at(6),
-    //       quantity: rows[index].at(13),
-    //       quantity_alert: rows[index].at(4),
-    //       sell_price2: rows[index].at(5),
-    //       barcode: rows[index].at(13).toString(),
-    //     } as Stocks;
-    //     this.listExecel.push(this.Execel);
-    //     // this.liststock.unshift(this.Execel);
-    //   }
-    //   this.api.saveManyStock(this.listExecel).then((result: any) => {
-    //     let saved = ((result as any).data as any).data as Stocks[];
-    //     //  let saved = result as Stocks;
-    //     this.liststock = saved;
-    //   });
-    //   this.listExecel = [] as Stocks[];
-    // });
+    // Trigger click on the FileInput
+    (this.$refs.uploader as any).click();
+  }
+  selectedFile(e: any): void {
+    // console.log();
+    // e.target.files[0]
+    readXlsxFile(e.target.files[0]).then((rows) => {
+      rows.shift();
+
+      for (let index = 0; index < rows.length; index++) {
+        this.Execel = {
+          name: rows[index][1],
+          barcode: rows[index][2].toString(),
+          quantity: rows[index][3],
+          price: rows[index][4],
+          date_expire:
+            rows[index][6] != null
+              ? new Date(rows[index][6].toString())
+              : null,
+          sell_price: rows[index][7],
+          sell_price2: rows[index][5],
+
+          quantity_alert: rows[index][8],
+        } as Stocks;
+        this.listExecel.push(this.Execel);
+        // this.liststock.unshift(this.Execel);
+      }
+      stockApi.saveManyStock(this.listExecel).then((result: any) => {
+        let saved = ((result as any).data as any).data as Stocks[];
+        //  let saved = result as Stocks;
+        this.liststock.unshift(...saved);
+      });
+      this.listExecel = [] as Stocks[];
+    });
   }
 
   async exportFile() {
@@ -230,7 +297,7 @@ export default class StockView extends Vue {
   }
 
   getStocks(search?: Search): void {
-    this.api
+    stockApi
       .getStock(search)
       .then((response) => {
         this.liststock = [];
@@ -263,7 +330,7 @@ export default class StockView extends Vue {
       if (deletedstockid) {
         this.liststock.splice(
           this.liststock.indexOf(
-            this.liststock.find((c) => c.id == deletedstockid) ?? ({} as Stocks)
+            this.liststock.find((c) => c.id == deletedstockid)
           ),
           1
         );
@@ -306,7 +373,25 @@ export default class StockView extends Vue {
 
   paginate(obj: any) {
     this.search.url = obj.page;
-    this.getStocks(this.search);
+    // this.getStocks(this.search);
   }
 }
 </script>
+<style scoped>
+.fade-enter-from {
+  opacity: 0;
+}
+.fade-enter-active {
+  transition: all 5s ease;
+}
+
+/* .app {
+  background: #f6f4f6 !important;
+    background-color: #f6f6f6;
+
+} */
+
+::v-deep .centered-input input {
+  text-align: center;
+}
+</style>

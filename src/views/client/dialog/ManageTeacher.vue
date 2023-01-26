@@ -4,30 +4,23 @@
       <div class="mr-2" v-bind="attrs" v-on="on">
         <v-btn
           :disabled="mutableTeacherAction == 2 && !Client.id"
-          dark
-          :fab="buttonSahpe"
-          class="mx-3"
-          color="primary"
-          :small="buttonSahpe == true ? true : false"
-          elevation="3"
+          :large="!isFab"
+          :fab="isFab"
+          class="mx-1"
+          :color="!isFab ? 'primary' : ''"
+          :small="isFab"
+          :elevation="!isFab ? 1 : 0"
         >
-          {{ !buttonSahpe ? "إضافة زبون" : "" }}
-          <v-icon>mdi-plus</v-icon>
+          {{ !isFab ? "إضافة زبون" : "" }}
+          <v-icon class="mx-2">mdi-account-plus-outline</v-icon>
         </v-btn>
       </div>
     </template>
-    <v-card v-if="dialog">
-      <v-card-title class="light-blue darken-4">
-        <span
-          style="font-size: 20px; color: white"
-          v-if="mutableTeacherAction == 1"
-          class="mr-5 mb-1"
-        >
-          زبون جديد</span
-        >
-        <span style="font-size: 20px; color: white" v-else>
-          تعديل معلومات الزبون</span
-        >
+    <v-card v-if="dialog" color="plain">
+      <v-card-title class="primary--text">
+        <span style="font-size: 20px" class="mr-5 mb-1 font-weight-bold">
+          {{ mutableTeacherAction == 1 ? "زبون جديد" : "تعديل معلومات الزبون" }}
+        </span>
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text>
@@ -37,40 +30,46 @@
               <v-col class=""
                 ><v-text-field
                   label="الإسم الكامل"
-                  outlined
-                  dense
+                  placeholder="الإسم الكامل"
+                  hint="الإسم الكامل"
+                  flat
+                  solo
                   v-model="Client.name"
                   :rules="vTeacher.firstname"
                 ></v-text-field
               ></v-col>
               <v-col class=""
                 ><v-text-field
-                  label="دين قديم"
-                  outlined
+                  placeholder="المبلغ"
+                  hint="المبلغ"
+                  flat
+                  solo
                   type="number"
-                  dense
-                  v-model="Client.ancien"
-                  :rules="vTeacher.price"
+                  v-model="Client.montant"
                 ></v-text-field
               ></v-col>
             </v-row>
 
-            <v-row class="">
-              <v-col class=""
+            <v-row>
+              <v-col
                 ><v-text-field
                   label="رقم الهاتف"
-                  outlined
-                  dense
+                  hint="رقم الهاتف"
+                  placeholder="رقم الهاتف"
+                  flat
+                  solo
                   type="number"
                   v-model="Client.mobile"
                   :rules="vTeacher.mobile"
                 ></v-text-field
               ></v-col>
-              <v-col class=""
-                ><v-text-field
+              <v-col class="">
+                <v-text-field
                   label="البريد الإلكتروني"
-                  outlined
-                  dense
+                  hint="البريد الإلكتروني"
+                  placeholder="البريد الإلكتروني"
+                  flat
+                  solo
                   v-model="Client.email"
                 ></v-text-field
               ></v-col>
@@ -79,82 +78,185 @@
               <v-col cols=""
                 ><v-text-field
                   label="العنوان"
-                  outlined
-                  dense
+                  hint="العنوان"
+                  placeholder="العنوان"
+                  flat
+                  solo
                   v-model="Client.address"
-                  :rules="vTeacher.address"
                 ></v-text-field
               ></v-col>
+            </v-row>
+
+            <v-row>
+              <v-col>
+                <v-row no-gutters>
+                  <v-btn
+                    @click="generateBarcode()"
+                    class="me-2"
+                    flat
+                    fab
+                    rounded
+                    height="45"
+                    width="45"
+                    tile
+                    elevation="0"
+                    color="#E7FBE7"
+                  >
+                    <v-icon color="green">mdi-barcode</v-icon>
+                  </v-btn>
+                  <v-col>
+                    <v-text-field
+                      label="الباركود"
+                      hint="الباركود"
+                      placeholder="الباركود"
+                      flat
+                      solo
+                      v-model="Client.barcode"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-col>
+              <v-col
+                ><v-text-field
+                  label="عدد النقاط"
+                  hint="عدد النقاط"
+                  placeholder="عدد النقاط"
+                  flat
+                  solo
+                  v-model="Client.point"
+                ></v-text-field
+              ></v-col>
+            </v-row>
+            <v-row>
+              <h3 class="pt-2 px-4">حالة البطاقة</h3>
+              <v-col>
+                <v-btn-toggle
+                  v-model="Client.is_faithful"
+                  mandatory
+                  group
+                  class="mt-n6"
+                  background-color="red"
+                  color="primary"
+                >
+                  <v-btn text> غير نشط </v-btn>
+                  <v-btn text> نشط </v-btn>
+                </v-btn-toggle>
+              </v-col>
+            </v-row>
+            <v-row v-if="Client.name" justify="end">
+              <v-btn
+                large
+                color="primary"
+                outlined
+                text
+                class="my-2"
+                width="292"
+                @click="createPdf()"
+              >
+                <v-icon color="primary" class="mx-2"> fa-print </v-icon>
+                طباعة
+              </v-btn>
+            </v-row>
+            <v-row justify="end" v-if="Client.name">
+              <v-card
+                outlined
+                :color="$vuetify.theme.dark ? 'white' : undefined"
+                class="pa-3"
+              >
+                <div id="barcodePrint">
+                  <v-row justify="center" class="mb-0 mt-2">
+                    <h3 style="letter-spacing: normal; color: black">
+                      {{
+                        Client.name != undefined
+                          ? Client.name.substring(0, 30)
+                          : ""
+                      }}
+                    </h3>
+                  </v-row>
+
+                  <barcode
+                    displayValue="false"
+                    format="CODE128"
+                    :value="Client.barcode"
+                    font-options="bold"
+                    width="2"
+                    height="80"
+                    margin-bottom="1"
+                    margin-top="1"
+                  >
+                  </barcode>
+                  <v-row justify="center" class="my-0">
+                    <h4 style="letter-spacing: normal; color: black">
+                      {{ setting.name_store }}
+                    </h4>
+                  </v-row>
+                </div>
+              </v-card>
             </v-row>
           </v-form>
         </v-container>
       </v-card-text>
       <v-card-actions class="justify-end">
-        <v-btn text color="red darken-1" @click="close">إلغاء</v-btn>
+        <v-btn outlined large class="mx-6" color="red darken-1" @click="close"
+          >إلغاء</v-btn
+        >
         <v-btn
-          text
-          color="green darken-1"
+          large
+          class="mx-3"
+          color="primary "
           v-if="mutableTeacherAction === 1"
           @click="manage"
           >حفظ</v-btn
         >
-        <v-btn text color="green darken-1" v-else @click="manage">تعديل</v-btn>
+        <v-btn large color="primary" v-else @click="manage">تعديل</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 <script lang="ts">
 import client from "@/classes/client";
-import { Vue, Component, Ref, Prop, Watch } from "vue-property-decorator";
+import { Vue, Component, Ref, Prop } from "vue-property-decorator";
 import clientModule from "@/store/clientModule";
 import SnackBarModule from "@/store/snackBarModule";
 import VTeacher from "@/validation/vTeacher";
-import Group from "@/classes/group";
-import groupModule from "@/store/groupModule";
 import Search from "@/classes/search";
 import CDatePicker from "@/components/CDatePicker.vue";
+import settingModule from "@/store/settingModule";
+import { Setting } from "@/classes/setting";
+import VueBarcode from "vue-barcode";
+import PrintImage from "@/print/print_image";
+import stockApi from "@/api/stockApi";
 
-@Component({ components: { CDatePicker } })
+@Component({ components: { CDatePicker, barcode: VueBarcode } })
 export default class ManageTeacher extends Vue {
   @Prop({ default: 0 }) teacherAction!: number;
-  @Prop({ default: false }) buttonSahpe!: boolean;
+  @Prop({ default: false }) isFab!: boolean;
   mutableTeacherAction = 0;
+  tab = 0;
   @Ref() form: any;
-  @Ref() menu!: any;
-  menuState = false;
-  date = "";
+
   img = undefined;
   previewImage = "";
   selectImage(image: any) {
     this.img = image;
     this.previewImage = URL.createObjectURL(this.img);
   }
-  save(date: string) {
-    this.menu.save(date);
-  }
-  @Ref() bdayMenu!: any;
-  bdayMenuState = false;
-  bdayDate = "";
-  saveBday(date: string) {
-    this.menu.save(date);
-  }
+
   public dialog = false;
   valid = true;
-  Client = { montant: 0.0, ancien: 0.0 } as client;
+  Client = {
+    montant: 0.0,
+    ancien: 0.0,
+    point: 0,
+    barcode: "",
+    is_faithful: false,
+  } as client;
   vTeacher = new VTeacher();
 
-  groups = [] as Group[];
-  groupIds = [] as number[];
-
   search = { name: "", url: "" } as Search;
-  page = 1;
-  count = 0;
-  perPage = 0;
 
   created() {
     this.mutableTeacherAction = this.teacherAction;
-
-    this.getGroups();
 
     this.$root.$on("editClient", (Client: client) => {
       this.Client = Object.assign({}, Client);
@@ -163,41 +265,29 @@ export default class ManageTeacher extends Vue {
       this.dialog = true;
     });
   }
-  // TODO Change manegeteacher
-  private getGroups() {
-    // groupModule.getGroups(this.search).then((data) => {
-    //   this.groups.length = 0;
-    //   ((data as any).data as Group[]).forEach((g) => {
-    //     let group = Object.assign({}, g);
-    //     group.name =
-    //       group.name +
-    //       " (" +
-    //       group.subj.name +
-    //       " " +
-    //       group.subj.level +
-    //       " " +
-    //       group.subj.grade +
-    //       ")";
-    //     this.groups.push(group);
-    //   });
-    //   this.count = (data as any).total;
-    //   this.perPage = (data as any).per_page;
-    // });
-  }
 
-  @Watch("search", { deep: true })
-  onSearchChange() {
-    this.getGroups();
+  generateBarcode(): void {
+    stockApi.getBarcode("clients").then((res) => {
+      this.Client.barcode = res.data;
+    });
   }
-  @Watch("page", { deep: true })
-  onPageChange() {
-    this.search.url = "&page=" + this.page;
-  }
-
   close() {
-    this.Client = { montant: 0.0, ancien: 0.0 } as client;
+    this.Client = {
+      montant: 0.0,
+      ancien: 0.0,
+      barcode: "",
+      point: 0,
+    } as client;
     this.mutableTeacherAction = 1;
     this.dialog = false;
+  }
+
+  createPdf(): void {
+    PrintImage.printBarcode(document.getElementById("barcodePrint"));
+  }
+
+  get setting(): Setting {
+    return settingModule.getSetting;
   }
   // TODO teacher_id: savedClient.id ?? 0,            ضفتلها ؟؟ 0
   manage() {

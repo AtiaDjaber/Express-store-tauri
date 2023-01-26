@@ -2,7 +2,7 @@
   <v-dialog v-model="dialog" persistent max-width="350">
     <template v-slot:activator="{ on, attrs }">
       <div v-bind="attrs" v-on="on">
-        <v-btn rounded small outlined color="pink">
+        <v-btn  small outlined color="pink">
           <v-icon class="pink--text">mdi-trash-can-outline</v-icon>
         </v-btn>
       </div>

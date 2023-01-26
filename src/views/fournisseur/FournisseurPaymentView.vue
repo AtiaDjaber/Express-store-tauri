@@ -1,67 +1,66 @@
 <template>
-  <v-col>
-    <v-row>
-      <v-col>
-        <c-date-picker
-          placeholder="التاريخ"
-          label="التاريخ"
-          outlined
-          dense
-          v-model="payment.date"
-        ></c-date-picker
-      ></v-col>
-      <v-col
-        ><v-text-field
-          label="المبلغ"
-          type="number"
-          outlined
-          dense
-          v-model="payment.price"
-        ></v-text-field
-      ></v-col>
-      <v-col
-        ><v-btn
-          :disabled="fournisseurId == 0"
-          elevation="3"
-          color="primary"
-          dark
-          @click="manage()"
-          ><v-icon color="white"> mdi-cash </v-icon>
-          دفع
-        </v-btn></v-col
-      >
-
-      <!-- <printeWasel :data="dataPrint" :name="name" :rest="rest" /> -->
-      <printeWasel :data="datawasel" :name="nameFournisseur" :dayn="dayn" />
-      <printePayment :data="paymentData" :name="nameFournisseur" />
-    </v-row>
+  <div>
     <v-col>
-      <v-data-table
-        elevation="3"
-        :headers="paymentHeaders"
-        :items="paymentData"
-        @click:row="rowClick"
-        @update:options="paginate"
-        :server-items-length="count"
-        single-select
-        :footer-props="{
-          'items-per-page-options': [10, 10],
-          'show-current-page': true,
-          'show-first-last-page': true,
-          'page-text': 'رقم الصفحة',
-          'items-per-page-text': 'عدد الأسطر',
-        }"
-      >
-        <template v-slot:[`item.actions`]="{ item }">
-          <delete-dialog
-            :id="item.id"
-            :disabled="false"
-            :source="'CLIENTPAYMENT'"
-          />
-        </template>
-      </v-data-table>
+      <v-row>
+        <v-col>
+          <c-date-picker
+            placeholder="التاريخ"
+            hint="التاريخ"
+            label="التاريخ"
+            clearable
+            v-model="payment.date"
+          ></c-date-picker
+        ></v-col>
+        <v-col
+          ><v-text-field
+            label="المبلغ"
+            type="number"
+            flat
+            solo
+            v-model="payment.price"
+          ></v-text-field
+        ></v-col>
+        <v-col
+          ><v-btn
+            :disabled="fournisseurId == 0"
+            elevation="1"
+            color="primary"
+            dark
+            large
+            @click="manage()"
+            ><v-icon color="white" class="px-2"> mdi-cash </v-icon>
+            دفع
+          </v-btn></v-col
+        >
+      </v-row>
+      <v-col>
+        <v-data-table
+          elevation="3"
+          :headers="paymentHeaders"
+          :items="paymentData"
+          @click:row="rowClick"
+          @update:options="paginate"
+          :server-items-length="count"
+          single-select
+          :footer-props="{
+            'items-per-page-options': [10, 10],
+            'show-current-page': true,
+            'show-first-last-page': true,
+            'page-text': 'رقم الصفحة',
+            'items-per-page-text': 'عدد الأسطر',
+          }"
+        >
+          <template v-slot:[`item.actions`]="{ item }">
+            <delete-dialog
+              :id="item.id"
+              :disabled="false"
+              :source="'CLIENTPAYMENT'"
+            />
+          </template>
+        </v-data-table>
+      </v-col>
     </v-col>
-  </v-col>
+  </div>
 </template>
 
 <script lang="ts">
@@ -74,11 +73,9 @@ import CDatePicker from "@/components/CDatePicker.vue";
 import DeleteDialog from "@/components/custom_dialogs/DeleteDialog.vue";
 import Fournisseur from "@/classes/fournisseur";
 import FournisseurPayment from "@/classes/fournisseurPayment";
-import printePayment from "@/views/printe/printPayment.vue";
-import printeWasel from "@/views/printe/printWasel.vue";
 
 @Component({
-  components: { CDatePicker, DeleteDialog, printePayment, printeWasel },
+  components: { CDatePicker, DeleteDialog },
 })
 export default class FournisseurPaymentView extends Vue {
   paymentHeaders = [
@@ -101,7 +98,7 @@ export default class FournisseurPaymentView extends Vue {
   fournisseurId = 0;
   rest: number;
   nameFournisseur: any = "";
-  dayn = 0;
+  dayn: number = 0;
   index: any;
 
   created() {

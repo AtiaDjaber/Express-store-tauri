@@ -2,18 +2,19 @@
   <v-dialog v-model="dialog" scrollable max-width="1000px">
     <template v-slot:activator="{ on, attrs }">
       <div class="mr-2" v-bind="attrs" v-on="on">
-        <v-btn
-          :disabled="mutableExpenseAction == 2 && !expenseobj.id"
-          color="primary"
-          elevation="5"
-        >
+        <v-btn color="primary" large elevation="1">
           إضافة صنف
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
-    <v-card v-if="dialog">
-      <v-card-title class="light-blue darken-4 white--text">
+    <v-card
+      v-if="dialog"
+      color="plain"
+      v-shortkey="['enter']"
+      @shortkey="addToCartUsingEnterKey()"
+    >
+      <v-card-title class="primary--text font-weight-bold">
         <span> اضافة صنف للسلة</span>
       </v-card-title>
       <v-divider></v-divider>
@@ -21,51 +22,59 @@
         <v-container>
           <v-row class="mt-1">
             <v-text-field
-              color="blue darken-2"
-              dense
               label="الصنف"
               placeholder="البحث باسم الصنف"
               required
               append-icon="fa-search"
-              outlined
-              v-model="search.name"
+              solo
+              flat
+              :value="search.name"
+              @keyup="onChangeBarcode"
+              @click:clear="clearInput"
               clearable
             ></v-text-field>
           </v-row>
-
-          <v-data-table
-            class="mb-n3"
-            :headers="headersProducts"
-            :items="liststock"
-            single-select
-            dense
-            :server-items-length="count"
-            :items-per-page="10"
-            @update:options="paginate"
-            :footer-props="{
-              'items-per-page-options': [10, 10],
-              'show-current-page': true,
-              'show-first-last-page': true,
-              'page-text': 'رقم الصفحة',
-              'items-per-page-text': 'عدد الأسطر',
-            }"
-          >
-            <template v-slot:[`item.actions`]="{ item }">
-              <v-row class="my-1">
-                <v-btn
-                  color="green"
-                  class="mr-2"
-                  small
-                  outlined
-                  rounded
-                  elevation="0"
-                  @click="addToCart(item)"
-                >
-                  <v-icon>mdi-plus</v-icon>
+          <v-card outlined>
+            <v-data-table
+              class="mb-n3"
+              :headers="headersProducts"
+              :items="liststock"
+              single-select
+              @click:row="rowClick"
+              @dblclick:row="addToCartUsingEnterKey"
+              :server-items-length="count"
+              :items-per-page="10"
+              @update:options="paginate"
+              :footer-props="{
+                'items-per-page-options': [10, 10],
+                'show-current-page': true,
+                'show-first-last-page': true,
+                'page-text': 'رقم الصفحة',
+                'items-per-page-text': 'عدد الأسطر',
+              }"
+            >
+              <!-- <template v-slot:[`item.actionUp`]="{ item }">
+                <v-btn color="success" icon @click="moveUp(item.id)">
+                  <v-icon>mdi-arrow-up</v-icon>
                 </v-btn>
-              </v-row>
-            </template>
-          </v-data-table>
+              </template> -->
+              <template v-slot:[`item.actions`]="{ item }">
+                <v-row class="my-1">
+                  <v-btn
+                    color="green"
+                    class="mr-2"
+                    small
+                    outlined
+                    fab
+                    elevation="0"
+                    @click="addToCart(item)"
+                  >
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </v-row>
+              </template>
+            </v-data-table></v-card
+          >
         </v-container>
       </v-card-text>
       <v-divider></v-divider>
@@ -77,11 +86,7 @@
   </v-dialog>
 </template>
 <script lang="ts">
-import { Vue, Component, Ref, Prop, Watch } from "vue-property-decorator";
-import expense from "@/classes/expense";
-import Expense from "@/classes/expense";
-import VExpense from "@/validation/vExpense";
-import expenseApi from "@/api/expenseApi";
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import SnackBarModule from "@/store/snackBarModule";
 import Stocks from "@/classes/stock";
 import stockApi from "@/api/stockApi";
@@ -89,140 +94,10 @@ import saleModule from "@/store/saleModule";
 import Stock from "@/classes/stock";
 import Sale from "@/classes/sale";
 import Search from "@/classes/search";
+import Decoded from "@/helper/decode";
 
 @Component({ components: {} })
 export default class ManageProductSale extends Vue {
-  @Prop({ default: 0 }) expenseAction!: number;
-  mutableExpenseAction = 0;
-  @Ref() form: any;
-  @Ref() menu!: any;
-  menuState = false;
-  date = "";
-
-  save(date: string) {
-    this.menu.save(date);
-  }
-
-  @Ref() bdayMenu!: any;
-  bdayMenuState = false;
-  bdayDate = "";
-
-  saveBday(date: string) {
-    this.menu.save(date);
-  }
-
-  public dialog = false;
-  valid = true;
-  //  TODO :disabled="mutableExpenseAction == 2 && !expenseobj.id"
-  // expenseobj = {} as Expense;
-  vexpense = new VExpense();
-
-  Apiexpense = new expenseApi();
-  expenseobj = {} as Expense;
-  // vexpense = new VExpense();
-  original = {} as Expense;
-
-  created() {
-    // this.getProducts("1");
-
-    this.mutableExpenseAction = this.expenseAction;
-
-    this.$root.$on("editexpense", (selectexpense: expense) => {
-      // selectexpense.date = TimeFormatService.format_date(new Date(selectexpense.date));
-      this.expenseobj = Object.assign({}, selectexpense);
-
-      this.mutableExpenseAction = 2;
-      this.dialog = true;
-      this.original = selectexpense;
-    });
-  }
-
-  addToCart(stock: Stock) {
-
-    let sale = Object.assign({}, {
-      quantity: 1,
-      product_id: stock.id,
-      name: stock.name,
-      sell_price: stock.sell_price,
-      barcode: stock.barcode,
-      total: 0,
-      price: stock.price,
-    } as Sale);
-
-
-    // this.$root.$emit("addItem",  sale);
-    saleModule.addItem(sale);
-  }
-
-  close() {
-    this.expenseobj = {} as expense;
-    this.mutableExpenseAction = 1;
-    this.dialog = false;
-  }
-
-  manage() {
-    if (this.form.validate()) {
-      if (this.mutableExpenseAction == 1) {
-        this.Apiexpense.saveExpense(this.expenseobj)
-          .then((result: any) => {
-            let saved = (result as any).data as expense;
-            this.$root.$emit("createdExpense", saved);
-            SnackBarModule.setSnackbar({
-              text: "تمت العملية بنجاح",
-              color: "success",
-              timeout: 2000,
-              show: true,
-              icon: "mdi-checkbox-marked-circle-outline",
-              x: "right",
-              y: "top",
-            });
-          })
-          .catch((error) => {
-            SnackBarModule.setSnackbar({
-              text: error,
-              color: "error",
-              timeout: 2000,
-              show: true,
-              icon: "mdi-alert-outline",
-              x: "right",
-              y: "top",
-            });
-          });
-      } else {
-        this.Apiexpense.updateExpense(this.expenseobj).then((result: any) => {
-          Object.assign(this.original, result.data);
-          SnackBarModule.setSnackbar({
-            text: "تم التعديل بنجاح",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
-        });
-        // .catch((error:any) => {
-        //   SnackBarModule.setSnackbar({
-        //     text: error,
-        //     color: "error",
-        //     timeout: 2000,
-        //     show: true,
-        //     icon: "mdi-alert-outline",
-        //     x: "right",
-        //     y: "top",
-        //   });
-        // });
-      }
-      setTimeout(() => {
-        this.form?.resetValidation();
-      }, 20);
-      this.close();
-    }
-  }
-
-  liststock = [] as Stocks[];
-  count = 0;
-  private apiStock = new stockApi();
   headersProducts = [
     // { text: "الباركود", value: "barcode" },
     { text: "الاسم", value: "name" },
@@ -230,6 +105,50 @@ export default class ManageProductSale extends Vue {
     { text: "سعر البيع", value: "sell_price" },
     { text: "", value: "actions" },
   ];
+  @Prop({ default: 0 }) expenseAction!: number;
+
+  public dialog = false;
+  valid = true;
+  stock = { alternatives: [], accessoires: [] } as Stock;
+
+  created() {
+    this.$root.$on("searchManageSale", (search: string) => {
+      this.search.name = search;
+
+      this.dialog = true;
+    });
+  }
+
+  addToCart(stock: Stock): void {
+    const sale = Object.assign({}, {
+      quantity: 1,
+      product_id: stock.id,
+      name: stock.name,
+      sell_price: stock.sell_price,
+      barcode: stock.barcode,
+      total: stock.sell_price,
+      price: stock.price,
+      alternatives: stock.alternatives,
+      accessoires: stock.accessoires,
+      product: stock,
+    } as Sale);
+
+    saleModule.addItem(sale);
+  }
+
+  close(): void {
+    this.dialog = false;
+  }
+
+  onChangeBarcode(text: any): void {
+    this.search.name = Decoded.DecodedBarcode(text.target.value);
+  }
+  clearInput(): void {
+    this.search.name = "";
+  }
+
+  liststock = [] as Stocks[];
+  count = 0;
 
   search = new Search();
 
@@ -238,8 +157,26 @@ export default class ManageProductSale extends Vue {
     this.getProducts(this.search);
   }
 
+  // moveUp(id: number) {
+  //   const index = this.liststock.findIndex((e) => e.id == id);
+  //   if (index > 0) {
+  //     const el = this.liststock[index];
+  //     this.$set(this.liststock, index, this.liststock[index - 1]);
+  //     this.$set(this.liststock, index - 1, el);
+  //   }
+  // }
+  addToCartUsingEnterKey() {
+    // debugger;
+    // console.log("dbCLick");
+    // row.select(true);
+
+    // this.selectedItem = item;
+    if (this.selectedItem.id) {
+      this.addToCart(this.selectedItem);
+    }
+  }
   getProducts(search?: Search): void {
-    this.apiStock
+    stockApi
       .getStock(search)
       .then((response) => {
         this.liststock = [];
@@ -264,9 +201,19 @@ export default class ManageProductSale extends Vue {
       });
   }
 
-  paginate(obj: any) {
+  paginate(obj: any): void {
     this.search.url = obj.page;
-    this.getProducts(this.search);
+  }
+  selectedItem = {} as Stock;
+
+  rowClick(item: any, row: any): void {
+    if (!row.isSelected) {
+      row.select(true);
+      this.selectedItem = item;
+    } else {
+      // row.select(false);
+      // this.selectedItem = {} as Stock;
+    }
   }
 }
 </script>

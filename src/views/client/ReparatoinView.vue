@@ -40,7 +40,7 @@ export default class ReparatoinView extends Vue {
   ];
 
   count = 0;
-  clientId = 0;
+  clientId: number = 0;
   clientMontant: number;
   newitem = {} as client;
   ReparationData = [] as Reparation[];

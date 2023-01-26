@@ -1,5 +1,5 @@
 <template>
-  <v-tabs v-model="tab">
+  <v-tabs background-color="transparent" v-model="tab">
     <v-tab :key="0"> إضافة مشتريات </v-tab>
     <v-tab :key="1"> أرشيف المشتريات </v-tab>
     <v-tabs-items v-model="tab">
@@ -13,7 +13,7 @@
   </v-tabs>
 </template>
 
-<script>
+<script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import PurchaseView from "@/views/purchase/PurchaseView.vue";
 import HistoryPurchaseView from "@/views/purchase/HistoryPurchaseView.vue";
@@ -25,6 +25,9 @@ export default class PurchaseDetail extends Vue {
     setTimeout(() => {
       this.tab--;
     }, 1);
+    this.$root.$on("editFactureFournisseur", (_: any) => {
+      this.tab = 0;
+    });
   }
 }
 </script>

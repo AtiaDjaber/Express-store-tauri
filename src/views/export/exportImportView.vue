@@ -25,7 +25,7 @@
       </div>
 
       <!--      <div v-show="!facture.id" class="mt-3" style="width: 60px">-->
-      <!--        <manage-teacher :teacherAction="1" :buttonSahpe="true" />-->
+      <!--        <manage-teacher :teacherAction="1" :isFab="true" />-->
       <!--      </div>-->
 
       <!--      <v-col cols="3">-->
@@ -37,7 +37,7 @@
       <!--          :disabled="facture.id != null"-->
       <!--          return-object-->
       <!--          hide-details-->
-      <!--          dense-->
+      <!--          -->
       <!--          placeholder="اكتب اسم الزبون"-->
       <!--          label="الزبون"-->
       <!--          prepend-inner-icon="mdi-account-search"-->
@@ -48,7 +48,6 @@
         v-model="toggle_exclusive"
         mandatory
         class="mt-3"
-        dense
         group
         background-color="red"
         color="primary"
@@ -75,11 +74,11 @@
           item-text="name"
           item-value="id"
           v-model="facture_transfer.depot_id"
-          outlined
+          flat
+          solo
           hide-details
-          dense
           placeholder="اكتب اسم المخزن"
-          label="المخزن"
+          hint="المخزن"
           prepend-inner-icon="mdi-storefront"
           clearable
           @change="changeDepot"
@@ -93,13 +92,21 @@
           }}</span
         >
       </v-col>
-      <v-btn class="ml-2 mt-3" dark color="red " @click="clearCart()">
+      <v-btn
+        class="ml-2 mt-3"
+        large
+        outlined
+        dark
+        color="red "
+        @click="clearCart()"
+      >
         تنظيف السلة
         <v-icon right>mdi-delete-outline</v-icon>
       </v-btn>
       <v-btn
         class="ml-2 mt-3"
         dark
+        large
         color="red "
         v-show="facture_transfer.id != null"
         @click="addNewFacture"
@@ -110,6 +117,8 @@
 
       <v-btn
         dark
+        large
+        elevation="1"
         class="ml-2 mt-3"
         color="green darken-1"
         :disabled="facture_transfer.depot_id == null"
@@ -130,68 +139,71 @@
       <!--      </v-btn>-->
     </v-row>
     <v-row no-gutters></v-row>
+    <v-card outlined>
+      <v-data-table
+        :headers="Headers"
+        :items="facture_transfer.transfers"
+        @click:row="rowClick"
+        hide-default-footer
+        fixed-header
+        height="600px"
+        item-key="product_id"
+        :items-per-page="-1"
+        single-select
+      >
+        <template v-slot:item.quantity="{ item }">
+          <v-text-field
+            style="width: 150px"
+            label="الكمية"
+            flat
+            solo
+            hide-details
+            type="number"
+            v-model="item.quantity"
+            @input="editItem(item)"
+          ></v-text-field>
+        </template>
 
-    <v-data-table
-      :headers="Headers"
-      :items="facture_transfer.transfers"
-      @click:row="rowClick"
-      hide-default-footer
-      fixed-header
-      height="600px"
-      item-key="product_id"
-      :items-per-page="-1"
-      single-select
-    >
-      <template v-slot:item.quantity="{ item }">
-        <v-text-field
-          style="width: 150px"
-          dense
-          label="الكمية"
-          flat
-          solo
-          hide-details
-          type="number"
-          v-model="item.quantity"
-          @input="editItem(item)"
-        ></v-text-field>
-      </template>
-
-      <template v-slot:[`item.actions`]="{ item }">
-        <v-row>
-          <!--         v-if="item.id==null"-->
-          <v-btn @click="deleteItem(item)" rounded outlined small color="red">
-            <v-icon>mdi-trash-can-outline</v-icon>
-          </v-btn>
-          <!--          <delete-dialog v-else :id="item.id" :source="'SALE'"/>-->
-        </v-row>
-      </template>
-    </v-data-table>
-
+        <template v-slot:[`item.actions`]="{ item }">
+          <v-row>
+            <!--         v-if="item.id==null"-->
+            <v-btn @click="deleteItem(item)" fab outlined small color="red">
+              <v-icon>mdi-trash-can-outline</v-icon>
+            </v-btn>
+            <!--          <delete-dialog v-else :id="item.id" :source="'SALE'"/>-->
+          </v-row>
+        </template>
+      </v-data-table>
+    </v-card>
     <v-col>
-      <v-footer padless color="white">
-        <v-row class="">
-          <v-col cols="3">
-            <v-text-field
-              outlined
-              dense
-              readonly
-              v-model="facture_transfer.montant"
-              append-icon="mdi-search"
-              label="مبلغ الفاتورة  "
-            ></v-text-field>
-          </v-col>
+      <!-- <v-footer outlined color="white"> -->
+      <v-row class="">
+        <v-col cols="3">
+          <v-text-field
+            flat
+            solo
+            readonly
+            v-model="facture_transfer.montant"
+            append-icon="mdi-cash"
+            persistent-placeholder
+            hint="مبلغ الفاتورة  "
+            persistent-hint
+            placeholder="مبلغ الفاتورة  "
+          ></v-text-field>
+        </v-col>
 
-          <v-col cols="5">
-            <v-text-field
-              outlined
-              dense
-              v-model="facture_transfer.remark"
-              append-icon="mdi-pencil"
-              label="ملاحظة"
-            ></v-text-field>
-          </v-col>
-        </v-row>
-      </v-footer>
+        <v-col cols="5">
+          <v-text-field
+            solo
+            flat
+            v-model="facture_transfer.remark"
+            append-icon="mdi-pencil"
+            hint="ملاحظة"
+            placeholder="اكتب ملاحظة"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <!-- </v-footer> -->
     </v-col>
 
     <v-overlay :value="loading">
@@ -279,6 +291,13 @@
         </h4>
       </v-row>
     </div>
+    <v-overlay :value="loading">
+      <v-progress-circular
+        indeterminate
+        color="#fb6333"
+        size="64"
+      ></v-progress-circular>
+    </v-overlay>
   </div>
 </template>
 
@@ -292,6 +311,7 @@ import clientApi from "@/api/clientApi";
 import Sale from "@/classes/transfer";
 import VueBarcode from "vue-barcode";
 import html2canvas, { Options } from "html2canvas";
+// import { shell } from "electron";
 import SnackBarModule from "@/store/snackBarModule";
 import exportModule from "@/store/exportModule";
 import depotApi from "@/api/depotApi";
@@ -314,13 +334,13 @@ import PrintImage from "@/print/print_image";
 })
 export default class ExportImportView extends Vue {
   Headers = [
-    { text: "#", value: "count", class: "grey lighten-4" },
-    // {text: "باركود", value: "barcode", class: "grey lighten-4"},
-    { text: "الصنف", value: "name", class: "grey lighten-4" },
-    { text: "الكمية", value: "quantity", class: "grey lighten-4" },
-    { text: "السعر", value: "sell_price", class: "grey lighten-4" },
-    { text: "المبلغ الإجمالي", value: "total", class: "grey lighten-4" },
-    { text: "", value: "actions", class: "grey lighten-4" },
+    { text: "#", value: "count" },
+    // {text: "باركود", value: "barcode", },
+    { text: "الصنف", value: "name" },
+    { text: "الكمية", value: "quantity" },
+    { text: "السعر", value: "sell_price" },
+    { text: "المبلغ الإجمالي", value: "total" },
+    { text: "", value: "actions" },
   ];
 
   facture_transfer = {
@@ -396,10 +416,11 @@ export default class ExportImportView extends Vue {
 
     this.facture_transfer.montant = 0;
 
-    this.facture_transfer.transfers.forEach((prodct, index) => {
-      prodct.count = index + 1;
-      this.facture_transfer.montant =
-        Number(this.facture_transfer.montant) + Number(prodct.total);
+    this.facture_transfer.transfers.forEach((sale: Sale, index) => {
+      sale.count = index + 1;
+      this.facture_transfer.montant = Number(
+        (Number(this.facture_transfer.montant) + Number(sale.total)).toFixed(2)
+      );
     });
   }
 
@@ -415,7 +436,9 @@ export default class ExportImportView extends Vue {
     let tel = this.listDepots.find(
       (e) => e.id == this.facture_transfer.depot_id
     ).tel;
-   
+    // shell.openExternal(
+    //   "https://api.whatsapp.com/send?phone=" + tel.replace("+", "")
+    // );
 
     if (this.toggle_exclusive == 1) {
       this.facture_transfer.type = "export";
@@ -423,13 +446,19 @@ export default class ExportImportView extends Vue {
         .saveExport(this.facture_transfer)
         .then((res) => {
           // this.facture_transfer = res["data"] as FactureTransfer;
-          this.facture_transfer = res["data"] as FactureTransfer;
-          this.loading = false;
 
-          setTimeout(() => {
-            PrintImage.print(document.getElementById("facture") as HTMLElement);
-            this.addNewFacture();
-          }, 50);
+          this.loading = false;
+          this.addNewFacture();
+
+          PrintImage.printFacturePdf(
+            this.setting,
+            res["data"] as FactureTransfer,
+            "مخزن"
+          );
+
+          // setTimeout(() => {
+          //   PrintImage.print(document.getElementById("facture") as HTMLElement);
+          // }, 50);
 
           SnackBarModule.setSnackbar({
             text: "تم إضافة الفاتورة بنجاح",
@@ -461,10 +490,11 @@ export default class ExportImportView extends Vue {
         .then((res) => {
           this.facture_transfer = res["data"] as FactureTransfer;
           this.loading = false;
-          setTimeout(() => {
-            PrintImage.print(document.getElementById("facture") as HTMLElement);
-            this.addNewFacture();
-          }, 50);
+          PrintImage.printFacturePdf(
+            this.setting,
+            this.facture_transfer,
+            "مخزن"
+          );
 
           SnackBarModule.setSnackbar({
             text: "تم إضافة الفاتورة بنجاح",
@@ -495,6 +525,7 @@ export default class ExportImportView extends Vue {
     this.$root.$emit("depotIdFromSale", depotId);
   }
 
+  // public selectedPrinter = {} as electron.PrinterInfo;
 
   listclients = [] as Client[];
 
@@ -559,8 +590,8 @@ export default class ExportImportView extends Vue {
 
 #facture {
   position: absolute;
-  /*display: none;*/
-  top: -100px;
+  /* display: none; */
+  top: -1000px;
   z-index: -10;
 }
 </style>

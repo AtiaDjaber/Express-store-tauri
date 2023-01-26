@@ -8,8 +8,11 @@ export default abstract class HttpClient {
       baseURL,
       headers: {
         "Content-type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem("token"),
+        // "Authorization": "Bearer " + localStorage.getItem("token"),
       },
     });
+    this.instance.defaults.headers.common["Authorization"] = "Bearer " + localStorage.getItem("token");
+
   }
+
 }

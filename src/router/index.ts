@@ -1,23 +1,12 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import SettingView from "@/views/setting/Setting.vue";
-import ExpenseView from "@/views/expense/ExpenseView.vue";
-import User from "@/views/user/UserView.vue";
-import Client from "@/views/client/Client.vue";
-import Fournisseur from "@/views/fournisseur/Fournisseur.vue";
-import StockView from "@/views/stock/StockView.vue";
-import ChartView from "@/views/chart/ChartView.vue";
 import SaleView from "@/views/sale/SaleView.vue";
-import PurchaseView from "@/views/purchase/PurchaseView.vue";
-import PurchaseDetail from "@/views/purchase/PurchaseDetail.vue";
-import HistoryView from "@/views/history/History.vue";
-import PrinteViews from "@/views/printe/PrinteViews.vue";
 import LoginView from "@/views/Login.vue";
-import DepotMain from "@/views/depot/DepotMain.vue";
-import exportImportView from "@/views/export/exportImportView.vue";
 
 Vue.use(VueRouter);
 
+// old : 7mb
+// new :
 const routes: Array<RouteConfig> = [
   {
     path: "/login",
@@ -38,7 +27,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/export",
     name: "Export",
-    component: exportImportView,
+    component: () => import("@/views/export/exportImportView.vue"),
     meta: {
       title: "تصدير/ استيراد سلع",
     },
@@ -46,7 +35,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/purchase",
     name: "Purchase",
-    component: PurchaseDetail,
+    component: () => import("@/views/purchase/PurchaseDetail.vue"),
     meta: {
       title: "مشتريات",
     },
@@ -54,15 +43,23 @@ const routes: Array<RouteConfig> = [
   {
     path: "/depot",
     name: "Depot",
-    component: DepotMain,
+    component: () => import("@/views/depot/DepotMain.vue"),
     meta: {
       title: "المخازن",
     },
   },
   {
+    path: "/notification",
+    name: "Dotification",
+    component: () => import("@/views/notification/NotificationView.vue"),
+    meta: {
+      title: "الإشعارات",
+    },
+  },
+  {
     path: "/chart",
     name: "Chart",
-    component: ChartView,
+    component: () => import("@/views/chart/ChartView.vue"),
     meta: {
       title: "إحصائيات",
     },
@@ -70,7 +67,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/history",
     name: "History",
-    component: HistoryView,
+    component: () => import("@/views/history/History.vue"),
     meta: {
       title: "ارشيف المبيعات",
     },
@@ -79,7 +76,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/product",
     name: "Product",
-    component: StockView,
+    component: () => import("@/views/stock/StockTabs.vue"),
     meta: {
       title: "المنتجات",
       icon: "mdi-bell-ring",
@@ -88,7 +85,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/user",
     name: "User",
-    component: User,
+    component: () => import("@/views/user/UserView.vue"),
     meta: {
       title: "المستخدمين",
     },
@@ -96,7 +93,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/expense",
     name: "Expense",
-    component: ExpenseView,
+    component: () => import("@/views/expense/ExpenseView.vue"),
     meta: {
       title: "المصاريف",
     },
@@ -104,7 +101,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/client",
     name: "Client",
-    component: Client,
+    component: () => import("@/views/client/Client.vue"),
     meta: {
       title: "الزبائن",
     },
@@ -112,7 +109,7 @@ const routes: Array<RouteConfig> = [
   {
     path: "/fournisseur",
     name: "Fournisseur",
-    component: Fournisseur,
+    component: () => import("@/views/fournisseur/Fournisseur.vue"),
     meta: {
       title: "الموردين",
     },
@@ -120,17 +117,17 @@ const routes: Array<RouteConfig> = [
   {
     path: "/setting",
     name: "Setting",
-    component: SettingView,
+    component: () => import("@/views/setting/Setting.vue"),
     meta: {
       title: "الإعدادات",
     },
   },
   {
-    path: "/printe",
-    name: "Printe",
-    component: PrinteViews,
+    path: "/box",
+    name: "box",
+    component: () => import("@/views/box/Box.vue"),
     meta: {
-      title: "طباعة",
+      title: "الصناديق",
     },
   },
 ];

@@ -1,10 +1,8 @@
-import ClientApi from "@/api/clientApi";
 import { VuexModule, Module, Mutation, Action } from "vuex-class-modules";
 import store from ".";
-import Sale from "@/classes/sale";
-import Client from "@/classes/client";
 import FournisseurFacture from "@/classes/fournisseurFacture";
 import SaleApi from "@/api/saleApi";
+import Purchase from "@/classes/purchase";
 
 @Module({ generateMutationSetters: true })
 class PurchaseModule extends VuexModule {
@@ -32,8 +30,8 @@ class PurchaseModule extends VuexModule {
   }
 
   @Mutation
-  addItem(sale: Sale) {
-    const productNew = Object.assign({}, sale);
+  addItem(purchase: Purchase) {
+    const productNew = Object.assign({}, purchase);
     productNew.count = this.facture.purchases.length + 1;
 
     const index = this.facture.purchases.findIndex(
@@ -53,7 +51,7 @@ class PurchaseModule extends VuexModule {
   }
 
   deleteSale(id: number): Promise<any> {
-    return this.api.deleteSale(id).then((x) => x);
+    return SaleApi.deleteSale(id).then((x) => x);
   }
 }
 

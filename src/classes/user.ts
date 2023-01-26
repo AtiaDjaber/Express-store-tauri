@@ -1,3 +1,5 @@
+import Box from "./box";
+
 export default class User {
   id?: number;
   name?: string;
@@ -5,6 +7,7 @@ export default class User {
   tel?: string;
   type?: string;
   status?: string;
+  box: Box;
   photo?: string;
   token?: string;
   chart?: boolean;
@@ -12,10 +15,14 @@ export default class User {
   purchase?: boolean;
   fournisseur?: boolean;
   depot?: boolean;
+  product?: boolean;
+  transfer?: boolean;
+  setting?: boolean;
   password?: string;
+  old_password: string;
   facture?: boolean;
   sale?: boolean;
-  client?:boolean;
+  client?: boolean;
   expense?: boolean;
 
   created_at?: Date;

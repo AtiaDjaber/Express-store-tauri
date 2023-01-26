@@ -1,28 +1,29 @@
 <template>
   <div class="pa-3">
     <v-row no-gutters>
-      <manage-teacher :teacherAction="1"/>
+      <manage-teacher :teacherAction="1" />
       <v-spacer></v-spacer>
       <v-text-field
-          style="width: 50%"
-          outlined
-          dense
-          append-icon="fa-search"
-          label="البحث بالاسم او اللقب"
-          v-model="search.name"
+        style="width: 50%"
+        flat
+        solo
+        append-icon="fa-search"
+        hint="البحث بالاسم او اللقب"
+        placeholder="البحث بالاسم او اللقب"
+        v-model="search.name"
       ></v-text-field>
     </v-row>
 
     <v-data-table
-        elevation="3"
-        :headers="clientHeaders"
-        :items="clientData"
-        @click:row="rowClick"
-        single-select
-        show-expand
-        @update:options="paginate"
-        :server-items-length="count"
-        :footer-props="{
+      elevation="3"
+      :headers="clientHeaders"
+      :items="clientData"
+      @click:row="rowClick"
+      single-select
+      show-expand
+      @update:options="paginate"
+      :server-items-length="count"
+      :footer-props="{
         'items-per-page-options': [10, 10],
         'show-current-page': true,
         'show-first-last-page': true,
@@ -33,17 +34,17 @@
       <template v-slot:[`item.actions`]="{ item }">
         <v-row>
           <v-btn
-              class="ml-2"
-              color="green"
-              small
-              outlined
-              rounded
-              elevation="0"
-              @click="editClient(item)"
+            class="ml-2"
+            color="green"
+            small
+            outlined
+            fab
+            elevation="0"
+            @click="editClient(item)"
           >
             <v-icon>mdi-pencil-outline</v-icon>
           </v-btn>
-          <delete-dialog :id="item.id" :disabled="false" :source="'CLIENT'"/>
+          <delete-dialog :id="item.id" :disabled="false" :source="'CLIENT'" />
         </v-row>
       </template>
       <template v-slot:item.montant="{ item }">
@@ -54,7 +55,7 @@
 
       <template v-slot:expanded-item="{ headers, item }">
         <td :colspan="headers.length">
-          <v-row no-gutters>
+          <v-row class="ma-3" no-gutters>
             <v-col>
               <v-row class="ma-1" no-gutters>
                 <v-col cols="4">الهاتف</v-col>
@@ -66,7 +67,7 @@
                 <v-col>{{ item.address }}</v-col>
               </v-row>
               <v-divider></v-divider>
-               <v-row class="ma-1" no-gutters>
+              <v-row class="ma-1" no-gutters>
                 <v-col cols="4">دين قديم</v-col>
                 <v-col>{{ item.ancien }}</v-col>
               </v-row>
@@ -78,6 +79,16 @@
 
               <v-divider></v-divider>
 
+              <v-row class="ma-1" no-gutters>
+                <v-col cols="4">الباركود</v-col>
+                <v-col>{{ item.barcode }}</v-col>
+              </v-row>
+              <v-divider></v-divider>
+              <v-row class="ma-1" no-gutters>
+                <v-col cols="4">النقاط</v-col>
+                <v-col>{{ item.point }}</v-col>
+              </v-row>
+              <v-divider></v-divider>
               <v-row class="ma-1" no-gutters>
                 <v-col cols="4">تاريخ التسجيل</v-col>
                 <v-col>{{ item.created_at }}</v-col>
@@ -92,7 +103,7 @@
 </template>
 
 <script lang="ts">
-import {Vue, Component, Watch} from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import client from "@/classes/client";
 import ManageTeacher from "./dialog/ManageTeacher.vue";
 import clientModule from "@/store/clientModule";
@@ -100,15 +111,14 @@ import DeleteDialog from "@/components/custom_dialogs/DeleteDialog.vue";
 import snackBarModule from "@/store/snackBarModule";
 import Search from "@/classes/search";
 
-@Component({components: {ManageTeacher, DeleteDialog}})
+@Component({ components: { ManageTeacher, DeleteDialog } })
 export default class ClientView extends Vue {
   clientHeaders = [
-    {text: "الإسم", value: "name", class: "grey lighten-4"},
-    {text: "المبلغ", value: "montant", class: "grey lighten-4"},
+    { text: "الإسم", value: "name" },
+    { text: "المبلغ", value: "montant" },
     // {text: "رقم الهاتف", value: "mobile"},
-    {text: "", value: "actions", class: "grey lighten-4"},
-    {text: "", value: "data-table-expand", class: "grey lighten-4"},
-
+    { text: "", value: "actions" },
+    { text: "", value: "data-table-expand" },
   ];
 
   previewImage = "";
@@ -116,7 +126,7 @@ export default class ClientView extends Vue {
   selectedClient = {} as client;
   count = 0;
   perPage = 0;
-  search = {name: "", url: ""} as Search;
+  search = { name: "", url: "" } as Search;
 
   getColor(montant) {
     if (montant > 0) return "red";
@@ -131,35 +141,35 @@ export default class ClientView extends Vue {
     this.$root.$on("updatedClient", (updatedclient: client) => {
       if (updatedclient) {
         this.clientData?.splice(
-            this.clientData?.indexOf(
-                this.clientData?.find((s) => s.id == updatedclient.id) ??
-                ({} as client)
-            ),
-            1,
-            updatedclient
+          this.clientData?.indexOf(
+            this.clientData?.find((s) => s.id == updatedclient.id) ??
+              ({} as client)
+          ),
+          1,
+          updatedclient
         );
       }
     });
     this.$root.$on("deletedClientId", (deletedClientId: number) => {
       if (deletedClientId) {
         this.clientData.splice(
-            this.clientData.indexOf(
-                this.clientData.find((c) => c.id == deletedClientId) ??
-                ({} as client)
-            ),
-            1
+          this.clientData.indexOf(
+            this.clientData.find((c) => c.id == deletedClientId) ??
+              ({} as client)
+          ),
+          1
         );
       }
     });
 
     this.$root.$on(
-        "ChangeMontantAfterDelete",
-        (numberofchange: number, numberofclient: number) => {
-          console.log("numberofchange");
-          console.log(numberofchange);
-          console.log("numberofclient");
-          console.log(numberofclient);
-        }
+      "ChangeMontantAfterDelete",
+      (numberofchange: number, numberofclient: number) => {
+        console.log("numberofchange");
+        console.log(numberofchange);
+        console.log("numberofclient");
+        console.log(numberofclient);
+      }
     );
   }
 
@@ -167,34 +177,34 @@ export default class ClientView extends Vue {
     this.search.url = "&page=" + obj.page;
   }
 
-  @Watch("search", {deep: true})
+  @Watch("search", { deep: true })
   onSearchChange() {
     this.getClient();
   }
 
   private getClient() {
     clientModule
-        .getClients(this.search)
-        .then((data) => {
-          // console.log( data)
-          this.clientData.length = 0;
-          ((data as any).data as client[]).forEach((s) => {
-            this.clientData.push(s);
-          });
-          this.count = (data as any).total;
-          this.perPage = ((data as any).data as any).per_page;
-        })
-        .catch((error) => {
-          snackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+      .getClients(this.search)
+      .then((data) => {
+        // console.log( data)
+        this.clientData.length = 0;
+        ((data as any).data as client[]).forEach((s) => {
+          this.clientData.push(s);
         });
+        this.count = (data as any).total;
+        this.perPage = ((data as any).data as any).per_page;
+      })
+      .catch((error) => {
+        snackBarModule.setSnackbar({
+          text: error,
+          color: "error",
+          timeout: 2000,
+          show: true,
+          icon: "mdi-alert-outline",
+          x: "right",
+          y: "top",
+        });
+      });
   }
 
   rowClick(item: any, row: any) {
@@ -219,9 +229,9 @@ export default class ClientView extends Vue {
 /* ::v-deep tr {
   height: 40px !important;
 } */
-::v-deep tr.v-data-table__selected {
+/* ::v-deep tr.v-data-table__selected {
   background: #c7e0f5 !important;
-}
+} */
 
 /* ::v-deep td {
   height: 40px !important;

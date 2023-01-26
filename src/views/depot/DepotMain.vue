@@ -1,7 +1,7 @@
 <template>
   <div class="pa-3">
     <v-row>
-      <v-col cols="5">
+      <v-col cols="4">
         <DepotView></DepotView>
       </v-col>
       <v-divider vertical class="my-6"></v-divider>
@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import {Vue, Component, Watch} from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import ManageDepot from "@/views/depot/dialog/ManageDepot.vue";
 
 import DeleteDialog from "@/components/custom_dialogs/DeleteDialog.vue";
@@ -24,7 +24,7 @@ import DepotView from "@/views/depot/DepotView.vue";
 import DepotDetail from "@/views/depot/DepotDetail.vue";
 
 @Component({
-  components: {DepotDetail, DepotView, DeleteDialog, ManageDepot },
+  components: { DepotDetail, DepotView, DeleteDialog, ManageDepot },
 })
 export default class DepotMain extends Vue {
   Headers = [
@@ -33,7 +33,7 @@ export default class DepotMain extends Vue {
     { text: "الايميل", value: "email" },
     { text: "الهاتف", value: "tel" },
     { text: "التاريخ ", value: "created_at" },
-    { text: "", value: "actions" },
+    { text: "العمليات", value: "actions" },
   ];
 
   count = 0;
@@ -42,10 +42,10 @@ export default class DepotMain extends Vue {
   selectDepot = {} as Depot;
   perPage = 0;
 
-  search=new Search();
+  search = new Search();
 
-  @Watch("search", {deep: true})
-  onChange(){
+  @Watch("search", { deep: true })
+  onChange() {
     this.getapi(this.search);
   }
   getapi(search?: Search) {
@@ -56,14 +56,12 @@ export default class DepotMain extends Vue {
         this.listDepots.push(s);
       });
 
-
       this.count = ((data as any).data as any).total;
       this.perPage = ((data as any).data as any).per_page;
     });
   }
 
   created() {
-
     this.$root.$on("createdDepot", (expense: Depot) => {
       //  this.expense.date="2017-01-01 00:00:00";
       this.listDepots.unshift(expense);
@@ -73,8 +71,7 @@ export default class DepotMain extends Vue {
       if (deletedDepotId) {
         this.listDepots.splice(
           this.listDepots.indexOf(
-            this.listDepots.find((c) => c.id == deletedDepotId) ??
-              ({} as Depot)
+            this.listDepots.find((c) => c.id == deletedDepotId) ?? ({} as Depot)
           ),
           1
         );
@@ -96,7 +93,6 @@ export default class DepotMain extends Vue {
     });
   }
 
-
   rowClick(item: any, row: any) {
     if (!row.isSelected) {
       row.select(true);
@@ -114,7 +110,7 @@ export default class DepotMain extends Vue {
   }
 
   paginate(obj: any) {
-    this.search.url=obj.page;
+    this.search.url = obj.page;
     this.getapi(this.search);
   }
 
