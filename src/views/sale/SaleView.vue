@@ -1134,8 +1134,8 @@ export default class SaleView extends Vue {
         this.loading = false;
         this.addNewFacture();
 
-        // PrintPdf.printFacturePdf(this.setting, res["data"], "زبون");
-        PrintPdf.printBon(this.setting, res["data"], "زبون");
+        PrintPdf.printFacturePdf(this.setting, res["data"], "زبون");
+        // PrintPdf.printBon(this.setting, res["data"], "زبون");
 
         SnackBarModule.setSnackbar({
           text: "تم إضافة الفاتورة بنجاح",

@@ -9,6 +9,8 @@ import ConstantValues from "@/ConstantValues";
 import { Setting } from "@/classes/setting";
 import Facture from "@/classes/facture";
 import autoTable from "jspdf-autotable";
+import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
+import { Command } from "@tauri-apps/api/shell";
 applyPlugin(jsPDF);
 
 export default class PrintImage {
@@ -350,78 +352,71 @@ export default class PrintImage {
     } else {
       this.buildFooter(doc, facture, setting, type);
     }
-    // const pageNumber = doc.internal.getNumberOfPages();
-    // doc.setPage(pageNumber);
-
-    // doc.autoTable({
-    //   columns: [
-    //     { dataKey: "id", header: "ID" },
-    //     { dataKey: "name", header: "Name" },
-    //     { dataKey: "expenses", header: "Sum" },
-    //   ],
-    //   body: rows,
-    //   showHead: "firstPage",
-    //   styles: { overflow: "hidden" },
-    //   margin: { left: 107 },
-    // });
-
-    // doc.autoTable({
-    //   columns: [
-    //     { dataKey: "id", header: "ID" },
-    //     { dataKey: "name", header: "Name" },
-    //     { dataKey: "expenses", header: "Sum" },
-    //   ],
-    //   body: rows,
-    //   showHead: "firstPage",
-    //   styles: { overflow: "hidden" },
-    //   margin: { right: 107 },
-    // });
 
     const date = new Date().getTime();
-    const blob = doc.output("blob");
-  //   const buffer = Buffer.from(await blob.arrayBuffer());
-  //   const filePath = "facture/" + date + ".pdf";
-  //   await new Promise((resolve, reject) =>
-  //     fs.writeFile(filePath, buffer, "binary", (err) => {
-  //       const facturePath = "facture";
-  //       // shell.openPath(path.join(__dirname, "1671810459821.pdf"));
-  //       // shell.openPath(
-  //       //   remote.app.getAppPath().replace("resources\\app.asar", "") +
-  //       //     "facture\\" +
-  //       //     date +
-  //       //     ".pdf"
-  //       // );
-  //       // console.log("path facture  => " + remote.app.getAppPath());
+    // const blob = doc.output("blob");
+    // const contents = await blob.arrayBuffer();
 
-  //       const printCmd = exec(".\\PDFToPrinter.exe " + filePath + " /s");
-  //       printCmd.stdout.on("data", (data) =>
-  //         console.log(`print data: ${data}`)
-  //       );
-  //     })
-  //   );
+    const filePath = "facture/" + date + ".pdf";
+    await writeBinaryFile({
+      path: filePath,
+      contents: doc.output("arraybuffer"),
+    }).then(async (_) => {
+      console.log(_);
+      new Command("print", ["PDFToPrinter.exe " + filePath]).execute();
+
+
+//       const output = await new Command(
+//         ".\\PDFToPrinter.exe " + filePath + " /s"
+//       ).execute();
+// console.log(output);
+    });
+    // await writeBinaryFile("avatar.png", new Uint8Array([]), {
+    //   dir: BaseDirectory.Desktop,
+    // });
+
+    // const buffer = Buffer.from(await blob.arrayBuffer());
+    //   const filePath = "facture/" + date + ".pdf";
+    //   await new Promise((resolve, reject) =>
+    //     fs.writeFile(filePath, buffer, "binary", (err) => {
+    //       const facturePath = "facture";
+    //       // shell.openPath(path.join(__dirname, "1671810459821.pdf"));
+    //       // shell.openPath(
+    //       //   remote.app.getAppPath().replace("resources\\app.asar", "") +
+    //       //     "facture\\" +
+    //       //     date +
+    //       //     ".pdf"
+    //       // );
+    //       // console.log("path facture  => " + remote.app.getAppPath());
+
+    //       const printCmd = exec(".\\PDFToPrinter.exe " + filePath + " /s");
+    //       printCmd.stdout.on("data", (data) =>
+    //         console.log(`print data: ${data}`)
+    //       );
+    //     })
+    //   );
   }
 
   static printBarcode(htmlElement: HTMLElement): void {
-  //   html2canvas(htmlElement, { scale: 8 }).then(async function (canvas) {
-  //     const imgData = canvas.toDataURL("image/png");
-  //     const doc = new jsPDF("l", "mm", [40, 20], true);
-  //     doc.addImage(imgData, "PNG", 0, 0, 40, 20);
-  //     const date = new Date().getTime();
-  //     const blob = doc.output("blob");
-  //     const buffer = Buffer.from(await blob.arrayBuffer());
-  //     const filePath = "barcode/" + date + ".pdf";
-
-  //     await new Promise((resolve, reject) =>
-  //       fs.writeFile(filePath, buffer, "binary", (err) => {
-  //         console.log("Print facture error => " + err);
-  //         const printCmd = exec(".\\PDFToPrinter.exe " + filePath + " /s");
-  //         printCmd.stdout.on("data", (data) =>
-  //           console.log(`print data: ${data}`)
-  //         );
-  //       })
-  //     );
-  //     // doc.save(date + ".pdf");
-  //   });
+    //   html2canvas(htmlElement, { scale: 8 }).then(async function (canvas) {
+    //     const imgData = canvas.toDataURL("image/png");
+    //     const doc = new jsPDF("l", "mm", [40, 20], true);
+    //     doc.addImage(imgData, "PNG", 0, 0, 40, 20);
+    //     const date = new Date().getTime();
+    //     const blob = doc.output("blob");
+    //     const buffer = Buffer.from(await blob.arrayBuffer());
+    //     const filePath = "barcode/" + date + ".pdf";
+    //     await new Promise((resolve, reject) =>
+    //       fs.writeFile(filePath, buffer, "binary", (err) => {
+    //         console.log("Print facture error => " + err);
+    //         const printCmd = exec(".\\PDFToPrinter.exe " + filePath + " /s");
+    //         printCmd.stdout.on("data", (data) =>
+    //           console.log(`print data: ${data}`)
+    //         );
+    //       })
+    //     );
+    //     // doc.save(date + ".pdf");
+    //   });
   }
 
   static buildHeaderBon(
@@ -529,163 +524,154 @@ export default class PrintImage {
     facture: any,
     type?: string
   ): Promise<void> {
-  //   const doc = new jsPDF("p", "mm", [72, 297]);
-
-  //   doc.addFileToVFS("arial.ttf", ConstantValues.Font);
-  //   doc.addFont("arial.ttf", "custom", "normal", "Identity-H");
-  //   doc.setFont("custom");
-  //   doc.setLanguage("ar-DZ");
-
-  //   doc.setFontSize(10);
-  //   this.buildHeaderBon(doc, facture, setting, type);
-
-  //   (doc as any).autoTable({
-  //     columns: [
-  //       { dataKey: "total", header: "المبلغ" },
-  //       { dataKey: "quantity", header: "الكمية" },
-  //       { dataKey: "name", header: "الصنف" },
-  //     ],
-  //     body:
-  //       type == "زبون"
-  //         ? (facture.sales as any)
-  //         : type == "مورد"
-  //         ? facture.purchases
-  //         : facture.transfers,
-  //     margin: { top: 0, bottom: -2, horizontal: 1 },
-
-  //     tableLineColor: 0x000000,
-  //     columnStyles: {
-  //       0: { cellWidth: 18 },
-  //       1: { cellWidth: 15 },
-  //       2: { cellWidth: 37 },
-  //     },
-  //     bodyStyles: {
-  //       fontSize: 8,
-  //       fillColor: "#FFFFFF",
-  //       textColor: "#000000",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0.3,
-  //       font: "custom",
-  //       overflow: "linebreak",
-  //       halign: "right",
-  //       // cellWidth: "wrap",
-  //       cellPadding: {
-  //         top: 0.5,
-  //         right: 0.5,
-  //         bottom: 0.5,
-  //         left: 0,
-  //       },
-  //     },
-  //     headStyles: {
-  //       // cellWidth: 23,
-  //       fontStyle: "bold",
-  //       fillColor: "#FFFFFF",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0.3,
-  //       textColor: "#000000",
-  //       fontSize: 10,
-  //       font: "custom",
-  //       overflow: "linebreak",
-  //       halign: "center",
-  //     },
-  //     theme: "grid",
-  //     tableWidth: 72,
-  //     // didDrawPage: function (data) {
-  //     //   doc.text("وصل بيع", width / 2, 20);
-  //     // },
-  //   } as UserOptions);
-  //   this.buildFooterBon(doc, facture, setting, type);
-  //   const date = new Date().getTime();
-  //   const blob = doc.output("blob");
-  //   const buffer = Buffer.from(await blob.arrayBuffer());
-  //   const filePath = "facture/" + date + ".pdf";
-  //   await new Promise((resolve, reject) =>
-  //     fs.writeFile(filePath, buffer, "binary", (err) => {
-  //       console.log("Print facture error => " + err);
-  //       const printCmd = exec(".\\PDFToPrinter.exe " + filePath + " /s");
-  //       printCmd.stdout.on("data", (data) =>
-  //         console.log(`print data: ${data}`)
-  //       );
-  //     })
-  //   );
-  // }
-  // static buildFooterBon(
-  //   doc: any,
-  //   facture: any,
-  //   setting: Setting,
-  //   type: string
-  // ): void {
-  //   doc.autoTable({
-  //     body: [
-  //       [
-  //         {
-  //           content: facture.montant + " : " + "المجموع",
-  //           colSpan: 2,
-  //           styles: { cellWidth: 30 },
-  //         },
-
-  //         {
-  //           content: facture.remark ?? "" + ": ملاحظة",
-  //           styles: { halign: "right", cellWidth: "auto" },
-  //         },
-  //       ],
-
-  //       [
-  //         {
-  //           content: facture.pay + " : " + "الدفع",
-  //           colSpan: 2,
-  //           styles: { cellWidth: 30 },
-  //         },
-
-  //         {
-  //           content: facture.user.name + " : " + "المستخدم",
-  //           styles: { halign: "right" },
-  //         },
-  //       ],
-  //       [
-  //         { content: facture.remise + " : " + "التخفيض", colSpan: 2 },
-  //         {
-  //           content: "",
-  //         },
-  //       ],
-  //       [
-  //         { content: facture.rest + " : " + "الباقي", colSpan: 2, rowSpan: 1 },
-  //         { content: "", colSpan: 1, rowSpan: 1 },
-  //       ],
-  //       [
-  //         {
-  //           content: setting.remark ?? "",
-  //           colSpan: 4,
-  //           rowSpan: 1,
-  //           styles: {
-  //             halign: "center",
-  //             fontStyle: "bold",
-  //             // lineWidth: [0, 0, 0, 0.3],
-  //             lineWidth: 0.3,
-  //             fontSize: 11,
-  //           },
-  //         },
-  //       ],
-  //     ],
-
-  //     margin: { horizontal: 1 },
-  //     bodyStyles: {
-  //       cellWidth: "auto",
-  //       fontSize: 9,
-  //       // fontStyle: "normal",
-  //       fillColor: "#FFFFFF",
-  //       textColor: "#000000",
-  //       lineColor: "#000000", // Or gray [200, 200, 200]
-  //       lineWidth: 0,
-  //       font: "custom",
-  //       overflow: "linebreak",
-  //       halign: "right",
-  //     },
-  //     theme: "grid",
-  //     tableWidth: "auto",
-
-  //     // tableWidth: width / 3,
-  //     styles: { overflow: "hidden" },
-  //   } as UserOptions);
+    //   const doc = new jsPDF("p", "mm", [72, 297]);
+    //   doc.addFileToVFS("arial.ttf", ConstantValues.Font);
+    //   doc.addFont("arial.ttf", "custom", "normal", "Identity-H");
+    //   doc.setFont("custom");
+    //   doc.setLanguage("ar-DZ");
+    //   doc.setFontSize(10);
+    //   this.buildHeaderBon(doc, facture, setting, type);
+    //   (doc as any).autoTable({
+    //     columns: [
+    //       { dataKey: "total", header: "المبلغ" },
+    //       { dataKey: "quantity", header: "الكمية" },
+    //       { dataKey: "name", header: "الصنف" },
+    //     ],
+    //     body:
+    //       type == "زبون"
+    //         ? (facture.sales as any)
+    //         : type == "مورد"
+    //         ? facture.purchases
+    //         : facture.transfers,
+    //     margin: { top: 0, bottom: -2, horizontal: 1 },
+    //     tableLineColor: 0x000000,
+    //     columnStyles: {
+    //       0: { cellWidth: 18 },
+    //       1: { cellWidth: 15 },
+    //       2: { cellWidth: 37 },
+    //     },
+    //     bodyStyles: {
+    //       fontSize: 8,
+    //       fillColor: "#FFFFFF",
+    //       textColor: "#000000",
+    //       lineColor: "#000000", // Or gray [200, 200, 200]
+    //       lineWidth: 0.3,
+    //       font: "custom",
+    //       overflow: "linebreak",
+    //       halign: "right",
+    //       // cellWidth: "wrap",
+    //       cellPadding: {
+    //         top: 0.5,
+    //         right: 0.5,
+    //         bottom: 0.5,
+    //         left: 0,
+    //       },
+    //     },
+    //     headStyles: {
+    //       // cellWidth: 23,
+    //       fontStyle: "bold",
+    //       fillColor: "#FFFFFF",
+    //       lineColor: "#000000", // Or gray [200, 200, 200]
+    //       lineWidth: 0.3,
+    //       textColor: "#000000",
+    //       fontSize: 10,
+    //       font: "custom",
+    //       overflow: "linebreak",
+    //       halign: "center",
+    //     },
+    //     theme: "grid",
+    //     tableWidth: 72,
+    //     // didDrawPage: function (data) {
+    //     //   doc.text("وصل بيع", width / 2, 20);
+    //     // },
+    //   } as UserOptions);
+    //   this.buildFooterBon(doc, facture, setting, type);
+    //   const date = new Date().getTime();
+    //   const blob = doc.output("blob");
+    //   const buffer = Buffer.from(await blob.arrayBuffer());
+    //   const filePath = "facture/" + date + ".pdf";
+    //   await new Promise((resolve, reject) =>
+    //     fs.writeFile(filePath, buffer, "binary", (err) => {
+    //       console.log("Print facture error => " + err);
+    //       const printCmd = exec(".\\PDFToPrinter.exe " + filePath + " /s");
+    //       printCmd.stdout.on("data", (data) =>
+    //         console.log(`print data: ${data}`)
+    //       );
+    //     })
+    //   );
+    // }
+    // static buildFooterBon(
+    //   doc: any,
+    //   facture: any,
+    //   setting: Setting,
+    //   type: string
+    // ): void {
+    //   doc.autoTable({
+    //     body: [
+    //       [
+    //         {
+    //           content: facture.montant + " : " + "المجموع",
+    //           colSpan: 2,
+    //           styles: { cellWidth: 30 },
+    //         },
+    //         {
+    //           content: facture.remark ?? "" + ": ملاحظة",
+    //           styles: { halign: "right", cellWidth: "auto" },
+    //         },
+    //       ],
+    //       [
+    //         {
+    //           content: facture.pay + " : " + "الدفع",
+    //           colSpan: 2,
+    //           styles: { cellWidth: 30 },
+    //         },
+    //         {
+    //           content: facture.user.name + " : " + "المستخدم",
+    //           styles: { halign: "right" },
+    //         },
+    //       ],
+    //       [
+    //         { content: facture.remise + " : " + "التخفيض", colSpan: 2 },
+    //         {
+    //           content: "",
+    //         },
+    //       ],
+    //       [
+    //         { content: facture.rest + " : " + "الباقي", colSpan: 2, rowSpan: 1 },
+    //         { content: "", colSpan: 1, rowSpan: 1 },
+    //       ],
+    //       [
+    //         {
+    //           content: setting.remark ?? "",
+    //           colSpan: 4,
+    //           rowSpan: 1,
+    //           styles: {
+    //             halign: "center",
+    //             fontStyle: "bold",
+    //             // lineWidth: [0, 0, 0, 0.3],
+    //             lineWidth: 0.3,
+    //             fontSize: 11,
+    //           },
+    //         },
+    //       ],
+    //     ],
+    //     margin: { horizontal: 1 },
+    //     bodyStyles: {
+    //       cellWidth: "auto",
+    //       fontSize: 9,
+    //       // fontStyle: "normal",
+    //       fillColor: "#FFFFFF",
+    //       textColor: "#000000",
+    //       lineColor: "#000000", // Or gray [200, 200, 200]
+    //       lineWidth: 0,
+    //       font: "custom",
+    //       overflow: "linebreak",
+    //       halign: "right",
+    //     },
+    //     theme: "grid",
+    //     tableWidth: "auto",
+    //     // tableWidth: width / 3,
+    //     styles: { overflow: "hidden" },
+    //   } as UserOptions);
   }
 }
