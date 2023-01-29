@@ -401,13 +401,14 @@ import settingModule from "@/store/settingModule";
 import DepotApi from "@/api/depotApi";
 import Depot from "@/classes/depot";
 import Search from "@/classes/search";
+import PrintImage from "@/print/print_image";
 // import { exec } from "child_process";
 
 @Component({ components: { CDatePicker } })
 export default class SettingView extends Vue {
   settingApi = new SettingApi();
-  listPrinter:[] = [];
-  public selectedPrinter = {} ;
+  listPrinter = [];
+  public selectedPrinter = {};
   // previewImage = null;
   imagePath = "";
   private api = new DepotApi();
@@ -512,8 +513,7 @@ export default class SettingView extends Vue {
   }
 
   async getPrinters(): Promise<void> {
-    // let win = new electron.remote.BrowserWindow({ show: false });
-    // this.listPrinter = win.webContents.getPrinters();
+    this.listPrinter = await PrintImage.getPrinters();
   }
   loading = false;
   restoreDB(file: File): void {

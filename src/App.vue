@@ -206,8 +206,8 @@ export default class App extends Vue {
   }
 
   changeTitle(): void {
-    document.title =
-      "Express Store V" + window.require("electron").remote.app.getVersion();
+    // document.title =
+    //   "Express Store V" + window.require("electron").remote.app.getVersion();
   }
 }
 </script>

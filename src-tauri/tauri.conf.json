@@ -17,13 +17,24 @@
         "all": true,
         "execute": true,
         "sidecar": true,
-        "open": true
+        "open": true,
+        "scope": [
+          {
+            "name": "print",
+            "cmd": ".\\PDFToPrinter.exe",
+                "args": true
+          },
+          {
+            "name": "printers",
+            "cmd": "wmic",
+            "args": true
+          }
+        ]
       },
       "fs": {
         "all": true,
         "scope": [
           "*"
-          
         ]
       }
     },
