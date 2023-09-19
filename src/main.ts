@@ -5,8 +5,35 @@ import store from "./store";
 import vuetify from "./plugins/vuetify";
 import VueKey from "vue-shortkey";
 import VueI18n from "vue-i18n";
-
+import { locales } from "./locales/locale";
+import { formatCurrency } from "./helper/global_function";
+import PerfectScrollbar from "vue2-perfect-scrollbar";
+import "vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css";
 Vue.use(VueI18n);
+const i18n = new VueI18n({
+  locale: "ar",
+  fallbackLocale: "ar",
+  messages: locales,
+});
+
+Vue.use(PerfectScrollbar);
+
+const currencyPlugin = {
+  install(Vue, options) {
+    Vue.prototype.formatCurrency = formatCurrency;
+  },
+};
+Vue.use(currencyPlugin);
+
+// Inject Global Function Using Mixin
+// Vue.mixin({
+//   methods: {
+//     globalHelper: function () {
+//       alert("Hello world");
+//     },
+//   },
+// });
+
 // Vue.config.productionTip = false;
 // import Echo from "laravel-echo";
 // (window as any).Pusher = require("pusher-js");
@@ -40,6 +67,7 @@ Vue.use(VueKey);
 new Vue({
   router,
   store,
+  i18n,
   vuetify,
   render: (h) => h(App),
 }).$mount("#app");

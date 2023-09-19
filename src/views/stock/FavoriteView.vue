@@ -178,7 +178,6 @@ import FavManage from "@/views/stock/dialog/FavManage.vue";
 import SnackBarModule from "@/store/snackBarModule";
 import stockApi from "@/api/stockApi";
 import Stocks from "@/classes/stock";
-import readXlsxFile from "read-excel-file";
 import DeleteDialog from "@/components/custom_dialogs/DeleteDialog.vue";
 import Search from "@/classes/search";
 import Depot from "@/classes/depot";

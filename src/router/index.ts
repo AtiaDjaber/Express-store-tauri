@@ -14,7 +14,7 @@ import NotificationView from "@/views/notification/NotificationView.vue";
 import History from "@/views/history/History.vue";
 import Client from "@/views/client/Client.vue";
 import Box from "@/views/box/Box.vue";
-// import AddCommandFournisseurView from "@/views/add_command_fournisseur/AddCommandFournisseurView.vue";
+import AddCommandFournisseurView from "@/views/add_command_fournisseur/AddCommandFournisseurView.vue";
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
@@ -46,7 +46,6 @@ const routes: Array<RouteConfig> = [
     path: "/export",
     name: "Export",
     component: exportImportView,
-    // component: () => import("@/views/export/exportImportView.vue"),
     meta: {
       title: "conversion_produits",
     },
@@ -175,24 +174,24 @@ const router = new VueRouter({
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   const publicPages = ["login"];
-//   const authRequired = !publicPages.includes(to.path);
-//   const user = localStorage.getItem("user") ?? "";
+router.beforeEach((to, from, next) => {
+  const publicPages = ["login"];
+  const authRequired = !publicPages.includes(to.path);
+  const user = localStorage.getItem("user") ?? "";
 
-//   if (to.path == "/login" && user && user != "") {
-//     next("/sale");
-//   } else {
-//     if (to.path !== "/login" && authRequired && (!user || user == "")) {
-//       next("login");
-//     } else {
-//       if (to.path == "/") {
-//         next("/sale");
-//       } else {
-//         next();
-//       }
-//     }
-//   }
-// });
+  if (to.path == "/login" && user && user != "") {
+    next("/sale");
+  } else {
+    if (to.path !== "/login" && authRequired && (!user || user == "")) {
+      next("login");
+    } else {
+      if (to.path == "/") {
+        next("/sale");
+      } else {
+        next();
+      }
+    }
+  }
+});
 
 export default router;

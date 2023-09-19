@@ -6,31 +6,29 @@ import ConstantValues from "@/ConstantValues";
 import { Setting } from "@/classes/setting";
 import Facture from "@/classes/facture";
 import autoTable from "jspdf-autotable";
-import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
+// import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 import { Command, SpawnOptions } from "@tauri-apps/api/shell";
 
 applyPlugin(jsPDF);
 
 export default class PrintImage {
   static async getPrinters() {
-    const res = await new Command("printers", [
-      "printer",
-      "get",
-      "name",
-    ]).execute();
-    console.log(res.stdout);
-
-    const printers = res.stdout
-      .trim()
-      .split("\n")
-      .map((e) => {
-        console.log(e);
-        e = e.trim();
-        return e;
-      })
-      .filter((e) => e != "Name");
-
-    return printers;
+    // const res = await new Command("printers", [
+    //   "printer",
+    //   "get",
+    //   "name",
+    // ]).execute();
+    // console.log(res.stdout);
+    // const printers = res.stdout
+    //   .trim()
+    //   .split("\n")
+    //   .map((e) => {
+    //     console.log(e);
+    //     e = e.trim();
+    //     return e;
+    //   })
+    //   .filter((e) => e != "Name");
+    // return printers;
   }
   // static print(htmlElement: HTMLElement, openFolder = false): void {
   //   html2canvas(htmlElement, {
@@ -377,12 +375,12 @@ export default class PrintImage {
     // const contents = await blob.arrayBuffer();
 
     const filePath = "facture/" + date + ".pdf";
-    await writeBinaryFile({
-      path: filePath,
-      contents: doc.output("arraybuffer"),
-    }).then(async (_) => {
-      new Command("print", [filePath, setting.facture]).execute();
-    });
+    // await writeBinaryFile({
+    //   path: filePath,
+    //   contents: doc.output("arraybuffer"),
+    // }).then(async (_) => {
+    //   new Command("print", [filePath, setting.facture]).execute();
+    // });
   }
 
   static printBarcode(htmlElement: HTMLElement, s, copies): void {
@@ -576,12 +574,12 @@ export default class PrintImage {
     this.buildFooterBon(doc, facture, setting, type);
     const date = new Date().getTime();
     const filePath = "facture/" + date + ".pdf";
-    await writeBinaryFile({
-      path: filePath,
-      contents: doc.output("arraybuffer"),
-    }).then(async (_) => {
-      new Command("print", [filePath, setting.receipt]).execute();
-    });
+    // await writeBinaryFile({
+    //   path: filePath,
+    //   contents: doc.output("arraybuffer"),
+    // }).then(async (_) => {
+    //   new Command("print", [filePath, setting.receipt]).execute();
+    // });
   }
   static buildFooterBon(
     doc: any,
@@ -664,5 +662,7 @@ export default class PrintImage {
     title,
     headerData: any,
     setting: Setting
-  ): Promise<void> {}
+  ): Promise<void> {
+    console.log("object");
+  }
 }

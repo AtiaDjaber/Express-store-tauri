@@ -63,10 +63,10 @@
         "signingIdentity": null
       },
       "resources": [
-        "PDFtoPrinter.exe",
         "facture",
         "barcode",
-        "backup"
+        "backup",
+        "C:\\laragon\\www\\expressStoreBackend"
       ],
       "shortDescription": "",
       "targets": "all",

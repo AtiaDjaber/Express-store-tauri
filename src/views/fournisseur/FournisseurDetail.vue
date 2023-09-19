@@ -37,7 +37,6 @@ import { Component, Vue } from "vue-property-decorator";
 import FournisseurFactureView from "@/views/fournisseur/FournisseurFactureView";
 import FournisseurPaymentView from "@/views/fournisseur/FournisseurPaymentView";
 import CommandFournisseurView from "@/views/fournisseur/CommandFournisseurView.vue";
-CommandFournisseurView;
 @Component({
   components: {
     FournisseurPaymentView,
