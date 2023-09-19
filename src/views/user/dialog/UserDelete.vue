@@ -13,7 +13,7 @@
         <h3>هل أنت متأكد؟</h3>
       </v-card-text>
       <v-card-actions class="justify-end">
-        <v-btn text color="green darken-1" @click="close"> إلفاء </v-btn>
+        <v-btn text color="green darken-1" @click="close"> إلغاء </v-btn>
         <v-btn text color="red darken-1" @click="manage">حذف</v-btn>
       </v-card-actions>
     </v-card>
@@ -36,33 +36,33 @@ export default class userDelete extends Vue {
   // private api = new userApi();
 
   manage() {
-  //   if (this.source == "Users")
-  //     this.api
-  //       .deleteUser(this.id)
-  //       .then((result) => {
-  //         this.$root.$emit("deleteduserid", this.id);
-  //         SnackBarModule.setSnackbar({
-  //           text: "تم الحذف",
-  //           color: "success",
-  //           timeout: 2000,
-  //           show: true,
-  //           icon: "check",
-  //           x: "right",
-  //           y: "top",
-  //         });
-  //       })
-  //       .catch((error) => {
-  //         SnackBarModule.setSnackbar({
-  //           text: error,
-  //           color: "error",
-  //           timeout: 2000,
-  //           show: true,
-  //           icon: "mdi-alert-outline",
-  //           x: "right",
-  //           y: "top",
-  //         });
-  //       });
-  //   this.close();
+    //   if (this.source == "Users")
+    //     this.api
+    //       .deleteUser(this.id)
+    //       .then((result) => {
+    //         this.$root.$emit("deleteduserid", this.id);
+    //         SnackBarModule.setSnackbar({
+    //           text: "تم الحذف",
+    //           color: "success",
+    //           timeout: 2000,
+    //           show: true,
+    //           icon: "check",
+    //           x: "right",
+    //           y: "top",
+    //         });
+    //       })
+    //       .catch((error) => {
+    //         SnackBarModule.setSnackbar({
+    //           text: error,
+    //           color: "error",
+    //           timeout: 2000,
+    //           show: true,
+    //           icon: "mdi-alert-outline",
+    //           x: "right",
+    //           y: "top",
+    //         });
+    //       });
+    //   this.close();
   }
 }
 </script>

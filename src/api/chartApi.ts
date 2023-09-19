@@ -29,31 +29,25 @@ export default class ChartApi {
       .then((x) => x.data);
   }
 
-  getChart(url: string): Promise<any> {
+  static getChart(url: string): Promise<any> {
     return axiosModule.instance.get("api/Charts" + url).then((x) => x.data);
   }
 
-  public getTeachersAnalytics(from?: string, to?: string): Promise<any> {
-    return axiosModule.instance
-      .get("api/chart/getBenifitsTeachersChart" + "?from=" + from + "&to=" + to)
-      .then((x) => x.data);
-  }
-
-  public getTopClientsData(): Promise<any> {
+  static getTopClientsData(): Promise<any> {
     return axiosModule.instance
       .get("api/chart/top_clients")
       .then((x) => x.data);
   }
 
-  public getChartData(): Promise<any> {
+  static getChartData(): Promise<any> {
     return axiosModule.instance
       .get("api/chart/yearMonthChart")
       .then((x) => x.data);
   }
 
-  public getTeachersBenifits(from?: string, to?: string): Promise<any> {
+  static getDaysChart(from?: string, to?: string): Promise<any> {
     return axiosModule.instance
-      .get("api/chart/getBenifitsTeachers" + "?from=" + from + "&to=" + to)
+      .get("api/chart/daysChart" + "?from=" + from + "&to=" + to)
       .then((x) => x.data);
   }
 
@@ -75,13 +69,13 @@ export default class ChartApi {
   //         .then((x) => x.data);
   // }
 
-  public getBenifitPeriod(from?: string, to?: string): Promise<any> {
+  static getBenifitPeriod(from?: string, to?: string): Promise<any> {
     return axiosModule.instance
       .get("api/chart/benifitPeriod" + "?from=" + from + "&to=" + to)
       .then((x) => x.data);
   }
 
-  public getBenifitPeriodDepots(from?: string, to?: string): Promise<any> {
+  static getBenifitPeriodDepots(from?: string, to?: string): Promise<any> {
     return axiosModule.instance
       .get("api/chart/benifitPeriodDepots" + "?from=" + from + "&to=" + to)
       .then((x) => x.data);
@@ -93,19 +87,19 @@ export default class ChartApi {
       .then((x) => x.data);
   }
 
-  public getClientDues(): Promise<any> {
+  static getClientDues(): Promise<any> {
     return axiosModule.instance
       .get("api/chart/clients_dues")
       .then((x) => x.data);
   }
 
-  public getProductsInventory(): Promise<any> {
+  static getProductsInventory(): Promise<any> {
     return axiosModule.instance
       .get("api/chart/products_inventory")
       .then((x) => x.data);
   }
 
-  public getExpensesAnalytics(from: any, to: any): Promise<unknown> {
+  static getExpensesAnalytics(from: any, to: any): Promise<unknown> {
     return axiosModule.instance
       .get("api/chart/expenses?" + "from=" + from + "&to=" + to)
       .then((x) => x.data);

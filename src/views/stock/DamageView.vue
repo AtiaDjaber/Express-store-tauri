@@ -20,8 +20,9 @@
           append-icon="fa-search"
           @keyup="onChangeBarcode"
           @click:clear="clearInput"
-          hint="  البحث باسم الصنف او الباركود"
-          placeholder="  البحث باسم الصنف او الباركود"
+          :hint="$t('product_search')"
+          :label="$t('product_search')"
+          :placeholder="$t('product_search')"
         ></v-text-field>
       </v-col>
       <!-- <v-btn @click="show = !show">asds</v-btn> -->
@@ -73,6 +74,7 @@ import Search from "@/classes/search";
 import Depot from "@/classes/depot";
 import Decoded from "@/helper/decode";
 import Damage from "@/classes/damage";
+import { Debounce } from "vue-debounce-decorator";
 
 @Component({ components: { ManageProductDamage, DeleteDialog } })
 export default class DamageView extends Vue {
@@ -105,10 +107,11 @@ export default class DamageView extends Vue {
   }
 
   @Watch("search", { deep: true })
-  onChange() {
+  onChange(): void {
     this.getDamagesData(this.search);
   }
 
+  @Debounce(80)
   getDamagesData(search?: Search): void {
     stockApi
       .getDamages(search)
@@ -117,7 +120,6 @@ export default class DamageView extends Vue {
         this.count = 0;
 
         if (response.status == 200) {
-          console.log(response.data.data["data"]);
           this.listDamages = response.data.data["data"];
           this.count = response.data.data["total"];
         }

@@ -6,7 +6,6 @@ import Purchase from "@/classes/purchase";
 
 @Module({ generateMutationSetters: true })
 class PurchaseModule extends VuexModule {
-  private api = new SaleApi();
   facture = {
     montant: 0,
     pay: 0,

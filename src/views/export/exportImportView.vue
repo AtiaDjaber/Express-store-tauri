@@ -139,42 +139,69 @@
       <!--      </v-btn>-->
     </v-row>
     <v-row no-gutters></v-row>
-    <v-card outlined>
-      <v-data-table
-        :headers="Headers"
-        :items="facture_transfer.transfers"
-        @click:row="rowClick"
-        hide-default-footer
-        fixed-header
-        height="600px"
-        item-key="product_id"
-        :items-per-page="-1"
-        single-select
-      >
-        <template v-slot:item.quantity="{ item }">
-          <v-text-field
-            style="width: 150px"
-            label="الكمية"
-            flat
-            solo
-            hide-details
-            type="number"
-            v-model="item.quantity"
-            @input="editItem(item)"
-          ></v-text-field>
-        </template>
-
-        <template v-slot:[`item.actions`]="{ item }">
-          <v-row>
-            <!--         v-if="item.id==null"-->
-            <v-btn @click="deleteItem(item)" fab outlined small color="red">
-              <v-icon>mdi-trash-can-outline</v-icon>
-            </v-btn>
-            <!--          <delete-dialog v-else :id="item.id" :source="'SALE'"/>-->
-          </v-row>
-        </template>
-      </v-data-table>
-    </v-card>
+    <div v-resize="onResize">
+      <v-card outlined>
+        <v-data-table
+          :headers="Headers"
+          :items="facture_transfer.transfers"
+          @click:row="rowClick"
+          hide-default-footer
+          fixed-header
+          :height="windowSize.y - 270"
+          item-key="product_id"
+          :items-per-page="-1"
+          single-select
+        >
+          <template v-slot:item.quantity="{ item }">
+            <v-text-field
+              style="width: 150px"
+              label="الكمية"
+              flat
+              solo
+              hide-spin-buttons
+              class="centered-input"
+              dense
+              hide-details
+              type="number"
+              v-model="item.quantity"
+              @input="editItem(item)"
+            >
+              <template v-slot:append>
+                <v-icon @click="item.quantity++">mdi-plus</v-icon>
+              </template>
+              <template v-slot:prepend-inner>
+                <v-icon @click="item.quantity--">mdi-minus</v-icon>
+              </template></v-text-field
+            >
+          </template>
+          <template v-slot:item.sell_price="{ item }">
+            <v-text-field
+              style="width: 150px"
+              label="سعر البيع"
+              flat
+              solo
+              hide-spin-buttons
+              class="centered-input"
+              dense
+              hide-details
+              type="number"
+              v-model="item.sell_price"
+              @input="editItem(item)"
+            >
+            </v-text-field>
+          </template>
+          <template v-slot:[`item.actions`]="{ item }">
+            <v-row>
+              <!--         v-if="item.id==null"-->
+              <v-btn @click="deleteItem(item)" fab outlined small color="red">
+                <v-icon>mdi-trash-can-outline</v-icon>
+              </v-btn>
+              <!--          <delete-dialog v-else :id="item.id" :source="'SALE'"/>-->
+            </v-row>
+          </template>
+        </v-data-table>
+      </v-card>
+    </div>
     <v-col>
       <!-- <v-footer outlined color="white"> -->
       <v-row class="">
@@ -291,13 +318,6 @@
         </h4>
       </v-row>
     </div>
-    <v-overlay :value="loading">
-      <v-progress-circular
-        indeterminate
-        color="#fb6333"
-        size="64"
-      ></v-progress-circular>
-    </v-overlay>
   </div>
 </template>
 
@@ -310,8 +330,6 @@ import Client from "@/classes/client";
 import clientApi from "@/api/clientApi";
 import Sale from "@/classes/transfer";
 import VueBarcode from "vue-barcode";
-import html2canvas, { Options } from "html2canvas";
-// import { shell } from "electron";
 import SnackBarModule from "@/store/snackBarModule";
 import exportModule from "@/store/exportModule";
 import depotApi from "@/api/depotApi";
@@ -338,7 +356,7 @@ export default class ExportImportView extends Vue {
     // {text: "باركود", value: "barcode", },
     { text: "الصنف", value: "name" },
     { text: "الكمية", value: "quantity" },
-    { text: "السعر", value: "sell_price" },
+    { text: "سعر البيع", value: "sell_price" },
     { text: "المبلغ الإجمالي", value: "total" },
     { text: "", value: "actions" },
   ];
@@ -490,11 +508,10 @@ export default class ExportImportView extends Vue {
         .then((res) => {
           this.facture_transfer = res["data"] as FactureTransfer;
           this.loading = false;
-          PrintImage.printFacturePdf(
-            this.setting,
-            this.facture_transfer,
-            "مخزن"
-          );
+          // setTimeout(() => {
+            // PrintImage.print(document.getElementById("facture") as HTMLElement);
+            this.addNewFacture();
+          // }, 50);
 
           SnackBarModule.setSnackbar({
             text: "تم إضافة الفاتورة بنجاح",
@@ -519,6 +536,11 @@ export default class ExportImportView extends Vue {
           });
         });
     }
+  }
+
+  windowSize = { x: 0, y: 0 };
+  onResize(): void {
+    this.windowSize = { x: window.innerWidth, y: window.innerHeight };
   }
 
   changeDepot(depotId: any) {
@@ -593,5 +615,8 @@ export default class ExportImportView extends Vue {
   /* display: none; */
   top: -1000px;
   z-index: -10;
+}
+::v-deep .centered-input input {
+  text-align: center;
 }
 </style>

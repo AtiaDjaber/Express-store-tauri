@@ -37,7 +37,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var axiosModule_1 = require("@/store/axiosModule");
-var axios_1 = require("axios");
 var stockApi = /** @class */ (function () {
     function stockApi() {
     }
@@ -51,11 +50,31 @@ var stockApi = /** @class */ (function () {
             });
         });
     };
+    stockApi.getDiver = function () {
+        return __awaiter(this, void 0, Promise, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, axiosModule_1["default"].instance.get("api/divers")];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
     stockApi.getAllStock = function (search) {
         return __awaiter(this, void 0, Promise, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, axiosModule_1["default"].instance.get("api/products/all?" + search.toFilter())];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    stockApi.getAllStockExport = function () {
+        return __awaiter(this, void 0, Promise, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, axiosModule_1["default"].instance.get("api/products/export")];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
             });
@@ -144,7 +163,7 @@ var stockApi = /** @class */ (function () {
     stockApi.attachProductToFavorite = function (favorite, stock) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, axiosModule_1["default"].instance.post("api/favorite/add-product/" + favorite.id + "/" + stock.id, {})];
+                return [2 /*return*/, axiosModule_1["default"].instance.post("api/favorite/add-product/" + favorite.id + "/" + stock.id, stock)];
             });
         });
     };
@@ -160,17 +179,15 @@ var stockApi = /** @class */ (function () {
             var res;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        console.log(formData);
-                        return [4 /*yield*/, axios_1["default"]
-                                .post(process.env.VUE_APP_API_URL + "api/product/upload", formData, {
-                                headers: {
-                                    "Content-Type": "multipart/form-data",
-                                    Authorization: "Bearer " + localStorage.getItem("token")
-                                }
-                            })["catch"](function (e) {
-                                console.log(e);
-                            })];
+                    case 0: return [4 /*yield*/, axiosModule_1["default"].instance
+                            .post("api/product/upload", formData, {
+                            headers: {
+                                "Content-Type": "multipart/form-data",
+                                Authorization: "Bearer " + localStorage.getItem("token")
+                            }
+                        })["catch"](function (e) {
+                            console.log(e);
+                        })];
                     case 1:
                         res = _a.sent();
                         return [2 /*return*/, res];

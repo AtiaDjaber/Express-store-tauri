@@ -3,76 +3,68 @@
     <template v-slot:activator="{ on, attrs }">
       <div class="mr-2" v-bind="attrs" v-on="on">
         <v-btn class="mt-3" color="secondary" large outlined elevation="0">
-          إضافة فئة
+          {{ $t("ajoute_category") }}
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
     <v-card v-if="dialog" color="plain">
       <v-card-title>
-        <span> إضافة فئة </span>
+        <span> {{ $t("ajoute_category") }} </span>
       </v-card-title>
       <v-divider></v-divider>
 
       <v-card-text>
-        <v-container>
-          <v-form ref="form" lazy-validation v-model="valid">
-            <v-row class="mt-4">
-              <v-col cols="10">
-                <v-text-field
-                  label="الاسم"
-                  placeholder="الاسم"
-                  hint="الاسم"
-                  required
-                  flat
-                  solo
-                  clearable
-                  v-model="expenseCategoryObj.name"
-                  :rules="vexpense.name"
-                ></v-text-field>
-              </v-col>
-              <v-btn
-                class="mt-3"
-                color="primary"
-                @click="manage()"
-                large
-                elevation="0"
-              >
-                إضافة
+        <v-form ref="form" lazy-validation v-model="valid">
+          <v-row class="mt-4">
+            <v-col>
+              <v-text-field
+                :hint="$t('name')"
+                :placeholder="$t('name')"
+                required
+                flat
+                solo
+                clearable
+                v-model="expenseCategoryObj.name"
+                :rules="vexpense.name"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="auto">
+              <v-btn color="primary" @click="manage()" large elevation="0">
+                {{ $t("ajoute_category") }}
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
-            </v-row>
-            <v-row class="mt-n6">
-              <v-col>
-                <v-card outlined>
-                  <v-data-table
-                    :headers="Headers"
-                    :items="listCategories"
-                    single-select
-                    hide-default-footer
-                  >
-                    <template v-slot:[`item.actions`]="{ item }">
-                      <v-row>
-                        <DeleteDialog
-                          :id="item.id"
-                          :disabled="false"
-                          :source="resource"
-                        />
-                      </v-row>
-                    </template> </v-data-table
-                ></v-card>
-              </v-col>
-            </v-row>
-          </v-form>
-        </v-container>
+            </v-col>
+          </v-row>
+          <v-row class="mt-n6">
+            <v-col>
+              <v-card outlined>
+                <v-data-table
+                  :headers="Headers"
+                  :items="listCategories"
+                  single-select
+                  hide-default-footer
+                >
+                  <template v-slot:[`item.actions`]="{ item }">
+                    <v-row>
+                      <DeleteDialog
+                        :id="item.id"
+                        :disabled="false"
+                        :source="resource"
+                      />
+                    </v-row>
+                  </template> </v-data-table
+              ></v-card>
+            </v-col>
+          </v-row>
+        </v-form>
       </v-card-text>
       <v-divider></v-divider>
 
       <v-card-actions class="justify-end mx-3">
-        <v-btn large outlined color="red darken-1" @click="dialog = false"
-          >إلغاء</v-btn
-        >
-        <v-btn large dark color="green darken-1" @click="manage">حفظ </v-btn>
+        <v-btn large outlined color="red darken-1" @click="dialog = false">
+          {{ $t("cancel") }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -92,8 +84,8 @@ import Category from "@/classes/category";
 export default class ManageTypeExpense extends Vue {
   Headers = [
     { text: "الاسم", value: "name" },
-    { text: "المستخدم", value: "user.name" },
     { text: "التاريخ", value: "created_at" },
+    { text: "المستخدم", value: "user.name" },
     { text: "العمليات", value: "actions" },
   ];
   @Prop({ default: 0 }) expenseAction!: number;
@@ -156,6 +148,7 @@ export default class ManageTypeExpense extends Vue {
         .then((result: any) => {
           let saved = (result as any).data;
           this.listCategories.unshift(saved);
+          this.$root.$emit("categoryAdded", saved);
           SnackBarModule.setSnackbar({
             text: "تمت العملية بنجاح",
             color: "success",

@@ -53,7 +53,7 @@
         </template>
         <template v-slot:item.montant="{ item }">
           <v-chip dark :color="getColor(item.montant)">
-            {{ item.montant }}
+            {{ formatCurrency(item.montant) }}
           </v-chip>
         </template>
 
@@ -110,7 +110,7 @@ import Fournisseur from "@/classes/fournisseur";
 @Component({ components: { ManageFournisseur, DeleteDialog } })
 export default class FournisseurView extends Vue {
   fournisseurHeaders = [
-    { text: "الإسم", value: "name" },
+    { text: "اسم المورد", value: "name" },
     { text: "المبلغ", value: "montant" },
     // {text: "رقم الهاتف", value: "mobile", },
     { text: "", value: "actions" },

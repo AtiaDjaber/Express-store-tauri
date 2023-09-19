@@ -2,18 +2,28 @@ import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import SaleView from "@/views/sale/SaleView.vue";
 import LoginView from "@/views/Login.vue";
-
+import StockTabs from "@/views/stock/StockTabs.vue";
+import UserView from "@/views/user/UserView.vue";
+import exportImportView from "@/views/export/exportImportView.vue";
+import PurchaseDetail from "@/views/purchase/PurchaseDetail.vue";
+import DepotMain from "@/views/depot/DepotMain.vue";
+import ChartView from "@/views/chart/ChartView.vue";
+import Setting from "@/views/setting/Setting.vue";
+import Fournisseur from "@/views/fournisseur/Fournisseur.vue";
+import NotificationView from "@/views/notification/NotificationView.vue";
+import History from "@/views/history/History.vue";
+import Client from "@/views/client/Client.vue";
+import Box from "@/views/box/Box.vue";
+// import AddCommandFournisseurView from "@/views/add_command_fournisseur/AddCommandFournisseurView.vue";
 Vue.use(VueRouter);
 
-// old : 7mb
-// new :
 const routes: Array<RouteConfig> = [
   {
     path: "/login",
     name: "Login",
     component: LoginView,
     meta: {
-      title: "تسجيل الدخول",
+      title: "login",
     },
   },
   {
@@ -21,73 +31,88 @@ const routes: Array<RouteConfig> = [
     name: "Sale",
     component: SaleView,
     meta: {
-      title: "الرئيسية",
+      title: "point_vente",
+    },
+  },
+  {
+    path: "/",
+    name: "home",
+    component: SaleView,
+    meta: {
+      title: "point_vente",
     },
   },
   {
     path: "/export",
     name: "Export",
-    component: () => import("@/views/export/exportImportView.vue"),
+    component: exportImportView,
+    // component: () => import("@/views/export/exportImportView.vue"),
     meta: {
-      title: "تصدير/ استيراد سلع",
+      title: "conversion_produits",
     },
   },
   {
     path: "/purchase",
     name: "Purchase",
-    component: () => import("@/views/purchase/PurchaseDetail.vue"),
+    component: PurchaseDetail,
+    // component: () => import("@/views/purchase/PurchaseDetail.vue"),
     meta: {
-      title: "مشتريات",
+      title: "achats",
     },
   },
   {
     path: "/depot",
     name: "Depot",
-    component: () => import("@/views/depot/DepotMain.vue"),
+    component: DepotMain,
+    // component: () => import("@/views/depot/DepotMain.vue"),
     meta: {
-      title: "المخازن",
+      title: "magasins",
     },
   },
   {
     path: "/notification",
     name: "Dotification",
-    component: () => import("@/views/notification/NotificationView.vue"),
+    component: NotificationView,
+    // component: () => import("@/views/notification/NotificationView.vue"),
     meta: {
-      title: "الإشعارات",
+      title: "notifications",
     },
   },
   {
     path: "/chart",
     name: "Chart",
-    component: () => import("@/views/chart/ChartView.vue"),
+    component: ChartView,
+    // component: () => import("@/views/chart/ChartView.vue"),
     meta: {
-      title: "إحصائيات",
+      title: "statistiques",
     },
   },
   {
     path: "/history",
     name: "History",
-    component: () => import("@/views/history/History.vue"),
+    component: History,
+    // component: () => import("@/views/history/History.vue"),
     meta: {
-      title: "ارشيف المبيعات",
+      title: "archives_ventes",
     },
   },
 
   {
     path: "/product",
     name: "Product",
-    component: () => import("@/views/stock/StockTabs.vue"),
+    component: StockTabs,
     meta: {
-      title: "المنتجات",
+      title: "produites",
       icon: "mdi-bell-ring",
     },
   },
   {
     path: "/user",
     name: "User",
-    component: () => import("@/views/user/UserView.vue"),
+    component: UserView,
+    // component: () => import("@/views/user/UserView.vue"),
     meta: {
-      title: "المستخدمين",
+      title: "utilisateurs",
     },
   },
   {
@@ -95,39 +120,51 @@ const routes: Array<RouteConfig> = [
     name: "Expense",
     component: () => import("@/views/expense/ExpenseView.vue"),
     meta: {
-      title: "المصاريف",
+      title: "depenses",
     },
   },
   {
     path: "/client",
     name: "Client",
-    component: () => import("@/views/client/Client.vue"),
+    component: Client,
+    // component: () => import("@/views/client/Client.vue"),
     meta: {
-      title: "الزبائن",
+      title: "clients",
     },
   },
+  // {
+  //   path: "/add_command",
+  //   name: "AddCommand",
+  //   component: AddCommandFournisseurView,
+  //   meta: {
+  //     title: "purchase_order",
+  //   },
+  // },
   {
     path: "/fournisseur",
     name: "Fournisseur",
-    component: () => import("@/views/fournisseur/Fournisseur.vue"),
+    component: Fournisseur,
+    // component: () => import("@/views/fournisseur/Fournisseur.vue"),
     meta: {
-      title: "الموردين",
+      title: "fournisseurs",
     },
   },
   {
     path: "/setting",
     name: "Setting",
-    component: () => import("@/views/setting/Setting.vue"),
+    component: Setting,
+    // component: () => import("@/views/setting/Setting.vue"),
     meta: {
-      title: "الإعدادات",
+      title: "setting",
     },
   },
   {
     path: "/box",
     name: "box",
-    component: () => import("@/views/box/Box.vue"),
+    component: Box,
+    // component: () => import("@/views/box/Box.vue"),
     meta: {
-      title: "الصناديق",
+      title: "boites",
     },
   },
 ];
@@ -138,24 +175,24 @@ const router = new VueRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const publicPages = ["login"];
-  const authRequired = !publicPages.includes(to.path);
-  const user = localStorage.getItem("user") ?? "";
-  document.title = "Express Store";
-  if (to.path == "/login" && user && user != "") {
-    next("/sale");
-  } else {
-    if (to.path !== "/login" && authRequired && (!user || user == "")) {
-      next("login");
-    } else {
-      if (to.path == "/") {
-        next("/sale");
-      } else {
-        next();
-      }
-    }
-  }
-});
+// router.beforeEach((to, from, next) => {
+//   const publicPages = ["login"];
+//   const authRequired = !publicPages.includes(to.path);
+//   const user = localStorage.getItem("user") ?? "";
+
+//   if (to.path == "/login" && user && user != "") {
+//     next("/sale");
+//   } else {
+//     if (to.path !== "/login" && authRequired && (!user || user == "")) {
+//       next("login");
+//     } else {
+//       if (to.path == "/") {
+//         next("/sale");
+//       } else {
+//         next();
+//       }
+//     }
+//   }
+// });
 
 export default router;

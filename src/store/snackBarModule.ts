@@ -13,10 +13,25 @@ class SnackBarModule extends VuexModule {
     return this.notifications;
   }
 
+  validationErrors(messages: any): string[] {
+    return Object.values<string>(messages).flat();
+  }
   @Mutation
   setSnackbar(playload: Notification) {
     this.notifications = [];
-    playload.text= !(playload.text + "").includes("500") ? playload.text : "فشلت العملية",
+
+    if (playload.text.toString().includes("500")) {
+      playload.text = "فشلت العملية";
+      playload.icon = "mdi-alert-outline";
+    } else if (playload.text.toString().includes("422")) {
+      playload.text = this.validationErrors(
+        (playload.text as any).response.data["message"]
+      ).join("\n,");
+      playload.color = "blue";
+    } else if (playload.text.toString().includes("401")) {
+      playload.text = "معلومات الدخول غير صحيحة";
+      playload.icon = "mdi-alert-outline";
+    }
     this.notifications.push(playload);
   }
 }

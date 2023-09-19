@@ -11,6 +11,10 @@ export default class BoxApi {
 
     return (res.data as any).data;
   }
+  static async getAllBoxes() {
+    const res = await axiosModule.instance.get("api/boxes/all");
+    return (res.data as any).data;
+  }
 
   // TODO SAVE Box
   static async saveBox(Box: Box): Promise<Box> {

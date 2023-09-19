@@ -4,9 +4,8 @@ var Decoded = /** @class */ (function () {
     function Decoded() {
     }
     Decoded.DecodedBarcode = function (barcode) {
-        if (barcode == null) {
+        if (barcode == null)
             return barcode;
-        }
         barcode = barcode
             .replaceAll("à", "0")
             .replaceAll("&", "1")

@@ -3,14 +3,14 @@
     <template v-slot:activator="{ on, attrs }">
       <div class="mr-2" v-bind="attrs" v-on="on">
         <v-btn large color="primary" elevation="1">
-          اضافة مفضلة
+          {{ $t("ajoute_favori") }}
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
     <v-card v-if="dialog" color="plain">
       <v-card-title class="primary--text font-weight-bold">
-        <span v-if="mutableAction == 1"> إضافة مفضلة </span>
+        <span v-if="mutableAction == 1"> {{ $t("ajoute_favori") }} </span>
         <span v-else> تعديل معلومات المفضلة</span>
       </v-card-title>
       <v-divider></v-divider>

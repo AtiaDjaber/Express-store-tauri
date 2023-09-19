@@ -1,8 +1,5 @@
 import html2canvas from "html2canvas";
-// import { shell, app, remote } from "electron";
-// import fs from "fs";
-// import path from "path";
-// import { exec } from "child_process";
+
 import jsPDF, { TextOptionsLight } from "jspdf";
 import { applyPlugin, RowInput, UserOptions } from "jspdf-autotable";
 import ConstantValues from "@/ConstantValues";
@@ -10,21 +7,24 @@ import { Setting } from "@/classes/setting";
 import Facture from "@/classes/facture";
 import autoTable from "jspdf-autotable";
 import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
-import { Command } from "@tauri-apps/api/shell";
+import { Command, SpawnOptions } from "@tauri-apps/api/shell";
+
 applyPlugin(jsPDF);
 
 export default class PrintImage {
   static async getPrinters() {
-    let res = await new Command("printers", [
+    const res = await new Command("printers", [
       "printer",
       "get",
       "name",
     ]).execute();
+    console.log(res.stdout);
 
-    let printers = res.stdout
+    const printers = res.stdout
       .trim()
       .split("\n")
       .map((e) => {
+        console.log(e);
         e = e.trim();
         return e;
       })
@@ -51,6 +51,7 @@ export default class PrintImage {
   //     const date = new Date().getTime();
 
   //     const filePath = "facture/" + date + ".png";
+
   //     await new Promise((resolve, reject) =>
   //       fs.writeFile(filePath, buffer, "binary", (err) => {
   //         console.log("Print facture error => " + err);
@@ -384,7 +385,7 @@ export default class PrintImage {
     });
   }
 
-  static printBarcode(htmlElement: HTMLElement): void {
+  static printBarcode(htmlElement: HTMLElement, s, copies): void {
     //   html2canvas(htmlElement, { scale: 8 }).then(async function (canvas) {
     //     const imgData = canvas.toDataURL("image/png");
     //     const doc = new jsPDF("l", "mm", [40, 20], true);
@@ -656,4 +657,12 @@ export default class PrintImage {
       styles: { overflow: "hidden" },
     } as UserOptions);
   }
+
+  static async printGenericFacturePdf(
+    header: any,
+    data: any,
+    title,
+    headerData: any,
+    setting: Setting
+  ): Promise<void> {}
 }

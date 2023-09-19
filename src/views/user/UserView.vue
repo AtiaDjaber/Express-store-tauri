@@ -28,7 +28,7 @@
             <v-row>
               <v-btn
                 color="green"
-                class="ml-2"
+                class="me-2"
                 small
                 outlined
                 fab
@@ -46,7 +46,7 @@
 
               <v-btn
                 color="primary"
-                class="mr-2"
+                class="ms-2"
                 small
                 outlined
                 fab
@@ -121,19 +121,7 @@ export default class Users extends Vue {
       });
   }
 
-  // counter1: number = 7;
-  // counter2: number = 1;
-  // counter: number = 1;
-
   created() {
-    // for (let i = 1; i <= 6; i++) {
-    // this.counter1 = this.counter1 - 1;
-    // this.counter2 = this.counter2 * this.counter1;
-    // console.log(this.counter2);
-    // }
-
-    // this.getUsers("1");
-
     this.$root.$on("createdUser", (user: User) => {
       this.listuser.unshift(user);
       this.count++;

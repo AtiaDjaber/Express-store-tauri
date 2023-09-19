@@ -3,25 +3,39 @@
     <v-tabs class="ma-3">
       <v-tab>
         <v-icon right>mdi-download</v-icon>
-        الكميات المنتهية و المنخفضة
+        <h3>الكميات المنتهية و المنخفضة</h3>
       </v-tab>
       <v-tab>
         <v-icon right>mdi-calendar</v-icon>
-        الأصناف منتهية الصلاحية
+        <h3>الأصناف منتهية الصلاحية</h3>
       </v-tab>
 
       <v-tab-item class="ma-3">
+        <v-btn
+          dark
+          large
+          elevation="0"
+          class="ma-2"
+          color="primary"
+          v-shortkey="['f2']"
+          @shortkey="print"
+          @click="print"
+        >
+          طباعة F2
+          <v-icon right>mdi-printer-outline</v-icon>
+        </v-btn>
         <div v-resize="onResize">
-          <v-card elevation="0" outlined
+          <v-card outlined
             ><v-data-table
               :headers="quantityHeaders"
-              :items="prodcuts"
+              :items="products"
               hide-default-footer
+              v-model="selected"
               fixed-header
-              :height="windowSize.y - 180"
-              item-key="count"
+              show-select
+              :height="windowSize.y - 210"
+              item-key="id"
               :items-per-page="-1"
-              single-select
             >
               <template v-slot:item.count="{ item, index }">
                 <span>{{ index + 1 }}</span>
@@ -33,16 +47,16 @@
 
       <v-tab-item class="ma-3">
         <div v-resize="onResize">
-          <v-card elevation="0" outlined>
+          <v-card outlined>
             <v-data-table
               :headers="expireHeaders"
-              :items="expireProdcuts"
+              :items="expireProducts"
               hide-default-footer
               fixed-header
               :height="windowSize.y - 180"
               item-key="count"
               :items-per-page="-1"
-              single-select
+              show-select
             >
               <template v-slot:item.count="{ item, index }">
                 <span>{{ index + 1 }}</span>
@@ -63,36 +77,59 @@ import NotificationApi from "@/api/notificationApi";
 
 import Search from "@/classes/search";
 import Stock from "@/classes/stock";
+import PrintImage from "@/print/print_image";
+import settingModule from "@/store/settingModule";
 
 @Component({ components: { CDatePicker } })
 export default class NotificationView extends Vue {
   search = new Search();
   quantityHeaders = [
     { text: "#", value: "count" },
-    { text: "باركود", value: "barcode" },
+    // { text: "باركود", value: "barcode" },
     { text: "الصنف", value: "name" },
     { text: "الكمية", value: "quantity" },
   ];
   expireHeaders = [
     { text: "#", value: "count" },
-    { text: "باركود", value: "barcode" },
+    // { text: "باركود", value: "barcode" },
     { text: "الصنف", value: "name" },
     { text: "الكمية", value: "quantity" },
     { text: "نهاية الصلاحية", value: "date_expire" },
   ];
-  prodcuts: Stock[] = [];
-  expireProdcuts: Stock[] = [];
-  created() {
+
+  selected = [];
+  products: Stock[] = [];
+  expireProducts: Stock[] = [];
+  windowSize = { x: 0, y: 0 };
+
+  print(): void {
+    // console.log(this.selected);
+    let printHeader = [
+      {
+        dataKey: "name",
+        header: "الصنف",
+      },
+    ];
+    PrintImage.printGenericFacturePdf(
+      printHeader,
+      this.selected.length > 0 ? this.selected : this.products,
+      "المنتجات المنتهية و المنخفضة",
+      [],
+      settingModule.getSetting
+    );
+  }
+
+  created(): void {
     this.getNotifications();
   }
+
   getNotifications(): void {
     NotificationApi.getNotificationsApi().then((res) => {
-      this.prodcuts = res.data["quantityProducts"];
-      this.expireProdcuts = res.data["expireProducts"];
+      this.products = res.data["quantityProducts"];
+      this.expireProducts = res.data["expireProducts"];
       console.log(res);
     });
   }
-  windowSize = { x: 0, y: 0 };
 
   onResize() {
     this.windowSize = { x: window.innerWidth, y: window.innerHeight };

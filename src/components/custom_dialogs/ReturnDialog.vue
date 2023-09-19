@@ -61,7 +61,6 @@ export default class ReturnDialog extends Vue {
     this.copy = Object.assign({}, this.original);
   }
   manage(): void {
-    debugger;
     if (this.source == "sale") {
       SaleApi.returnSale(this.copy)
         .then((result) => {

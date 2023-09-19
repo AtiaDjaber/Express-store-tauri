@@ -44,7 +44,7 @@ class clientModule extends VuexModule {
 
   @Action
   async addPayment(payment: ClientPayment): Promise<any> {
-    return this.api.addPayment(payment).then((x) => Object.assign({}, x));
+    return this.api.addPayment(payment).then((x) => x);
   }
 
   getClientfactursById(seacrh: Search): Promise<any> {

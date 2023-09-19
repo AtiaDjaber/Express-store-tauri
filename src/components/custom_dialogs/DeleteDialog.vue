@@ -43,6 +43,8 @@ import fournisseurModule from "@/store/fournisseurModule";
 import SaleApi from "@/api/saleApi";
 import CategoryApi from "@/api/categoryApi";
 import BoxApi from "@/api/boxApi";
+import DepotApi from "@/api/depotApi";
+import FournisseurFactureApi from "@/api/fournisseurFactureApi";
 
 @Component({})
 export default class DeleteDialog extends Vue {
@@ -66,78 +68,50 @@ export default class DeleteDialog extends Vue {
       BoxApi.deleteBox(this.id)
         .then((result) => {
           this.$root.$emit("deletedBoxId", this.id);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
+    if (this.source == "CommandFournisseur") {
+      FournisseurFactureApi.deleteCommand(this.id)
+        .then((result) => {
+          this.$root.$emit("CommandFournisseurId", this.id);
+          this.successMsg();
+        })
+        .catch((error) => {
+          this.failedMsg(error);
+        });
+    }
     if (this.source == "Barcode")
       stockApi
         .deleteBarcode(this.id)
         .then((result) => {
           this.$root.$emit("deletedBarcodeId", this.id);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
+        });
+
+    if (this.source == "Depots")
+      DepotApi.deleteDepot(this.id)
+        .then((result) => {
+          this.$root.$emit("deletedDepotId", this.id);
+          this.successMsg();
+        })
+        .catch((error) => {
+          this.failedMsg(error);
         });
     if (this.source.includes("categories"))
       CategoryApi.deleteCategory(this.id, this.source)
         .then((result) => {
           this.$root.$emit("deletedCategoryId", result.data);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
     if (this.source == "Facture")
@@ -145,26 +119,10 @@ export default class DeleteDialog extends Vue {
         .deleteFacture(this.id)
         .then((result) => {
           this.$root.$emit("deleteFacture", result.data);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
     if (this.source == "FournisseurFacture")
@@ -172,26 +130,10 @@ export default class DeleteDialog extends Vue {
         .deleteFacture(this.id)
         .then((result) => {
           this.$root.$emit("deleteFournisseurFacture", result.data);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
     if (this.source == "CLIENT")
@@ -199,26 +141,10 @@ export default class DeleteDialog extends Vue {
         .deleteClient(this.id)
         .then((result) => {
           this.$root.$emit("deletedClientId", this.id);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
     if (this.source == "Favorites")
@@ -226,26 +152,10 @@ export default class DeleteDialog extends Vue {
         .deleteFavorite(this.id)
         .then((result) => {
           this.$root.$emit("deletedFavoriteId", this.id);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
     if (this.source == "Damages")
@@ -253,26 +163,10 @@ export default class DeleteDialog extends Vue {
         .deleteDamage(this.id)
         .then((result) => {
           this.$root.$emit("deletedDamageId", this.id);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
     if (this.source == "SALE")
@@ -280,26 +174,10 @@ export default class DeleteDialog extends Vue {
         .then((result) => {
           // saleModule.deleteItemById(this.id);
           this.$root.$emit("deletedSaleId", this.id);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
     if (this.source == "factureTransfer")
@@ -310,26 +188,10 @@ export default class DeleteDialog extends Vue {
             id: this.id,
             type: result["data"]["type"],
           });
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
     if (this.source == "UserView.vue")
@@ -337,52 +199,21 @@ export default class DeleteDialog extends Vue {
         .deleteUser(this.id)
         .then((result) => {
           this.$root.$emit("deletedUserId", this.id);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
+
     if (this.source == "ExpenseView.vue")
       expenseApi
         .deleteExpense(this.id)
         .then((result) => {
           this.$root.$emit("deletedexpenseid", this.id);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
 
     if (this.source == "Stocks")
@@ -390,27 +221,25 @@ export default class DeleteDialog extends Vue {
         .deleteStock(this.id)
         .then((result) => {
           this.$root.$emit("deletedstockid", this.id);
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
+
+    if (this.source == "FOURNISSEURPAYMENT") {
+      fournisseurModule
+        .deletePayment(this.id)
+        .then((result) => {
+          this.$root.$emit("deletedFournisseurPayment", this.id);
+          fournisseurModule.fournisseur.montant = result.data.montant;
+
+          this.successMsg();
+        })
+        .catch((error) => {
+          this.failedMsg(error);
+        });
+    }
 
     if (this.source == "CLIENTPAYMENT") {
       clientModule
@@ -419,30 +248,38 @@ export default class DeleteDialog extends Vue {
           this.$root.$emit("deletedClientPayment", this.id);
           clientModule.client.montant = result.data.montant;
 
-          SnackBarModule.setSnackbar({
-            text: "تمت عملية الحذف",
-            color: "success",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-checkbox-marked-circle-outline",
-            x: "right",
-            y: "top",
-          });
+          this.successMsg();
         })
         .catch((error) => {
-          SnackBarModule.setSnackbar({
-            text: error,
-            color: "error",
-            timeout: 2000,
-            show: true,
-            icon: "mdi-alert-outline",
-            x: "right",
-            y: "top",
-          });
+          this.failedMsg(error);
         });
     }
 
     this.close();
+  }
+
+  successMsg(): void {
+    SnackBarModule.setSnackbar({
+      text: "تمت عملية الحذف",
+      color: "success",
+      timeout: 2000,
+      show: true,
+      icon: "mdi-checkbox-marked-circle-outline",
+      x: "right",
+      y: "top",
+    });
+  }
+
+  failedMsg(error: any): void {
+    SnackBarModule.setSnackbar({
+      text: error,
+      color: "error",
+      timeout: 2000,
+      show: true,
+      icon: "mdi-alert-outline",
+      x: "right",
+      y: "top",
+    });
   }
 }
 </script>

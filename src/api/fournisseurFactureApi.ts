@@ -1,10 +1,8 @@
-import HttpClient from "./httpClient";
+import CommandFournisseur from "@/classes/CommandFournisseur";
 import FournisseurFacture from "@/classes/fournisseurFacture";
 import axiosModule from "@/store/axiosModule";
 
-export default class FournisseurFactureApi  {
-  
-
+export default class FournisseurFactureApi {
   public getFactures(url?: string): Promise<FournisseurFacture[]> {
     return axiosModule.instance
       .get(url ? "api/fournisseur_facture" + url : "api/fournisseur_facture")
@@ -24,9 +22,21 @@ export default class FournisseurFactureApi  {
     return deletedFacture;
   }
 
+  static deleteCommand(id: number) {
+    const deletedFacture = axiosModule.instance
+      .delete<any>("api/command_fournisseur/" + id)
+      .then((x) => x.data);
+    return deletedFacture;
+  }
   async updateFacture(facture: FournisseurFacture) {
     return axiosModule.instance
       .put("api/fournisseur_facture/put", facture)
+      .then((x) => x.data);
+  }
+
+  async saveCommandFournisseur(facture: CommandFournisseur): Promise<any> {
+    return axiosModule.instance
+      .post("api/command_fournisseur/add", facture)
       .then((x) => x.data);
   }
 }

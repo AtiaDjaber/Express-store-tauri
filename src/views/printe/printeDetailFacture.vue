@@ -156,11 +156,7 @@ export default class printeDetailFacture extends Vue {
   settingApi = new SettingApi();
 
   getSetting() {
-    // this.settingApi.getSetting().then((res) => {
-    //   this.setting = res.data;
-    //   if (this.setting.logo != null)
-    //     this.previewImage = (process.env.VUE_APP_API_URL as string) + (res.data as Setting).logo;
-    // });
+
   }
 }
 </script>

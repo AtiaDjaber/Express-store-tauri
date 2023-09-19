@@ -30,7 +30,7 @@ export default class DepotApi {
     return updateDepot;
   }
 
-  deleteDepot(id: number) {
+ static deleteDepot(id: number) {
     const deleteDepot = axiosModule.instance
       .delete("api/depot/" + id)
       .then((x) => x.data);

@@ -13,8 +13,8 @@
       <v-col cols="4">
         <v-text-field
           color="blue darken-2"
-          hint="اسم المصروف"
-          placeholder="البحث باسم المصروف"
+          :hint="$t('expense_name')"
+          :placeholder="$t('expense_name')"
           required
           append-icon="fa-search"
           flat
@@ -46,6 +46,9 @@
           'items-per-page-text': 'عدد الأسطر',
         }"
       >
+        <template v-slot:[`item.price`]="{ item }">
+          {{ formatCurrency(item.price) }}
+        </template>
         <template v-slot:[`item.actions`]="{ item }">
           <v-row>
             <v-btn
@@ -93,6 +96,7 @@ export default class ExpenseView extends Vue {
     { text: "ملاحظة", value: "remarque" },
     { text: "الفئة", value: "expense_category.name" },
     { text: "المستخدم", value: "user.name" },
+    { text: "الصندوق", value: "box.name" },
     { text: "التاريخ", value: "date" },
 
     { text: "", value: "actions" },
@@ -130,8 +134,8 @@ export default class ExpenseView extends Vue {
 
   created() {
     this.$root.$on("createdExpense", (expense: Expense) => {
-      //  this.expense.date="2017-01-01 00:00:00";
       this.listexpense.unshift(expense);
+      this.count++;
     });
 
     this.$root.$on("deletedexpenseid", (deletedexpenseid: number) => {

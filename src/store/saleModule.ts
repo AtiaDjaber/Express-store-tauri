@@ -4,6 +4,7 @@ import Sale from "@/classes/sale";
 import Facture from "@/classes/facture";
 import SaleApi from "@/api/saleApi";
 import SnackBarModule from "@/store/snackBarModule";
+import settingModule from "./settingModule";
 
 @Module({ generateMutationSetters: true })
 class SaleModule extends VuexModule {
@@ -56,26 +57,48 @@ class SaleModule extends VuexModule {
   setCartList(cartList: any) {
     this.cartList = cartList;
   }
+
   @Mutation
   addItem(productNew: Sale) {
-    // const productNew = Object.assign({}, sale);
-    productNew.count = this.cartList[this.currentCart].sales.length + 1;
-
     const index = this.cartList[this.currentCart].sales.findIndex(
       (e) => e.product_id == productNew.product_id
     );
-    if (index >= 0)
-      this.cartList[this.currentCart].sales[index].quantity =
-        this.cartList[this.currentCart].sales[index].quantity + 1;
-    else {
-      if (productNew.name != undefined) {
-        this.cartList[this.currentCart].sales.splice(0, 0, productNew);
+    if (index >= 0) {
+      // eslint-disable-next-line prefer-const
+      let saleItem = this.cartList[this.currentCart].sales[index];
+      const available = this.checkQuantity(saleItem);
+
+      if (available || saleItem.product.name == "DIVERS") {
+        saleItem.quantity = saleItem.quantity + productNew.quantity;
+      } else {
+        if (settingModule.setting.negative_stock) {
+          saleItem.quantity = saleItem.quantity + productNew.quantity;
+        }
       }
-      this.checkQuantity(productNew);
+      this.checkPackagePrice(saleItem);
+    } else {
+      if (productNew.name != undefined) {
+        productNew.quantity = 0;
+        const available = this.checkQuantity(productNew);
+        productNew.quantity = 1;
+        if (available) {
+          this.cartList[this.currentCart].sales.splice(0, 0, productNew);
+        } else {
+          if (settingModule.setting.negative_stock) {
+            this.cartList[this.currentCart].sales.splice(0, 0, productNew);
+          }
+        }
+      }
     }
   }
+
   checkQuantity(sale: Sale) {
-    if (sale.product.quantity < 1) {
+    const avail =
+      sale.product.quantity > sale.quantity ||
+      sale.product.name == "DIVERS" ||
+      sale.product.name == undefined;
+
+    if (!avail) {
       SnackBarModule.setSnackbar({
         text: "الكمية غير متوفرة",
         color: "error",
@@ -99,6 +122,17 @@ class SaleModule extends VuexModule {
         x: "left",
         y: "top",
       });
+    }
+    return avail;
+  }
+
+  checkPackagePrice(sale: Sale) {
+    if (sale.product.packing_size != null) {
+      if (sale.product.packing_size <= sale.quantity) {
+        sale.sell_price = sale.product.packing_price ?? sale.product.sell_price;
+      } else {
+        sale.sell_price = sale.product.sell_price;
+      }
     }
   }
   @Mutation

@@ -1,14 +1,17 @@
 <template>
   <div class="pa-3">
-    <v-row class="pa-3">
+    <v-row class="py-2">
       <v-col cols="3">
         <v-text-field
+          autofocus
           solo
           flat
+          prepend-inner-icon="mdi-barcode-scan"
           append-icon="fa-search"
           clearable
-          hint="البحث باسم الصنف او الباركود"
-          placeholder="اكتب اسم الصنف او الباركود"
+          :hint="$t('product_search')"
+          :label="$t('product_search')"
+          :placeholder="$t('product_search')"
           :value="search.name"
           @keyup="onChangeBarcode"
           @click:clear="clearInput"
@@ -20,8 +23,9 @@
           item-text="name"
           item-value="id"
           v-model="search.client_id"
-          placeholder="اكتب اسم الزبون"
-          hint="الزبون"
+          :hint="$t('user_search')"
+          :placeholder="$t('user_search')"
+          :label="$t('user_search')"
           prepend-inner-icon="mdi-account-search"
           clearable
           solo
@@ -36,8 +40,8 @@
           item-value="id"
           solo
           flat
-          placeholder="اكتب اسم المخزن"
-          hint="المخزن"
+          :hint="$t('name_store')"
+          :placeholder="$t('name_store')"
           prepend-inner-icon="mdi-storefront"
           clearable
         ></v-autocomplete>
@@ -56,8 +60,8 @@
       <v-col>
         <c-date-picker
           v-model="search.from"
-          hint="تاريخ البداية"
-          placeholder="تاريخ البداية"
+          :hint="$t('from')"
+          :placeholder="$t('from')"
           clearable
           @eventname="clearFrom"
         ></c-date-picker>
@@ -67,10 +71,10 @@
         <c-date-picker
           solo
           flat
+          :hint="$t('to')"
+          :placeholder="$t('to')"
           @eventname="clearTo"
           v-model="search.to"
-          hint="تاريخ النهاية"
-          placeholder="تاريخ النهاية"
           clearable
         ></c-date-picker>
       </v-col>
@@ -95,6 +99,15 @@
           'items-per-page-text': 'عدد الأسطر',
         }"
       >
+        <template v-slot:[`item.montant`]="{ item }">
+          {{ formatCurrency(item.montant) }}
+        </template>
+        <template v-slot:[`item.pay`]="{ item }">
+          {{ formatCurrency(item.pay) }}
+        </template>
+        <template v-slot:[`item.rest`]="{ item }">
+          {{ formatCurrency(item.rest) }}
+        </template>
         <template v-slot:item.client="{ item }">
           {{ item.client != null ? item.client.name : "بيع مباشر" }}
         </template>
@@ -103,7 +116,7 @@
             <v-btn
               color="green"
               small
-              class="ml-2"
+              class="me-2"
               outlined
               fab
               elevation="0"
@@ -113,6 +126,7 @@
             </v-btn>
             <delete-dialog
               :id="item.id"
+              class="me-2"
               :disabled="false"
               :source="'Facture'"
             />
@@ -125,7 +139,26 @@
               <v-alert color="primary" dense type="info" border="left" text>{{
                 item.remark ? item.remark : "لا توجد ملاحظة"
               }}</v-alert>
-
+              <v-alert
+                v-if="item.point > 0"
+                :color="item.gift ? 'green' : 'red'"
+                dense
+                type="error"
+                icon="mdi-gift"
+                border="left"
+                text
+                >{{ item.point + " نقطة " }}
+                <span class="mx-6"
+                  ><v-icon :color="item.gift ? 'green' : 'red'">{{
+                    item.gift ? "mdi-check-circle" : "mdi-close-circle"
+                  }}</v-icon>
+                  {{
+                    item.gift
+                      ? " تم تفعيل النقاط     "
+                      : "لم يتم تفعيل النقاط    "
+                  }}</span
+                ></v-alert
+              >
               <v-data-table
                 :headers="SaleHeaders"
                 :items="item.sales"
@@ -133,15 +166,13 @@
                 item-key="name"
                 class="elevation-1 headers-grey mb-3"
                 color="red"
+                :items-per-page="-1"
                 hide-default-footer
-                :footer-props="{
-                  'items-per-page-options': [10, 10],
-                  'show-current-page': true,
-                  'show-first-last-page': true,
-                  'page-text': 'رقم الصفحة',
-                  'items-per-page-text': 'عدد الأسطر',
-                }"
               >
+                <template v-slot:[`item.total`]="{ item }">
+                  {{ formatCurrency(item.total, false) }}
+                </template>
+
                 <template v-slot:[`item.actions`]="{ item }">
                   <v-row>
                     <ReturnDialog source="sale" :original="item"></ReturnDialog>
@@ -174,6 +205,7 @@ import saleModule from "@/store/saleModule";
 import clientModule from "@/store/clientModule";
 import Decoded from "@/helper/decode";
 import PrintComponent from "@/components/PrintComponent.vue";
+import { Debounce } from "vue-debounce-decorator";
 
 @Component({
   components: { PrintComponent, ReturnDialog, DeleteDialog, CDatePicker },
@@ -196,19 +228,14 @@ export default class HistoryView extends Vue {
 
   SaleHeaders = [
     { text: "#", value: "id" },
-    { text: "الباركود", value: "barcode" },
+    // { text: "الباركود", value: "barcode" },
     { text: "الصنف", value: "name" },
+    { text: "المرجع", value: "product.reference" },
     { text: "الكمية", value: "quantity" },
     { text: "السعر", value: "sell_price" },
     { text: "المبلغ الاجمالي", value: "total" },
     { text: "المخزن", value: "depot.name" },
     { text: "العمليات", value: "actions" },
-  ];
-  SalePrint = [
-    { text: "الصنف", value: "name" },
-    { text: "الكمية", value: "quantity" },
-    { text: "السعر", value: "sell_price" },
-    { text: "المبلغ الاجمالي", value: "total" },
   ];
 
   search = new Search();
@@ -238,6 +265,7 @@ export default class HistoryView extends Vue {
     });
   }
 
+  @Debounce(120)
   getapi(search?: Search) {
     historyApi.getFactures(search).then((data) => {
       this.listhisory.length = 0;

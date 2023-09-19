@@ -4,34 +4,37 @@
       <div class="mr-2" v-bind="attrs" v-on="on">
         <v-btn
           :disabled="mutableTeacherAction == 2 && !Client.id"
-          :large="!isFab"
           :fab="isFab"
-          class="mx-1"
+          :class="isFab ? 'mt-1 mx-1' : 'mx-1'"
           :color="!isFab ? 'primary' : ''"
+          :large="!isFab"
           :small="isFab"
           :elevation="!isFab ? 1 : 0"
         >
-          {{ !isFab ? "إضافة زبون" : "" }}
-          <v-icon class="mx-2">mdi-account-plus-outline</v-icon>
+          {{ !isFab ? $t("add_client") : "" }}
+          <v-icon class="ms-2">mdi-account-plus-outline</v-icon>
         </v-btn>
       </div>
     </template>
     <v-card v-if="dialog" color="plain">
       <v-card-title class="primary--text">
         <span style="font-size: 20px" class="mr-5 mb-1 font-weight-bold">
-          {{ mutableTeacherAction == 1 ? "زبون جديد" : "تعديل معلومات الزبون" }}
+          {{
+            mutableTeacherAction == 1
+              ? $t("add_client")
+              : "تعديل معلومات الزبون"
+          }}
         </span>
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text>
         <v-container>
           <v-form ref="form" lazy-validation v-model="valid">
-            <v-row class="mt-3">
+            <v-row class="mt-2">
               <v-col class=""
                 ><v-text-field
-                  label="الإسم الكامل"
-                  placeholder="الإسم الكامل"
-                  hint="الإسم الكامل"
+                  :hint="$t('full_name')"
+                  :placeholder="$t('full_name')"
                   flat
                   solo
                   v-model="Client.name"
@@ -40,8 +43,8 @@
               ></v-col>
               <v-col class=""
                 ><v-text-field
-                  placeholder="المبلغ"
-                  hint="المبلغ"
+                  :hint="$t('montant')"
+                  :placeholder="$t('montant')"
                   flat
                   solo
                   type="number"
@@ -50,14 +53,14 @@
               ></v-col>
             </v-row>
 
-            <v-row>
+            <v-row class="mt-n6">
               <v-col
                 ><v-text-field
-                  label="رقم الهاتف"
-                  hint="رقم الهاتف"
-                  placeholder="رقم الهاتف"
+                  :hint="$t('phone')"
+                  :placeholder="$t('phone')"
                   flat
                   solo
+                  hide-spin-buttons
                   type="number"
                   v-model="Client.mobile"
                   :rules="vTeacher.mobile"
@@ -65,29 +68,55 @@
               ></v-col>
               <v-col class="">
                 <v-text-field
-                  label="البريد الإلكتروني"
-                  hint="البريد الإلكتروني"
-                  placeholder="البريد الإلكتروني"
+                  :hint="$t('email')"
+                  :placeholder="$t('email')"
                   flat
                   solo
                   v-model="Client.email"
                 ></v-text-field
               ></v-col>
             </v-row>
-            <v-row>
-              <v-col cols=""
-                ><v-text-field
-                  label="العنوان"
-                  hint="العنوان"
-                  placeholder="العنوان"
+            <v-row class="mt-n6">
+              <v-col cols="">
+                <v-text-field
+                  :hint="$t('address')"
+                  :placeholder="$t('address')"
                   flat
                   solo
                   v-model="Client.address"
                 ></v-text-field
               ></v-col>
+              <v-col cols="">
+                <v-text-field
+                  :hint="$t('NIF')"
+                  :placeholder="$t('NIF')"
+                  flat
+                  solo
+                  v-model="Client.nif"
+                ></v-text-field
+              ></v-col>
             </v-row>
-
-            <v-row>
+            <v-row class="mt-n6">
+              <v-col cols="">
+                <v-text-field
+                  :hint="$t('NºRC')"
+                  :placeholder="$t('NºRC')"
+                  flat
+                  solo
+                  v-model="Client.n_rc"
+                ></v-text-field
+              ></v-col>
+              <v-col cols="">
+                <v-text-field
+                  :hint="$t('NºAI')"
+                  :placeholder="$t('NºAI')"
+                  flat
+                  solo
+                  v-model="Client.n_ai"
+                ></v-text-field
+              ></v-col>
+            </v-row>
+            <v-row class="mt-n6">
               <v-col>
                 <v-row no-gutters>
                   <v-btn
@@ -106,9 +135,8 @@
                   </v-btn>
                   <v-col>
                     <v-text-field
-                      label="الباركود"
-                      hint="الباركود"
-                      placeholder="الباركود"
+                      :hint="$t('barcode')"
+                      :placeholder="$t('barcode')"
                       flat
                       solo
                       v-model="Client.barcode"
@@ -116,19 +144,18 @@
                   </v-col>
                 </v-row>
               </v-col>
-              <v-col
-                ><v-text-field
-                  label="عدد النقاط"
-                  hint="عدد النقاط"
-                  placeholder="عدد النقاط"
+              <v-col>
+                <v-text-field
+                  :hint="$t('points')"
+                  :placeholder="$t('points')"
                   flat
                   solo
                   v-model="Client.point"
                 ></v-text-field
               ></v-col>
             </v-row>
-            <v-row>
-              <h3 class="pt-2 px-4">حالة البطاقة</h3>
+            <v-row class="mt-n6">
+              <h3 class="pt-2 px-4">{{ $t("card_status") }}</h3>
               <v-col>
                 <v-btn-toggle
                   v-model="Client.is_faithful"
@@ -138,8 +165,8 @@
                   background-color="red"
                   color="primary"
                 >
-                  <v-btn text> غير نشط </v-btn>
-                  <v-btn text> نشط </v-btn>
+                  <v-btn text> {{ $t("inactive") }} </v-btn>
+                  <v-btn text> {{ $t("active") }} </v-btn>
                 </v-btn-toggle>
               </v-col>
             </v-row>
@@ -154,7 +181,7 @@
                 @click="createPdf()"
               >
                 <v-icon color="primary" class="mx-2"> fa-print </v-icon>
-                طباعة
+                {{ $t("print") }}
               </v-btn>
             </v-row>
             <v-row justify="end" v-if="Client.name">
@@ -197,8 +224,13 @@
         </v-container>
       </v-card-text>
       <v-card-actions class="justify-end">
-        <v-btn outlined large class="mx-6" color="red darken-1" @click="close"
-          >إلغاء</v-btn
+        <v-btn
+          outlined
+          large
+          class="mx-6"
+          color="red darken-1"
+          @click="close"
+          >{{ $t("cancel") }}</v-btn
         >
         <v-btn
           large
@@ -206,9 +238,11 @@
           color="primary "
           v-if="mutableTeacherAction === 1"
           @click="manage"
-          >حفظ</v-btn
+          >{{ $t("save") }}</v-btn
         >
-        <v-btn large color="primary" v-else @click="manage">تعديل</v-btn>
+        <v-btn large color="primary" v-else @click="manage">{{
+          $t("edit")
+        }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -283,7 +317,10 @@ export default class ManageTeacher extends Vue {
   }
 
   createPdf(): void {
-    PrintImage.printBarcode(document.getElementById("barcodePrint"));
+    PrintImage.printBarcode(
+      document.getElementById("barcodePrint"),
+      this.setting,1
+    );
   }
 
   get setting(): Setting {

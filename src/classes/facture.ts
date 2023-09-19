@@ -10,6 +10,7 @@ export default class Facture {
   pay?: number = 0;
   rest?: number = 0;
   remise?: number = 0;
+  gift = false;
   remark?: string;
   type?: string;
   deleted_at?: null;

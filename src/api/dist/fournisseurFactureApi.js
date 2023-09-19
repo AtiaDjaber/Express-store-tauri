@@ -59,11 +59,25 @@ var FournisseurFactureApi = /** @class */ (function () {
             .then(function (x) { return x.data; });
         return deletedFacture;
     };
+    FournisseurFactureApi.deleteCommand = function (id) {
+        var deletedFacture = axiosModule_1["default"].instance["delete"]("api/command_fournisseur/" + id)
+            .then(function (x) { return x.data; });
+        return deletedFacture;
+    };
     FournisseurFactureApi.prototype.updateFacture = function (facture) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/, axiosModule_1["default"].instance
                         .put("api/fournisseur_facture/put", facture)
+                        .then(function (x) { return x.data; })];
+            });
+        });
+    };
+    FournisseurFactureApi.prototype.saveCommandFournisseur = function (facture) {
+        return __awaiter(this, void 0, Promise, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, axiosModule_1["default"].instance
+                        .post("api/command_fournisseur/add", facture)
                         .then(function (x) { return x.data; })];
             });
         });

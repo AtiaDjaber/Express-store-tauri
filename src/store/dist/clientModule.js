@@ -99,7 +99,7 @@ var clientModule = /** @class */ (function (_super) {
     clientModule.prototype.addPayment = function (payment) {
         return __awaiter(this, void 0, Promise, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.api.addPayment(payment).then(function (x) { return Object.assign({}, x); })];
+                return [2 /*return*/, this.api.addPayment(payment).then(function (x) { return x; })];
             });
         });
     };

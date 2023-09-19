@@ -3,7 +3,7 @@
     <template v-slot:activator="{ on, attrs }">
       <div class="mr-2" v-bind="attrs" v-on="on">
         <v-btn color="primary" large elevation="1">
-          إضافة صنف
+          {{ $t("add_product") }}
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
@@ -15,15 +15,17 @@
       @shortkey="addToCartUsingEnterKey()"
     >
       <v-card-title class="primary--text font-weight-bold">
-        <span> اضافة صنف للسلة</span>
+        <span> {{ $t("add_product_cart") }}</span>
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text>
         <v-container>
           <v-row class="mt-1">
             <v-text-field
-              label="الصنف"
-              placeholder="البحث باسم الصنف"
+              autofocus
+              :hint="$t('product_search')"
+              :label="$t('product_search')"
+              :placeholder="$t('product_search')"
               required
               append-icon="fa-search"
               solo
@@ -40,6 +42,8 @@
               :headers="headersProducts"
               :items="liststock"
               single-select
+              :loading="loading"
+              loading-text="جاري تحميل البيانات ..."
               @click:row="rowClick"
               @dblclick:row="addToCartUsingEnterKey"
               :server-items-length="count"
@@ -73,6 +77,11 @@
                   </v-btn>
                 </v-row>
               </template>
+              <template v-slot:item.quantity="{ item }">
+                <v-chip :color="getColor(item)" dark>
+                  {{ item.quantity }}
+                </v-chip>
+              </template>
             </v-data-table></v-card
           >
         </v-container>
@@ -95,16 +104,23 @@ import Stock from "@/classes/stock";
 import Sale from "@/classes/sale";
 import Search from "@/classes/search";
 import Decoded from "@/helper/decode";
+import { getQteFromSearch, getSelectPrice } from "@/helper/global_function";
+import settingModule from "@/store/settingModule";
+import { Setting } from "@/classes/setting";
+import { Debounce } from "vue-debounce-decorator";
 
 @Component({ components: {} })
 export default class ManageProductSale extends Vue {
   headersProducts = [
     // { text: "الباركود", value: "barcode" },
     { text: "الاسم", value: "name" },
+    { text: "المرجع", value: "reference" },
     { text: " الكمية", value: "quantity" },
     { text: "سعر البيع", value: "sell_price" },
     { text: "", value: "actions" },
   ];
+  loading = false;
+
   @Prop({ default: 0 }) expenseAction!: number;
 
   public dialog = false;
@@ -118,13 +134,16 @@ export default class ManageProductSale extends Vue {
       this.dialog = true;
     });
   }
+  get setting(): Setting {
+    return settingModule.getSetting;
+  }
 
   addToCart(stock: Stock): void {
     const sale = Object.assign({}, {
-      quantity: 1,
+      quantity: getQteFromSearch(stock, this.search),
       product_id: stock.id,
       name: stock.name,
-      sell_price: stock.sell_price,
+      sell_price: getSelectPrice(stock, this.setting),
       barcode: stock.barcode,
       total: stock.sell_price,
       price: stock.price,
@@ -166,7 +185,6 @@ export default class ManageProductSale extends Vue {
   //   }
   // }
   addToCartUsingEnterKey() {
-    // debugger;
     // console.log("dbCLick");
     // row.select(true);
 
@@ -175,10 +193,14 @@ export default class ManageProductSale extends Vue {
       this.addToCart(this.selectedItem);
     }
   }
+  @Debounce(80)
   getProducts(search?: Search): void {
+    this.loading = true;
     stockApi
       .getStock(search)
       .then((response) => {
+        this.loading = false;
+
         this.liststock = [];
         // this.liststock.length = 0;
         if (response.status == 200) {
@@ -189,6 +211,7 @@ export default class ManageProductSale extends Vue {
         }
       })
       .catch((error) => {
+        this.loading = false;
         SnackBarModule.setSnackbar({
           text: error,
           color: "error",
@@ -206,6 +229,11 @@ export default class ManageProductSale extends Vue {
   }
   selectedItem = {} as Stock;
 
+  getColor(item: Stocks): string {
+    if (item.quantity <= 0) return "red";
+    else if (item.quantity <= item.quantity_alert) return "orange";
+    else return "green";
+  }
   rowClick(item: any, row: any): void {
     if (!row.isSelected) {
       row.select(true);

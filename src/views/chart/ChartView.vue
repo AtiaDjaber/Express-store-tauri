@@ -1,6 +1,6 @@
 <template>
   <div class="pa-3">
-    <v-row>
+    <v-row class="mt-2">
       <v-col cols="6" md="5" sm="6" lg="3">
         <v-row no-gutters>
           <p
@@ -42,17 +42,18 @@
 
       <v-col>
         <v-btn outlined large color="primary" @click="getAnalytic">
-          <v-icon class="mx-2">mdi-check-circle</v-icon>
+          <v-icon class="mx-2">mdi-check-circle-outline</v-icon>
           موافق
         </v-btn>
       </v-col>
     </v-row>
     <v-row class="mb-2 mt-n2">
+      <!-- :style="$vuetify.breakpoint.mdAndUp ? ' flex: 1 0 18%;' : ''" -->
       <v-col
         cols="12"
         md="4"
         sm="6"
-        lg="2"
+        lg="3"
         xl="2"
         v-for="(item, i) in items"
         :key="item.title + i"
@@ -61,21 +62,24 @@
           <v-list-item three-line>
             <v-list-item-content>
               <v-list-item-title
-                style="font-size: 24px"
-                class="mb-1 primary--text font-weight-bold"
+                style="font-size: 21px"
+                class="mb-1 grey--text text--darken-1"
               >
                 {{ item.title }}
               </v-list-item-title>
               <v-list-item-title
-                :style="'font-size: 20px;color:' + item.color"
-                class="font-weight-bold'"
+                :style="'font-family:Cairo-semi;font-size: 20px;'"
               >
-                {{ item.price }} DA
+                {{
+                  item.displayCurrency == false
+                    ? item.price
+                    : formatCurrency(item.price, true)
+                }}
               </v-list-item-title>
             </v-list-item-content>
             <v-list-item-avatar tile size="60">
               <v-avatar :color="item.background" size="60">
-                <v-icon :color="item.color" size="40"> {{ item.icon }} </v-icon>
+                <v-icon :color="item.color" size="30"> {{ item.icon }} </v-icon>
               </v-avatar>
             </v-list-item-avatar>
           </v-list-item>
@@ -83,12 +87,10 @@
       </v-col>
     </v-row>
     <v-card elevation="0" rounded="8" outlined class="pa-2">
-      <canvas
-        id="myChartSchool"
-        color="white"
-        width="400"
-        height="140"
-      ></canvas>
+      <canvas id="myChartDays" color="white" width="400" height="140"></canvas>
+    </v-card>
+    <v-card elevation="0" rounded="8" outlined class="pa-2 mt-3">
+      <canvas id="myChartYears" color="white" width="400" height="140"></canvas>
     </v-card>
     <v-row class="mt-3">
       <v-col
@@ -112,24 +114,6 @@
     </v-row>
 
     <v-row class="my-4">
-      <!-- <v-col cols="6">
-        <v-card elevation="0" rounded="8" class="pa-2">
-          <v-data-table
-            item-key="teacher_id"
-            elevation="3"
-            class="my-4"
-            height="350"
-            :headers="depotsHeaders"
-            :items="listDepots"
-            single-select
-            hide-default-footer
-          >
-            <template v-slot:item.depot="{ item }">
-              {{ item == null ? "المخزن الرئيسي" : item.name }}
-            </template>
-          </v-data-table>
-        </v-card>
-      </v-col> -->
       <v-col cols="5">
         <v-card elevation="0" outlined>
           <v-data-table
@@ -141,6 +125,9 @@
             single-select
             hide-default-footer
           >
+            <template v-slot:[`item.total`]="{ item }">
+              {{ formatCurrency(item.total, true) }}
+            </template>
             <template v-slot:item.depot="{ item }">
               {{ item.depot == null ? "المخزن الرئيسي" : item.depot.name }}
             </template>
@@ -158,14 +145,39 @@
             single-select
             hide-default-footer
           >
+            <template v-slot:[`item.total`]="{ item }">
+              {{ formatCurrency(item.total, true) }}
+            </template>
+            <template v-slot:[`item.totalSell`]="{ item }">
+              {{ formatCurrency(item.totalSell, true) }}
+            </template>
             <template v-slot:item.depot_id="{ item }">
-              {{ (item.totalSell - item.total).toFixed(2) }}
+              {{ formatCurrency(item.totalSell - item.total, true) }}
             </template>
           </v-data-table>
         </v-card>
       </v-col>
     </v-row>
-    <v-row class="my-6"></v-row>
+    <v-row class="mt-6"></v-row>
+    <v-row>
+      <v-col cols="5">
+        <v-card elevation="0" outlined>
+          <v-data-table
+            item-key="id"
+            elevation="3"
+            height="350"
+            :headers="expenseHeaders"
+            :items="expenses"
+            single-select
+            hide-default-footer
+          >
+            <template v-slot:[`item.total`]="{ item }">
+              {{ formatCurrency(item.total, true) }}
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-col>
+    </v-row>
   </div>
 </template>
 
@@ -184,6 +196,11 @@ export default class ChartView extends Vue {
     { text: "الفائدة", value: "total" },
   ];
 
+  expenseHeaders = [
+    { text: "الفئة", value: "name" },
+    { text: "المبلغ", value: "total" },
+  ];
+
   totalDepotsHeaders = [
     { text: "المخزن", value: "name" },
     { text: "مجموع (سعر البيع)", value: "totalSell" },
@@ -197,17 +214,20 @@ export default class ChartView extends Vue {
   detailData = [];
   myChart;
   chartStore;
+  chartDays;
   chartClient;
   chartProduct;
   labels = [];
   datas = [];
 
-  labelsSchool = [];
-  datasSchool = [];
+  labelsMonths = [];
+  dataMonths = [];
+  labelsDays = [];
+  dataDays = [];
   montant = 0;
   clientsDues = 0;
   fournisseursDues = 0;
-  productInventory = 0;
+  // productInventory = 0;
   expensesTotal = 0;
   damagesTotal = 0;
 
@@ -226,15 +246,16 @@ export default class ChartView extends Vue {
     .toISOString()
     .substr(0, 10);
 
+  expenses = [];
   created() {
     this.getTopClientChart();
     this.getExpenses();
     this.getClientsFournisseursDues();
     this.getProductInventory();
-    this.getBenefitPeriod();
     this.getYearMonthChart();
     this.getDepots();
     this.totalDepots();
+    this.getDaysChart();
     // this.getBenefitSchoolPeriod();
   }
 
@@ -250,99 +271,20 @@ export default class ChartView extends Vue {
   }
 
   getAnalytic() {
-    this.chartApi
-      .getTeachersAnalytics(this.dateFrom, this.dateTo + " 23:59:50")
-      .then((res) => {
-        this.labels = res.labels;
-        let listData: [] = res.data;
-        this.datas = listData;
-
-        const demoCanvas: HTMLCanvasElement = document.getElementById(
-          "myChart"
-        ) as any;
-
-        let ctx = demoCanvas.getContext("2d");
-
-        if (this.myChart != undefined) {
-          this.myChart.destroy();
-        }
-        this.myChart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: this.labels,
-            datasets: [
-              {
-                label: " المبلغ",
-                data: this.datas,
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.6)",
-                  "rgba(54, 162, 235, 0.6)",
-                  "rgba(255, 206, 86, 0.6)",
-                  "rgba(153, 102, 255, 0.6)",
-                  "rgba(255, 159, 64, 0.6)",
-                  "rgba(245, 186, 145, 0.6)",
-                  "rgba(74, 255, 16, 0.6)",
-                  "rgba(16, 59, 255, 0.6)",
-                  "rgba(238, 15, 255, 0.6)",
-                  "rgba(255, 15, 15, 0.6)",
-                  "rgba(243, 255, 15,0.6)",
-                  "rgba(75, 192, 192, 0.6)",
-                ],
-                borderColor: [
-                  "rgba(255, 99, 132, 1)",
-                  "rgba(54, 162, 235, 1)",
-                  "rgba(255, 206, 86, 1)",
-                  "rgba(153, 102, 255, 1)",
-                  "rgba(255, 159, 64, 1)",
-                  "rgba(245, 186, 145, 1)",
-                  "rgba(74, 255, 16, 1)",
-                  "rgba(16, 59, 255, 1)",
-                  "rgba(238, 15, 255, 1)",
-                  "rgba(255, 15, 15, 1)",
-                  "rgba(243, 255, 15, 1)",
-                  "rgba(75, 192, 192, 1)",
-                ],
-                borderWidth: 1,
-              },
-            ],
-          },
-          options: {
-            plugins: {
-              title: {
-                display: true,
-                text: " إحصائية أرباح الأساتذة خلال مدة زمنية",
-                fullSize: true,
-                color: "black",
-                font: {
-                  size: 24,
-                },
-              },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-              },
-            },
-          },
-        });
-      });
-    // this.getTeachers();
+    this.items = [];
     this.getExpenses();
-    this.getBenefitPeriod();
-    // this.getSchoolChart();
+    this.getClientsFournisseursDues();
+    this.getProductInventory();
+    this.getDaysChart();
   }
 
   getYearMonthChart(): void {
-    this.chartApi.getChartData().then((res) => {
-      this.labelsSchool = res.labels;
-      let listData: [] = res.data;
-      this.datasSchool = [];
-      listData.forEach((element) => {
-        this.datasSchool.push(element);
-      });
+    ChartApi.getChartData().then((res) => {
+      this.labelsMonths = res.labels;
+      this.dataMonths = res.data;
 
       const demoCanvas: HTMLCanvasElement = document.getElementById(
-        "myChartSchool"
+        "myChartYears"
       ) as any;
 
       let ctx = demoCanvas.getContext("2d");
@@ -353,7 +295,7 @@ export default class ChartView extends Vue {
       this.chartStore = new Chart(ctx, {
         type: "line",
         data: {
-          labels: this.labelsSchool,
+          labels: this.labelsMonths,
           datasets: [
             {
               fill: true,
@@ -361,7 +303,7 @@ export default class ChartView extends Vue {
               backgroundColor: "rgba(153, 102, 255, 0.2)",
               borderColor: "rgba(153, 102, 255, 1)",
               label: " المبلغ",
-              data: this.datasSchool,
+              data: this.dataMonths,
               borderWidth: 1,
               tension: 0.2,
             },
@@ -369,26 +311,6 @@ export default class ChartView extends Vue {
         },
         options: {
           responsive: true,
-
-          // animation: {
-          //   onProgress: function (animation) {
-          //     var c = document.getElementById("myChartSchool");
-          //     var ctx = (c as any).getContext("2d");
-          //     ctx.font = "22px Verdana";
-          //     // Create gradient
-          //     var gradient = ctx.createLinearGradient(
-          //       0,
-          //       0,
-          //       (c as any).width,
-          //       0
-          //     );
-          //     gradient.addColorStop("0", "magenta");
-          //     gradient.addColorStop("0.5", "blue");
-          //     // Fill with gradient
-          //     ctx.fillStyle = gradient;
-          //     ctx.fillText("أرباح المدرسة خلال سنة", 45, 70);
-          //   },
-          // },
           plugins: {
             legend: {
               position: "top",
@@ -406,8 +328,59 @@ export default class ChartView extends Vue {
     });
   }
 
+  getDaysChart(): void {
+    ChartApi.getDaysChart(this.dateFrom, this.dateTo + " 23:59:50").then(
+      (res) => {
+        this.labelsDays = res.labels;
+        this.dataDays = res.data;
+
+        const demoCanvas: HTMLCanvasElement = document.getElementById(
+          "myChartDays"
+        ) as any;
+
+        let ctx = demoCanvas.getContext("2d");
+
+        if (this.chartDays != undefined) {
+          this.chartDays.destroy();
+        }
+        this.chartDays = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: this.labelsDays,
+            datasets: [
+              {
+                fill: true,
+                borderDash: [5, 5],
+                backgroundColor: "rgba(247, 88, 15, 0.2)",
+                borderColor: "rgba(247, 88, 15, 1)",
+                label: " المبلغ",
+                data: this.dataDays,
+                borderWidth: 1,
+                tension: 0.3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: " إحصائية الأرباح يوميا",
+                fullSize: true,
+                color: "orange",
+                font: { size: 24 },
+              },
+            },
+          },
+        });
+      }
+    );
+  }
   getTopClientChart(): void {
-    this.chartApi.getTopClientsData().then((res) => {
+    ChartApi.getTopClientsData().then((res) => {
       let labelsClients = res["clients"].labels;
       let listData: [] = res["clients"].data;
       this.chartProducts(res["products"]);
@@ -525,32 +498,72 @@ export default class ChartView extends Vue {
   }
 
   getBenefitPeriod(): void {
-    this.chartApi
-      .getBenifitPeriod(this.dateFrom, this.dateTo + " 23:59:50")
+    ChartApi.getBenifitPeriod(this.dateFrom, this.dateTo + " 23:59:50")
       .then((data) => {
+        this.expenses = data["expensesCategories"];
+        console.log(this.expenses);
         this.montant = Number(data["benefits"]);
         this.items.push({
           title: "المبيعات",
-          price: Number(data["sales"]).toFixed(2),
+          price: Number(data["sales"]),
           icon: "mdi-wallet-outline",
           color: "#734900",
           background: "#f7e9d0",
         });
 
         this.items.push({
+          title: "عدد المبيعات",
+          price: Number(data["countFactures"]),
+          icon: "mdi-order-numeric-ascending",
+          color: "#A459D1",
+          background: "#dfb7f7",
+          displayCurrency: false,
+        });
+        this.items.push({
           title: "المشتريات",
-          price: Number(data["purchases"]).toFixed(2),
+          price: Number(data["purchases"]),
           icon: "mdi-cart-plus",
           color: "#fa0563",
           background: "#f5d0de",
         });
 
         this.items.push({
+          title: "عدد المشتريات",
+          price: Number(data["countPurchases"]),
+          icon: "mdi-order-numeric-ascending",
+          color: "#4c4c6d",
+          background: "#a7a7c9",
+          displayCurrency: false,
+        });
+
+        this.items.push({
           title: "الفائدة",
-          price: this.montant.toFixed(2),
+          price: this.montant,
           icon: "fa-coins",
           color: "#52c234",
           background: "#ddfcd4",
+        });
+        this.items.push({
+          title: "الخسائر",
+          price: this.lossesTotal,
+          icon: "fa-coins",
+          color: "#8f1f2c",
+          background: "#f7dfe2",
+        });
+        this.items.push({
+          title: "الفائدة الصافية",
+          price: this.montant - this.lossesTotal,
+          icon: "mdi-lightbulb-on-outline",
+          color: "#0397aa",
+          background: "#caf7fc",
+        });
+        this.items.push({
+          title: "مبلغ التخفيضات",
+          price: Number(data["discountFactures"]),
+          icon: "mdi-percent",
+          color: "#d17524",
+          background: "#ffe2c9",
+          displayCurrency: false,
         });
       })
       .catch((error) => {
@@ -566,42 +579,52 @@ export default class ChartView extends Vue {
       });
   }
 
+  lossesTotal = 0;
   getExpenses() {
-    this.chartApi
-      .getExpensesAnalytics(this.dateFrom, this.dateTo + " 23:59:50")
-      .then((res) => {
-        this.expensesTotal = Number(res["expenses"]["total"]);
-        this.damagesTotal = Number(res["damages"]["total"]);
-        this.items.push({
-          title: "المصاريف",
-          price: this.expensesTotal.toFixed(2),
-          icon: "mdi-cash-multiple",
-          color: "#734b6d",
-          background: "#e8daf5",
-        });
-        this.items.push({
-          title: "التالفة",
-          price: this.damagesTotal.toFixed(2),
-          icon: "mdi-archive-off-outline",
-          color: "#ffbf00",
-          background: "#fcf2d4",
-        });
+    ChartApi.getExpensesAnalytics(
+      this.dateFrom,
+      this.dateTo + " 23:59:50"
+    ).then((res) => {
+      this.getBenefitPeriod();
+
+      this.expensesTotal = Number(res["expenses"]["total"]);
+      this.damagesTotal = Number(res["damages"]["total"]);
+      this.lossesTotal = this.expensesTotal + this.damagesTotal;
+
+      this.items.push({
+        title: "المصاريف",
+        price: this.expensesTotal,
+        icon: "mdi-cash-multiple",
+        color: "#734b6d",
+        background: "#e8daf5",
       });
+      this.items.push({
+        title: "التالفة",
+        price: this.damagesTotal,
+        icon: "mdi-archive-off-outline",
+        color: "#ffbf00",
+        background: "#fcf2d4",
+      });
+    });
   }
   getDepots() {
-    this.chartApi
-      .getBenifitPeriodDepots(this.dateFrom, this.dateTo + " 23:59:59")
-      .then((res) => {
-        this.listDepots = res;
-      });
+    ChartApi.getBenifitPeriodDepots(
+      this.dateFrom,
+      this.dateTo + " 23:59:59"
+    ).then((res) => {
+      this.listDepots = res;
+    });
   }
-
+  formater = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "DZD",
+  });
   getClientsFournisseursDues() {
-    this.chartApi.getClientDues().then((res) => {
+    ChartApi.getClientDues().then((res) => {
       this.clientsDues = Number(res["clients"]["total"]);
       this.items.push({
         title: "الكريدي",
-        price: this.clientsDues.toFixed(2),
+        price: this.clientsDues,
         icon: "mdi-account-multiple-outline",
         color: "#035caa",
         background: "#d7eafa",
@@ -610,7 +633,7 @@ export default class ChartView extends Vue {
       this.fournisseursDues = Number(res["fournisseurs"]["total"]);
       this.items.push({
         title: "الديون",
-        price: this.fournisseursDues.toFixed(2),
+        price: this.fournisseursDues,
         icon: "mdi-account-multiple-outline",
         color: "#000000",
         background: "#e0dede",
@@ -619,45 +642,51 @@ export default class ChartView extends Vue {
   }
 
   getProductInventory() {
-    this.chartApi.getProductsInventory().then((res) => {
-      this.productInventory = Number(res["total"]);
+    ChartApi.getProductsInventory().then((res) => {
+      const productInventory = Number(res["inventory"]["total"]);
+      const productInventorySell = Number(res["inventorySell"]["total"]);
       this.items.push({
         title: "الجرد",
-        price: this.productInventory.toFixed(2),
+        price: productInventory,
+        icon: "mdi-shape-outline",
+        color: "#ec3247",
+        background: "#f7dfe2",
+      });
+      this.items.push({
+        title: "الجرد(سعر البيع) ",
+        price: productInventorySell,
         icon: "mdi-shape-outline",
         color: "#ec3247",
         background: "#f7dfe2",
       });
       this.items.push({
         title: "الزكاة",
-        price: (this.productInventory * 0.025).toFixed(2),
+        price: productInventory * 0.025,
         icon: "mdi-scale-balance",
-        color: "#f0f005",
+        color: "#b8b818",
         background: "#f5f5c6",
       });
     });
   }
-
-  // rowClick(item
-  //              :
-  //              any, row
-  //              :
-  //              any
-  // ) {
-  //   this.detailData = [];
-  //   this.detailData.length = 0;
-  //   if (!row.isSelected) {
-  //     row.select(true);
-  //     //   this.selectedAttendance = item;
-  //   } else {
-  //     row.select(false);
-  //     //   this.selectedAttendance = {};
-  //   }
-  // }
 }
 </script>
 <style lang="css">
 .back_color {
   background-color: rgb(248, 248, 248);
+}
+@media (min-width: 1264px) and (max-width: 1903px) {
+  .flex.lg5-custom {
+    width: 20%;
+    max-width: 20%;
+    flex-basis: 20%;
+  }
+}
+
+@media (min-width: 1064px) and (max-width: 1903px) {
+  .flex.lg5-custom {
+    width: 18%;
+    max-width: 18%;
+    flex-basis: 20%;
+  }
 }
 </style>

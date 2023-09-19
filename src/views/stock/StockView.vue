@@ -14,6 +14,7 @@
       <manage-type-expense resource="categories"></manage-type-expense>
       <v-col cols="4">
         <v-text-field
+          autofocus
           solo
           flat
           clearable
@@ -21,24 +22,29 @@
           append-icon="fa-search"
           @keyup="onChangeBarcode"
           @click:clear="clearInput"
-          hint="  البحث باسم الصنف او الباركود"
-          placeholder="  البحث باسم الصنف او الباركود"
+          :hint="$t('product_search')"
+          :label="$t('product_search')"
+          :placeholder="$t('product_search')"
         ></v-text-field>
       </v-col>
-      <!-- <v-btn @click="show = !show">asds</v-btn> -->
-      <!-- <v-col cols="1"><v-btn @click="ExportFile">export</v-btn></v-col> -->
-      <v-btn
-        fab
-        tile
-        class="mt-3 me-2"
-        height="47"
-        width="47"
-        elevation="0"
-        :loading="isSelecting"
-        @click="handleFileImport"
-      >
-        <v-icon color="grey darken-1">mdi-upload</v-icon>
-      </v-btn>
+      <v-tooltip bottom color="secondary">
+        <template v-slot:activator="{ on }">
+          <v-btn
+            v-on="on"
+            fab
+            tile
+            class="mt-3 me-2"
+            height="47"
+            width="47"
+            elevation="0"
+            :loading="isSelecting"
+            @click="handleFileImport"
+          >
+            <v-icon color="grey darken-1">mdi-download</v-icon>
+          </v-btn>
+        </template>
+        <span>إستيراد المنتجات من ملف إكسيل</span>
+      </v-tooltip>
 
       <input
         type="file"
@@ -47,19 +53,31 @@
         style="display: none"
       />
 
-      <!-- <v-col cols="1" class="mt-n2">
-        <v-file-input
-          ref="uploader"
-          hide-input
-          @change="selectedFile"
-        ></v-file-input>
-      </v-col> -->
+      <v-tooltip bottom color="secondary">
+        <template v-slot:activator="{ on }">
+          <v-btn
+            v-on="on"
+            fab
+            tile
+            class="mt-3 me-2"
+            height="47"
+            width="47"
+            elevation="0"
+            @click="exportFile"
+          >
+            <v-icon color="grey darken-1">mdi-upload</v-icon>
+          </v-btn>
+        </template>
+        <span>تصدير المنتجات في ملف إكسيل</span>
+      </v-tooltip>
     </v-row>
     <v-card outlined>
       <v-data-table
         :headers="Headers"
         :items="liststock"
         single-select
+        :loading="loading"
+        loading-text="جاري تحميل البيانات ..."
         translate="yes"
         @click:row="rowClick"
         :server-items-length="count"
@@ -70,15 +88,21 @@
           'show-current-page': true,
           'show-first-last-page': true,
           'page-text': 'رقم الصفحة',
-          'items-per-page-text': 'عدد الأسطر',
+          'items-per-page-text': ' عدد العناصر - ' + count,
         }"
       >
+        <template v-slot:[`item.price`]="{ item }">
+          {{ formatCurrency(item.price) }}
+        </template>
+        <template v-slot:[`item.sell_price`]="{ item }">
+          {{ formatCurrency(item.sell_price) }}
+        </template>
         <template v-slot:[`item.actions`]="{ item }">
           <v-row>
             <v-btn
               color="green"
               small
-              class="ml-2"
+              class="me-2"
               outlined
               fab
               elevation="0"
@@ -100,7 +124,7 @@
   </div>
 </template>
 <script lang="ts">
-import { Vue, Component, Watch } from "vue-property-decorator";
+import { Vue, Component, Watch, Ref } from "vue-property-decorator";
 import Stockmanege from "@/views/stock/dialog/stockmanege.vue";
 import SnackBarModule from "@/store/snackBarModule";
 import stockApi from "@/api/stockApi";
@@ -112,12 +136,14 @@ import Depot from "@/classes/depot";
 import writeXlsxFile from "write-excel-file";
 import Decoded from "@/helper/decode";
 import ManageTypeExpense from "../expense/dialog/ManageTypeExpense.vue";
+import { Debounce } from "vue-debounce-decorator";
+import Stock from "@/classes/stock";
 
 @Component({ components: { Stockmanege, DeleteDialog, ManageTypeExpense } })
 export default class StockView extends Vue {
   Headers = [
-    // { text: "باركود", value: "barcode" },
     { text: "الصنف", value: "name" },
+    { text: "المرجع", value: "reference" },
     { text: " الكمية", value: "quantity" },
     { text: "سعر الشراء", value: "price" },
     { text: "سعر البيع", value: "sell_price" },
@@ -134,11 +160,10 @@ export default class StockView extends Vue {
   selectstock = {} as Stocks;
   listDepots = [] as Depot[];
   search = new Search();
-  listExecel = [] as Stocks[];
-  Execel: any;
+  listExcel = [] as Stocks[];
+  excel: any;
 
   onChangeBarcode(text: any): void {
-    //  &'èèàààéà&&à"
     this.search.name = Decoded.DecodedBarcode(text.target.value);
   }
 
@@ -221,7 +246,6 @@ export default class StockView extends Vue {
   isSelecting = false;
   handleFileImport() {
     this.isSelecting = true;
-    console.log(this.$refs);
     // After obtaining the focus when closing the FilePicker, return the button state to normal
     window.addEventListener(
       "focus",
@@ -234,72 +258,210 @@ export default class StockView extends Vue {
     // Trigger click on the FileInput
     (this.$refs.uploader as any).click();
   }
+  loading = false;
   selectedFile(e: any): void {
-    // console.log();
-    // e.target.files[0]
+    this.loading = true;
+    console.log("rows");
+
     readXlsxFile(e.target.files[0]).then((rows) => {
       rows.shift();
 
-      for (let index = 0; index < rows.length; index++) {
-        this.Execel = {
-          name: rows[index][1],
-          barcode: rows[index][2].toString(),
-          quantity: rows[index][3],
-          price: rows[index][4],
-          date_expire:
-            rows[index][6] != null
-              ? new Date(rows[index][6].toString())
-              : null,
-          sell_price: rows[index][7],
-          sell_price2: rows[index][5],
+      console.log(rows);
+      this.listExcel = [] as Stocks[];
 
-          quantity_alert: rows[index][8],
-        } as Stocks;
-        this.listExecel.push(this.Execel);
-        // this.liststock.unshift(this.Execel);
+      for (let index = 0; index < rows.length; index++) {
+        // Work with easy store
+        // this.excel = {
+        //   name: rows[index].at(1),
+        //   barcode: rows[index].at(2)?.toString(),
+        //   quantity: Number(rows[index].at(3)?.toString()),
+        //   price: Number(rows[index].at(4)?.toString().replaceAll(",", "")),
+        //   date_expire:
+        //     rows[index].at(6) != null
+        //       ? new Date(rows[index].at(6)?.toString())
+        //       : null,
+        //   sell_price: Number(rows[index].at(7)?.toString().replaceAll(",", "")),
+        //   sell_price2: Number(
+        //     rows[index].at(5)?.toString().replaceAll(",", "")
+        //   ),
+        //   quantity_alert: Number(rows[index].at(8)?.toString()),
+        // } as Stocks;
+
+        //work with Express Store
+        this.excel = {
+          // name: rows[index].at(0),
+          // quantity: Number(rows[index].at(1)?.toString()),
+          // price: Number(rows[index].at(2)?.toString().replaceAll(",", "")),
+          // sell_price: Number(rows[index].at(3)?.toString().replaceAll(",", "")),
+          // sell_price2: Number(
+          //   rows[index].at(4)?.toString().replaceAll(",", "")
+          // ),
+          // packing_price: Number(
+          //   rows[index].at(5)?.toString().replaceAll(",", "")
+          // ),
+          // packing_size: Number(rows[index].at(6)?.toString()),
+          // date_expire:
+          //   rows[index].at(7) != null
+          //     ? new Date(rows[index].at(7)?.toString())
+          //     : null,
+          // quantity_alert: Number(rows[index].at(8)?.toString()),
+          // reference: rows[index].at(9)?.toString(),
+          // photo: rows[index].at(10)?.toString(),
+          // path: rows[index].at(11)?.toString(),
+          // barcode: rows[index].at(12)?.toString(),
+          // note: rows[index].at(13)?.toString(),
+        } as Stock;
+
+        // Work with Taki
+        // this.excel = {
+        //   name: rows[index].at(2)?.toString(),
+        //   barcode: rows[index].at(0)?.toString(),
+        //   quantity: 0,
+        //   price: 0,
+        //   date_expire: null,
+        //   sell_price: 0,
+        //   sell_price2: 0,
+        //   quantity_alert: 1,
+        // } as Stocks;
+
+        /// add to list
+
+        this.listExcel.push(this.excel);
       }
-      stockApi.saveManyStock(this.listExecel).then((result: any) => {
-        let saved = ((result as any).data as any).data as Stocks[];
-        //  let saved = result as Stocks;
-        this.liststock.unshift(...saved);
-      });
-      this.listExecel = [] as Stocks[];
+      stockApi
+        .saveManyStock(this.listExcel)
+        .then((result: any) => {
+          this.getStocks(this.search);
+          this.loading = false;
+
+          SnackBarModule.setSnackbar({
+            text: "تمت استيراد المنتجات بنجاح",
+            color: "success",
+            timeout: 2000,
+            show: true,
+            icon: "mdi-checkbox-marked-circle-outline",
+            x: "right",
+            y: "top",
+          });
+        })
+        .catch((error) => {
+          this.loading = false;
+
+          SnackBarModule.setSnackbar({
+            text: error,
+            color: "error",
+            timeout: 2000,
+            show: true,
+            icon: "mdi-alert-outline",
+            x: "right",
+            y: "top",
+          });
+        });
     });
   }
 
   async exportFile() {
-    const schema = [
-      {
-        column: "Name",
-        type: String,
-        value: (stock) => stock.name,
-      },
-      {
-        column: "Price",
-        type: String,
-        value: (stock) => stock.price,
-      },
-      {
-        column: "Quantity",
-        type: Number,
-        value: (stock) => stock.quantity,
-      },
-    ];
-    await writeXlsxFile(this.liststock, {
-      schema,
-      fileName: "file.xlsx",
-    });
+    let res = await stockApi.getAllStockExport();
+    console.log(res);
+    if (res.status == 200) {
+      let allProduct = res.data;
+      const schema = [
+        {
+          column: "Nom du produit",
+          type: String,
+          value: (stock) => stock.name,
+        },
+
+        {
+          column: "Quantité",
+          type: Number,
+          value: (stock) => stock.quantity,
+        },
+        {
+          column: "Prix ​​d'achat",
+          type: String,
+          value: (stock) => stock.price.toString(),
+        },
+        {
+          column: "Prix ​​de vente 1",
+          type: String,
+          value: (stock) => stock.sell_price.toString(),
+        },
+        {
+          column: "Prix ​​de vente 2",
+          type: String,
+          value: (stock) => stock.sell_price2?.toString(),
+        },
+
+        {
+          column: "Prix ​​de gros",
+          type: String,
+          value: (stock: Stocks) => stock.packing_price?.toString(),
+        },
+        {
+          column: "Taille d'emballage",
+          type: String,
+          value: (stock: Stocks) => stock.packing_size?.toString(),
+        },
+        {
+          column: "Date d'expiration",
+          type: String,
+          value: (stock) => stock.date_expire?.toString(),
+        },
+        {
+          column: "Quantity alert",
+          type: String,
+          value: (stock: Stocks) => stock.quantity_alert?.toString(),
+        },
+        {
+          column: "Reference",
+          type: String,
+          value: (stock: Stocks) => stock.reference?.toString(),
+        },
+        {
+          column: "Photo",
+          type: String,
+          value: (stock: Stocks) => stock.photo?.toString(),
+        },
+        {
+          column: "Path",
+          type: String,
+          value: (stock: Stocks) => stock.path?.toString(),
+        },
+        {
+          column: "Barcode",
+          type: String,
+          value: (stock: Stocks) =>
+            stock.barcodes?.map((e) => e.name).join(" "),
+        },
+        {
+          column: "Note",
+          type: String,
+          value: (stock: Stocks) => stock.note?.toString(),
+        },
+      ];
+      console.log(allProduct);
+      await writeXlsxFile(allProduct, {
+        schema,
+        fileName: "list_products.xlsx",
+      });
+    }
   }
 
   @Watch("search", { deep: true })
-  onChange() {
+  onChange(): void {
     this.getStocks(this.search);
   }
 
+  @Debounce(80)
   getStocks(search?: Search): void {
+    this.loading = true;
+
     stockApi
       .getStock(search)
       .then((response) => {
+        this.loading = false;
+
         this.liststock = [];
         this.count = 0;
         if (response.status == 200) {
@@ -320,7 +482,7 @@ export default class StockView extends Vue {
       });
   }
 
-  created() {
+  created(): void {
     this.$root.$on("createdstocks", (stock: Stocks) => {
       this.liststock.unshift(stock);
       this.count++;
@@ -361,13 +523,13 @@ export default class StockView extends Vue {
     }
   }
 
-  getColor(item: Stocks) {
+  getColor(item: Stocks): string {
     if (item.quantity <= 0) return "red";
     else if (item.quantity <= item.quantity_alert) return "orange";
     else return "green";
   }
 
-  editstock(edited: any) {
+  editstock(edited: any): void {
     this.$root.$emit("editstock", edited);
   }
 

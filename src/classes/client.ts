@@ -8,8 +8,12 @@ export default class Client {
   updated_at?: Date;
   email?: string;
   address?: string;
+  nif?: string;
+  nis?: string;
+  n_rc?: string;
+  n_ai?: string;
   photo?: string;
   barcode = "";
   point = 0;
-  is_faithful: boolean;
+  is_faithful = false;
 }

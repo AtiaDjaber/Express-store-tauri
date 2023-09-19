@@ -1,21 +1,21 @@
 <template>
   <v-dialog v-model="dialog" scrollable max-width="700">
     <template v-slot:activator="{ on, attrs }">
-      <div class="mr-2" v-bind="attrs" v-on="on">
+      <div class="ms-2" v-bind="attrs" v-on="on">
         <v-btn
           :disabled="mutableExpenseAction == 2 && !userobj.id"
           color="primary"
           large
           elevation="2"
         >
-          اضافة مستخدم
+          {{ $t("add_user") }}
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
     <v-card v-if="dialog" color="plain">
       <v-card-title class="font-weight-bold">
-        <span v-if="mutableExpenseAction == 1"> مستخدم جديد</span>
+        <span v-if="mutableExpenseAction == 1"> {{ $t("add_user") }} </span>
         <span v-else> تعديل معلومات المستخدم</span>
       </v-card-title>
       <v-divider></v-divider>
@@ -28,9 +28,9 @@
                 <v-text-field
                   v-model="userobj.name"
                   color="blue darken-2"
-                  label="اسم المستخدم"
-                  hint="اسم المستخدم"
-                  placeholder="المستخدم"
+                  :label="$t('username')"
+                  :placeholder="$t('username')"
+                  :hint="$t('username')"
                   required
                   solo
                   flat
@@ -41,10 +41,9 @@
               <v-col>
                 <v-text-field
                   v-model="userobj.tel"
-                  placeholder="أدخل رقم الهاتف"
-                  hint="أدخل رقم الهاتف"
+                  :placeholder="$t('phone')"
+                  :hint="$t('phone')"
                   required
-                  label="رقم الهاتف"
                   solo
                   flat
                   clearable
@@ -55,14 +54,12 @@
             </v-row>
             <v-row class="mt-1">
               <v-col>
-                <!-- <span>اسم المصروف</span> -->
                 <v-text-field
                   v-model="userobj.email"
                   color="blue darken-2"
-                  label="البريد الإلكتروني"
-                  placeholder="ادخل البريد الإلكتروني"
+                  :placeholder="$t('email')"
+                  :hint="$t('email')"
                   required
-                  hint="ادخل البريد الإلكتروني"
                   solo
                   flat
                   clearable
@@ -134,7 +131,7 @@
               <v-col>
                 <v-switch
                   inset
-                  label="الفواتير"
+                  :label="$t('factures')"
                   v-model="userobj.facture"
                 ></v-switch>
               </v-col>
@@ -178,16 +175,20 @@
                   v-model="userobj.setting"
                 ></v-switch>
               </v-col>
-              <v-col></v-col>
+              <v-col>
+                <v-switch inset label="البيع" v-model="userobj.sale"></v-switch>
+              </v-col>
             </v-row>
           </v-form>
         </v-container>
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions class="justify-end">
-        <v-btn outlined large color="red darken-1" @click="close">إلغاء</v-btn>
+        <v-btn outlined large color="red darken-1" @click="close">
+          {{ $t("cancel") }}
+        </v-btn>
         <v-btn large class="mx-6" color="primary" @click="manage">
-          {{ mutableExpenseAction == 1 ? "حفظ" : "تعديل" }}
+          {{ mutableExpenseAction == 1 ? $t("save") : $t("edit") }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -227,6 +228,7 @@ export default class Manageexp extends Vue {
   original = {} as User;
 
   created() {
+    this.userobj = this.newUse();
     this.mutableExpenseAction = this.userAction;
 
     this.$root.$on("edituser", (selectuser: User) => {
@@ -236,8 +238,24 @@ export default class Manageexp extends Vue {
       this.original = selectuser;
     });
   }
+  newUse(): User {
+    return {
+      product: true,
+      facture: true,
+      user: false,
+      chart: false,
+      sale: true,
+      purchase: false,
+      transfer: true,
+      setting: false,
+      client: true,
+      expense: true,
+      depot: true,
+      fournisseur: true,
+    } as User;
+  }
   close() {
-    this.userobj = {} as User;
+    this.userobj = this.newUse();
     this.mutableExpenseAction = 1;
     this.dialog = false;
   }
@@ -248,9 +266,9 @@ export default class Manageexp extends Vue {
         this.userobj.status = "active";
         this.Apiuser.saveUser(this.userobj)
           .then((result: any) => {
-            let saved = ((result as any).data as any).data as User;
+            let saved = result.data.data as User;
 
-            this.$root.$emit("createdUser", this.userobj);
+            this.$root.$emit("createdUser", saved);
             this.close();
 
             SnackBarModule.setSnackbar({

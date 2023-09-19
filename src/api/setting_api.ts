@@ -1,11 +1,8 @@
-import HttpClient from "./httpClient";
 import { Setting } from "@/classes/setting";
 import axios from "axios";
 import axiosModule from "../store/axiosModule";
 
 export default class SettingApi {
-
-
   public async getSetting(depot_id: string): Promise<any> {
     return await axiosModule.instance.get("api/settings?depot_id=" + depot_id);
   }
@@ -15,8 +12,8 @@ export default class SettingApi {
   }
 
   async uploadImage(formData: FormData) {
-    return await axios.post(
-      (process.env.VUE_APP_API_URL as string) + "api/setting/upload",
+    const res = await axiosModule.instance.post(
+      "api/setting/upload",
       formData,
       {
         headers: {
@@ -25,5 +22,6 @@ export default class SettingApi {
         },
       }
     );
+    return res;
   }
 }

@@ -33,4 +33,10 @@ export default class historyApi {
       .get("api/fournisseur_factures?" + search.toFilter())
       .then((x) => x.data);
   }
+
+  static getCommandFourinsseur(search?: Search) {
+    return axiosModule.instance
+      .get("api/command_fournisseurs?" + search.toFilter())
+      .then((x) => x.data);
+  }
 }

@@ -4,13 +4,11 @@
       <div class="mr-2" v-bind="attrs" v-on="on">
         <v-btn
           :disabled="mutableExpenseAction == 2"
-          outlined
-          color="pink"
+          color="primary"
           large
           elevation="0"
         >
-          إضافة صنف
-          <v-icon>mdi-plus</v-icon>
+          {{ $t("add_product") }} <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
@@ -25,9 +23,9 @@
             <v-col>
               <v-row class="mt-1">
                 <v-text-field
-                  label="الصنف"
-                  placeholder="البحث باسم الصنف"
-                  hint="البحث باسم الصنف"
+                  :hint="$t('product_search')"
+                  :label="$t('product_search')"
+                  :placeholder="$t('product_search')"
                   required
                   append-icon="fa-search"
                   solo
@@ -66,16 +64,11 @@
               v-show="selectedItem.id != null"
             >
               <v-card outlined>
-                <v-footer height="55" color="white" elevation="0">
+                <v-footer height="55" elevation="0">
                   <h3>معلومات الصنف التالف</h3>
                 </v-footer>
                 <v-divider></v-divider>
-                <v-footer
-                  class="mx-2 mt-3"
-                  height="47"
-                  color="grey lighten-4"
-                  rounded
-                >
+                <v-footer class="mx-2 mt-3" height="47" rounded>
                   <v-col class="text-center" cols="12">
                     {{ selectedItem.name }}
                   </v-col>
@@ -92,10 +85,8 @@
                     solo
                     hide-details
                     hide-spin-buttons
-                    background-color="grey lighten-4"
                     prepend-inner-icon="mdi-cart-minus"
                     type="number"
-                    clearable
                   >
                     <template v-slot:append>
                       <v-icon @click="damage.quantity++">mdi-plus</v-icon>
@@ -114,9 +105,8 @@
                     hide-details
                     solo
                     flat
-                    background-color="grey lighten-4"
                     label="المخزن"
-                    placeholder="اختر مخزن البيع"
+                    placeholder="اختر المخزن "
                     prepend-inner-icon="mdi-store-outline"
                     clearable
                   ></v-select>
@@ -157,6 +147,7 @@ import Favorite from "@/classes/favorite";
 import Damage from "@/classes/damage";
 import DepotApi from "@/api/depotApi";
 import Depot from "@/classes/depot";
+import { Debounce } from "vue-debounce-decorator";
 
 @Component({ components: {} })
 export default class ManageProductDamage extends Vue {
@@ -253,6 +244,7 @@ export default class ManageProductDamage extends Vue {
     this.getProducts(this.search);
   }
 
+  @Debounce(80)
   getProducts(search?: Search): void {
     stockApi
       .getStock(search)
@@ -287,8 +279,6 @@ export default class ManageProductDamage extends Vue {
   selectedItem = {} as Stock;
 
   rowClick(item: any, row: any) {
-    console.log("one CLick");
-
     if (!row.isSelected) {
       row.select(true);
       this.selectedItem = item;

@@ -9,7 +9,7 @@
       </div>
     </template>
     <v-card v-if="dialog">
-      <v-card-title class="light-blue darken-4 white--text">
+      <v-card-title class="primary--text">
         <span> اضافة صنف للسلة</span>
       </v-card-title>
       <v-divider></v-divider>
@@ -17,12 +17,14 @@
         <v-container>
           <v-row class="mt-1">
             <v-text-field
-              color="blue darken-2"
-              label="الصنف"
-              placeholder="البحث باسم الصنف"
+              autofocus
+              :hint="$t('product_search')"
+              :label="$t('product_search')"
+              :placeholder="$t('product_search')"
               required
               append-icon="fa-search"
-              outlined
+              solo
+              flat
               :value="search.name"
               @keyup="onChangeBarcode"
               @click:clear="clearInput"
@@ -36,6 +38,8 @@
             :items="liststock"
             single-select
             dense
+            :loading="loading"
+            loading-text="جاري تحميل البيانات ..."
             @keyup.enter="addToCartUsingEnterKey"
             @click:row="rowClick"
             :server-items-length="count"
@@ -87,6 +91,7 @@ import ProductDepot from "@/classes/product_depot";
 import saleModule from "@/store/saleModule";
 import settingModule from "@/store/settingModule";
 import Decoded from "@/helper/decode";
+import { Debounce } from "vue-debounce-decorator";
 
 @Component({ components: {} })
 export default class ManageProductSaleDepot extends Vue {
@@ -113,6 +118,7 @@ export default class ManageProductSaleDepot extends Vue {
 
   public dialog = false;
   valid = true;
+  loading = false;
 
   created() {
     this.search.depot_id = settingModule.getSetting.depot_id;
@@ -144,7 +150,8 @@ export default class ManageProductSaleDepot extends Vue {
       barcode: item.product.barcode,
       total: 0,
       price: item.product.price,
-      // quantity_stock: item.quantity,
+      alternatives: item.product.alternatives,
+      accessoires: item.product.accessoires,
       product: item.product,
     } as Sale);
 
@@ -177,12 +184,16 @@ export default class ManageProductSaleDepot extends Vue {
 
   liststock = [] as ProductDepot[];
 
+  @Debounce(80)
   getProductDepot(search?: Search): void {
+    this.loading = true;
+
     stockApi
       .getProductsDepot(search)
       .then((response) => {
         this.liststock = [];
         this.count = 0;
+        this.loading = false;
 
         if (response.status == 200) {
           this.liststock = response.data.data as ProductDepot[];
@@ -190,6 +201,8 @@ export default class ManageProductSaleDepot extends Vue {
         }
       })
       .catch((error) => {
+        this.loading = false;
+
         SnackBarModule.setSnackbar({
           text: error,
           color: "error",

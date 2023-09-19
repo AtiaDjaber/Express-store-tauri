@@ -1,25 +1,28 @@
 <template>
   <div class="pa-3">
     <v-row class="pa-3">
-      <div class="mt-3 ml-10">
+      <div class="pt-3">
         <ManageProductPurchase />
       </div>
       <v-col cols="3">
-        <v-autocomplete
-          :items="listFournisseur"
-          v-model="facture.fournisseur_id"
-          item-text="name"
-          item-value="id"
-          solo
+        <v-text-field
+          ref="barcodeRef"
+          :hint="$t('product_search')"
+          :label="$t('product_search')"
+          :placeholder="$t('product_search')"
+          required
+          append-icon="fa-search"
+          prepend-inner-icon="mdi-barcode-scan"
           flat
-          :disabled="facture.id != null"
-          hide-details
-          placeholder="اكتب اسم المورد"
-          label="المورد"
-          prepend-inner-icon="mdi-account-search"
-          :clearable="facture.id == null"
-        ></v-autocomplete>
+          solo
+          :value="search.name"
+          @keyup.enter="manageSearch"
+          @keyup="onChangeBarcodeSearch"
+          @click:clear="clearInput"
+          clearable
+        ></v-text-field>
       </v-col>
+      <v-spacer></v-spacer>
 
       <v-col class="mt-2">
         <span> {{ facture.id ? "الفاتورة  # " + facture.id : "" }}</span>
@@ -48,18 +51,59 @@
         <v-icon right>mdi-cancel</v-icon>
       </v-btn>
       <v-btn
-        class="ml-2 mt-3"
+        class="ms-2 mt-3"
         color="green darken-1"
         large
         style="color: white"
+        v-shortkey="['f1']"
+        @shortkey="saveFacture(false)"
         :disabled="
           facture.fournisseur_id == null || facture.purchases.length < 2
         "
         @click="saveFacture()"
       >
-        حفظ الفاتورة
+        حفظ F1
         <v-icon right>mdi-plus</v-icon>
       </v-btn>
+      <v-tooltip bottom color="secondary">
+        <template v-slot:activator="{ on }">
+          <v-btn
+            large
+            v-on="on"
+            class="mx-2 mt-3"
+            style="color: white"
+            color="blue darken-1"
+            :disabled="
+              facture.fournisseur_id == null || facture.purchases.length < 2
+            "
+            v-shortkey="['f2']"
+            @shortkey="saveFacture(true)"
+            @click="saveFacture(true)"
+          >
+            طباعة F2
+            <v-icon right>mdi-printer-outline</v-icon>
+          </v-btn>
+        </template>
+        <span>Press F2</span>
+      </v-tooltip>
+      <v-col cols="auto">
+        <v-autocomplete
+          :items="listFournisseur"
+          v-model="facture.fournisseur_id"
+          item-text="name"
+          item-value="id"
+          solo
+          flat
+          :disabled="facture.id != null"
+          hide-details
+          placeholder="اكتب اسم المورد"
+          label="المورد"
+          prepend-inner-icon="mdi-account-search"
+          :clearable="facture.id == null"
+        ></v-autocomplete>
+      </v-col>
+      <manage-fournisseur :isFab="true" :teacherAction="1" />
+
       <!--      <v-btn-->
       <!--          outlined-->
       <!--          class="ml-2 mt-3"-->
@@ -74,110 +118,117 @@
     <v-row no-gutters></v-row>
 
     <div v-resize="onResize">
-      <v-data-table
-        :headers="Headers"
-        :items="facture.purchases"
-        @click:row="rowClick"
-        hide-default-footer
-        fixed-header
-        :height="windowSize.y - 310"
-        item-key="count"
-        :items-per-page="-1"
-        single-select
-      >
-        <template v-slot:item.barcode="{ item, index }">
-          <v-text-field
-            style="width: auto"
-            label="الباركود"
-            flat
-            solo
-            dense
-            clearable
-            hide-details
-            @keyup="onChangeBarcode(item, index)"
-            v-model="item.barcode"
-          ></v-text-field>
-        </template>
-
-        <template v-slot:[`item.name`]="{ item }">
-          <v-text-field
-            style="width: auto"
-            label="اسم الصنف"
-            flat
-            solo
-            dense
-            clearable
-            hide-details
-            v-model="item.name"
-          ></v-text-field>
-        </template>
-
-        <template v-slot:item.quantity="{ item, index }">
-          <v-text-field
-            style="width: 150px"
-            label="الكمية"
-            flat
-            dense
-            class="centered-input"
-            solo
-            hide-details
-            type="number"
-            hide-spin-buttons
-            v-model="item.quantity"
-            @input="editItem(item, index)"
-          >
-            <template v-slot:append>
-              <v-icon @click="item.quantity++">mdi-plus</v-icon>
-            </template>
-            <template v-slot:prepend-inner>
-              <v-icon @click="item.quantity--">mdi-minus</v-icon>
-            </template>
-          </v-text-field>
-        </template>
-        <template v-slot:item.price="{ item, index }">
-          <v-text-field
-            style="width: 70%"
-            label="سعر البيع"
-            flat
-            dense
-            solo
-            hide-details
-            type="number"
-            v-model="item.price"
-            @input="editItem(item, index)"
-          ></v-text-field>
-        </template>
-
-        <template v-slot:item.purchase_price="{ item, index }">
-          <v-text-field
-            style="width: 70%"
-            label="سعر الشراء"
-            flat
-            solo
-            dense
-            hide-details
-            type="number"
-            v-model="item.purchase_price"
-            @input="editItem(item, index)"
-          ></v-text-field>
-        </template>
-
-        <template v-slot:[`item.actions`]="{ item, index }">
-          <v-row>
-            <!--         v-if="item.id==null"-->
-            <v-btn
-              @click="deleteItem(item, index)"
-              fab
-              outlined
-              small
-              color="red"
+      <v-card outlined>
+        <v-data-table
+          :headers="Headers"
+          :items="facture.purchases"
+          @click:row="rowClick"
+          hide-default-footer
+          fixed-header
+          :height="windowSize.y - 345"
+          :items-per-page="-1"
+          single-select
+        >
+          <template v-slot:item.barcode="{ item, index }">
+            <v-text-field
+              style="width: auto"
+              label="الباركود"
+              flat
+              solo
+              dense
+              clearable
+              hide-details
+              @keyup="onChangeBarcode(item, index)"
+              v-model="item.barcode"
             >
-              <v-icon>mdi-trash-can-outline</v-icon>
-            </v-btn>
-            <!--          <delete-dialog v-else :id="item.id" :source="'SALE'"/>-->
-          </v-row>
-        </template>
-      </v-data-table>
+              <template v-slot:prepend-inner>
+                <v-icon @click="generateBarcode(item, index)"
+                  >mdi-barcode</v-icon
+                >
+              </template></v-text-field
+            >
+          </template>
+
+          <template v-slot:[`item.name`]="{ item }">
+            <v-text-field
+              style="width: auto"
+              label="اسم الصنف"
+              flat
+              solo
+              dense
+              clearable
+              hide-details
+              v-model="item.name"
+            ></v-text-field>
+          </template>
+
+          <template v-slot:item.quantity="{ item, index }">
+            <v-text-field
+              style="width: 150px"
+              label="الكمية"
+              flat
+              dense
+              class="centered-input"
+              solo
+              hide-details
+              type="number"
+              hide-spin-buttons
+              v-model="item.quantity"
+              @input="editItem(item, index)"
+            >
+              <template v-slot:append>
+                <v-icon @click="item.quantity++">mdi-plus</v-icon>
+              </template>
+              <template v-slot:prepend-inner>
+                <v-icon @click="item.quantity--">mdi-minus</v-icon>
+              </template>
+            </v-text-field>
+          </template>
+          <template v-slot:item.price="{ item, index }">
+            <v-text-field
+              style="width: 70%"
+              label="سعر البيع"
+              flat
+              dense
+              solo
+              hide-details
+              type="number"
+              v-model="item.price"
+              @input="editItem(item, index)"
+            ></v-text-field>
+          </template>
+
+          <template v-slot:item.purchase_price="{ item, index }">
+            <v-text-field
+              style="width: 70%"
+              label="سعر الشراء"
+              flat
+              solo
+              dense
+              hide-details
+              type="number"
+              v-model="item.purchase_price"
+              @input="editItem(item, index)"
+            ></v-text-field>
+          </template>
+
+          <template v-slot:[`item.actions`]="{ item, index }">
+            <v-row>
+              <!--         v-if="item.id==null"-->
+              <v-btn
+                @click="deleteItem(item, index)"
+                fab
+                outlined
+                small
+                color="red"
+              >
+                <v-icon>mdi-trash-can-outline</v-icon>
+              </v-btn>
+              <!--          <delete-dialog v-else :id="item.id" :source="'SALE'"/>-->
+            </v-row>
+          </template>
+        </v-data-table>
+      </v-card>
     </div>
     <v-col>
       <!-- <v-footer padless color="white"> -->
@@ -189,8 +240,22 @@
             readonly
             v-model="facture.montant"
             append-icon="mdi-search"
+            persistent-hint
             label="مبلغ الفاتورة  "
             hint="مبلغ الفاتورة"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="2" class="px-2" v-if="facture.fournisseur != null">
+          <v-text-field
+            flat
+            background-color="primary lighten-3"
+            solo
+            v-model="facture.fournisseur.montant"
+            persistent-hint
+            hint="دين قديم"
+            placeholder="دين قديم"
+            prefix="DA"
+            readonly
           ></v-text-field>
         </v-col>
         <v-col cols="2">
@@ -201,6 +266,7 @@
             v-model="facture.remise"
             append-icon="mdi-percent"
             hint="تخفيض"
+            persistent-hint
             label="تخفيض"
           ></v-text-field>
         </v-col>
@@ -212,6 +278,7 @@
             v-model="facture.pay"
             append-icon="mdi-cash"
             hint="الدفع"
+            persistent-hint
             label="الدفع "
           ></v-text-field>
         </v-col>
@@ -221,6 +288,7 @@
             flat
             readonly
             v-model="getRest"
+            persistent-hint
             hint="الباقي"
             label="الباقي"
           ></v-text-field>
@@ -230,6 +298,7 @@
             flat
             solo
             hint="ملاحظة"
+            persistent-hint
             v-model="facture.remark"
             append-icon="mdi-pencil"
             label="ملاحظة"
@@ -247,7 +316,7 @@
       ></v-progress-circular>
     </v-overlay>
 
-    <div id="facture" class="pa-3" style="width: 1000px">
+    <!-- <div id="facture" class="pa-3" style="width: 1000px">
       <v-row no-gutters class="mt-6">
         <v-col cols="6">
           <v-col>
@@ -288,13 +357,11 @@
           </v-col>
         </v-col>
         <v-divider vertical></v-divider>
-        <!--          العمود الثاتي-->
-        <!--        data-html2canvas-ignore-->
+        <
         <v-col class="mr-6">
           <v-row justify="center" class="mb-2">
             <h2>فاتورة شراء</h2>
           </v-row>
-          <!-- رقم الفاتورة : {{ this.FactureNumber }} -->
           <p class="mt-6">رقم الفاتورة : {{ facture.id }}</p>
           <p>
             اسم المورد :
@@ -329,12 +396,12 @@
           {{ setting.remark }}
         </h4>
       </v-row>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch } from "vue-property-decorator";
+import { Vue, Component, Watch, Ref } from "vue-property-decorator";
 import ManageProductPurchase from "@/views/purchase/dialog/ManageProductPurchase.vue";
 import Fournisseur from "@/classes/fournisseur";
 import FournisseurApi from "@/api/fournisseurApi";
@@ -343,10 +410,7 @@ import FournisseurFacture from "@/classes/fournisseurFacture";
 import FournisseurFactureApi from "@/api/fournisseurFactureApi";
 import Purchase from "@/classes/purchase";
 import VueBarcode from "vue-barcode";
-// import html2canvas, { Options } from "html2canvas";
-// import * as electron from "electron";
-// import * as fs from "fs";
-// import { exec } from "child_process";
+
 import SnackBarModule from "@/store/snackBarModule";
 import fournisseur from "@/classes/fournisseur";
 import depotApi from "@/api/depotApi";
@@ -356,11 +420,16 @@ import SettingApi from "@/api/setting_api";
 import settingModule from "@/store/settingModule";
 import PrintImage from "@/print/print_image";
 import Decoded from "@/helper/decode";
+import ManageFournisseur from "../fournisseur/dialog/ManageFournisseur.vue";
+import stockApi from "@/api/stockApi";
+import Search from "@/classes/search";
+import Stock from "@/classes/stock";
 
 @Component({
   components: {
     ManageProductPurchase,
     barcode: VueBarcode,
+    ManageFournisseur,
   },
 })
 export default class PurchaseView extends Vue {
@@ -385,8 +454,9 @@ export default class PurchaseView extends Vue {
   } as FournisseurFacture;
 
   apiFacture = new FournisseurFactureApi();
+  search = new Search();
 
-  barcode = "0978709669800";
+  @Ref() readonly barcodeRef: any;
 
   totalCredit = 0;
 
@@ -400,11 +470,7 @@ export default class PurchaseView extends Vue {
       Number(this.facture.montant) -
       Number(this.facture.pay) -
       Number(this.facture.remise);
-    return (
-      Number(this.facture.montant) -
-      Number(this.facture.pay) -
-      Number(this.facture.remise)
-    );
+    return this.facture.rest;
   }
 
   editItem(purchase: Purchase, index: number): void {
@@ -415,6 +481,22 @@ export default class PurchaseView extends Vue {
       Number(purchase.quantity) * Number(purchase.purchase_price);
   }
 
+  focusBarcodeField(): void {
+    this.$nextTick(() => this.barcodeRef.focus());
+  }
+  onChangeBarcodeSearch(text: any): void {
+    //  &'èèàààéà&&à"
+    this.search.name = Decoded.DecodedBarcode(text.target.value);
+  }
+
+  generateBarcode(item, index): void {
+    stockApi.getBarcode().then((res) => {
+      this.facture.purchases[index].barcode = res.data;
+
+      item.barcode = res.data;
+      this.$forceUpdate();
+    });
+  }
   emptyRow(): void {
     this.facture.purchases.push({
       count: this.facture.purchases.length + 1,
@@ -428,9 +510,10 @@ export default class PurchaseView extends Vue {
   created(): void {
     this.emptyRow();
 
-    this.$root.$on("createdClient", (newClient: fournisseur) => {
-      this.listFournisseur.unshift(newClient);
-      this.facture.fournisseur = newClient;
+    this.$root.$on("createdFournisseur", (newFour: fournisseur) => {
+      this.listFournisseur.unshift(newFour);
+      this.facture.fournisseur = newFour;
+      this.facture.fournisseur_id = newFour.id;
     });
     this.$root.$on("editFactureFournisseur", (_: any) => {
       this.facture = purchaseModule.getFacture;
@@ -488,10 +571,10 @@ export default class PurchaseView extends Vue {
     // }, 20);
   }
   onChangeBarcode(item: any, index: number): void {
-    //  &'èèàààéà&&à"
     console.log(item);
     item.barcode = Decoded.DecodedBarcode(item.barcode);
     this.facture.purchases[index].barcode = item.barcode;
+    this.$forceUpdate();
   }
 
   get setting() {
@@ -502,8 +585,64 @@ export default class PurchaseView extends Vue {
     purchaseModule.clearCart();
     this.emptyRow();
   }
+  listStock = [] as Stock[];
 
-  saveFacture(): void {
+  manageSearch(): void {
+    stockApi
+      .getStock(this.search)
+      .then((response) => {
+        if (response.status == 200) {
+          this.listStock = response.data["data"];
+
+          if (this.listStock.length == 1) {
+            let stock = this.listStock[0];
+            let purchase = Object.assign({}, {
+              quantity: 1,
+              product_id: stock.id,
+              name: stock.name,
+              purchase_price: stock.price,
+              barcode: stock.barcode,
+              total: 0,
+              price: stock.sell_price,
+            } as Purchase);
+
+            // this.$root.$emit("addItem",  purchase);
+            purchaseModule.addItem(purchase);
+          } else {
+            if (this.listStock.length > 1) {
+              this.$root.$emit("searchManagePurchase", this.search.name);
+            } else {
+              SnackBarModule.setSnackbar({
+                text: "المنتج غير موجود",
+                color: "error",
+                timeout: 2000,
+                show: true,
+                icon: "mdi-alert-outline",
+                x: "right",
+                y: "top",
+              });
+            }
+          }
+        }
+        this.search.name = "";
+      })
+      .catch((error) => {
+        SnackBarModule.setSnackbar({
+          text: error,
+          color: "error",
+          timeout: 2000,
+          show: true,
+          icon: "mdi-alert-outline",
+          x: "right",
+          y: "top",
+        });
+      });
+  }
+
+  clearInput(): void {
+    this.search.name = "";
+  }
+  saveFacture(print = false): void {
     this.loading = true;
 
     this.apiFacture
@@ -515,7 +654,18 @@ export default class PurchaseView extends Vue {
         // PrintImage.print(document.getElementById("facture") as HTMLElement);
         this.addNewFacture();
         this.loading = false;
-        PrintImage.printFacturePdf(this.setting, copyFacture as any, "مورد");
+        if (print) {
+          if (this.setting.isReceiptDefault) {
+            PrintImage.printBon(this.setting, copyFacture as any, "مورد");
+          } else {
+            PrintImage.printFacturePdf(
+              this.setting,
+              copyFacture as any,
+              "مورد"
+            );
+          }
+        }
+        // PrintImage.printFacturePdf(this.setting, copyFacture as any, "مورد");
 
         this.$root.$emit("updateFactures", "");
         SnackBarModule.setSnackbar({
@@ -550,6 +700,13 @@ export default class PurchaseView extends Vue {
     });
   }
 
+  @Watch("facture.fournisseur_id", { immediate: true, deep: true })
+  selectClient(): void {
+    this.facture.fournisseur = this.listFournisseur.find(
+      (e) => e.id == this.facture.fournisseur_id
+    );
+  }
+
   deleteItem(purchase: Purchase, index: number): void {
     // const index = this.facture.purchases.findIndex(
     //   (e) => e.product_id == purchase.product_id
@@ -566,53 +723,14 @@ export default class PurchaseView extends Vue {
     this.windowSize = { x: window.innerWidth, y: window.innerHeight };
   }
   rowClick(item: any, row: any) {
-    if (!row.isSelected) {
-      row.select(true);
-      this.selectedSale = item;
-    } else {
-      row.select(false);
-      this.selectedSale = {} as Purchase;
-    }
+    // if (!row.isSelected) {
+    //   row.select(true);
+    //   this.selectedSale = item;
+    // } else {
+    //   row.select(false);
+    //   this.selectedSale = {} as Purchase;
+    // }
   }
-
-  // printFacture() {
-  //   let factureElement = document.getElementById(
-  //     "facturePurchase"
-  //   ) as HTMLElement;
-  //   html2canvas(factureElement, {
-  //     allowTaint: false,
-  //     scale: 4,
-  //     logging: true,
-  //     imageTimeout: 0,
-  //     useCORS: true,
-  //     onclone(doc, html) {
-  //       doc.getElementById("facturePurchase").style.display = "block";
-  //     },
-  //   }).then(async function (canvas) {
-  //     const remote = electron.remote;
-  //     const blob: any = await new Promise((resolve) =>
-  //       canvas.toBlob((blob) => resolve(blob), "image/jpg")
-  //     );
-  //     const buffer = new Buffer(await blob.arrayBuffer());
-  //     let date = new Date().getTime();
-
-  //     let filePath = "facture/" + date + ".png";
-  //     await new Promise((resolve, reject) =>
-  //       fs.writeFile(filePath, buffer, "binary", (err) => {
-  //         electron.shell.openPath(fs.realpath.name);
-
-  //         let printCmd = exec(
-  //           ".\\SumatraPDF.exe -silent -print-to-default -print-settings landscape " +
-  //             filePath
-  //         );
-
-  //         printCmd.stdout.on("data", (data: any) =>
-  //           console.log(`print data: ${data}`)
-  //         );
-  //       })
-  //     );
-  //   });
-  // }
 }
 </script>
 <style scoped>

@@ -1,10 +1,9 @@
 <template>
-  <v-dialog v-model="dialog" scrollable persistent max-width="1000">
+  <v-dialog v-model="dialog" scrollable persistent fullscreen max-width="1000">
     <template v-slot:activator="{ on, attrs }">
       <div class="mr-2" v-bind="attrs" v-on="on">
         <v-btn large color="primary" elevation="1">
-          اضافة صنف جديد
-          <v-icon>mdi-plus</v-icon>
+          {{ $t("add_product") }} <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
@@ -15,38 +14,53 @@
       @keyup.enter="addBarcode()"
     >
       <v-card-title class="primary--text font-weight-bold">
-        <span v-if="mutableStockAction == 1"> إضافة صنف جديد</span>
-        <span v-else> تعديل معلومات الصنف</span>
+        <span v-if="mutableStockAction == 1"> {{ $t("add_product") }}</span>
+        <span v-else>{{ $t("edit_product") }} </span>
       </v-card-title>
       <v-divider></v-divider>
-
       <v-card-text>
         <v-container>
-          <v-form ref="form" lazy-validation v-model="valid">
-            <v-row>
+          <v-form ref="form" lazy-validation v-model="valid" class="mx-n10">
+            <v-row no-gutters>
               <v-col cols="8">
                 <v-row class="mt-2">
                   <v-col>
+                    <span class="title_input"> {{ $t("nom_produit") }} </span>
                     <v-text-field
                       v-model="stockobj.name"
                       color="blue darken-2"
                       flat
                       solo
-                      hint="الصنف"
-                      placeholder="ادخل اسم الصنف"
+                      :hint="$t('nom_produit')"
+                      :placeholder="$t('nom_produit')"
                       required
                       prepend-inner-icon="mdi-cube-outline"
                       clearable
                       :rules="vuser.name"
                     ></v-text-field>
                   </v-col>
+                  <v-col>
+                    <span class="title_input"> {{ $t("reference") }} </span>
+                    <v-text-field
+                      v-model="stockobj.reference"
+                      color="blue darken-2"
+                      flat
+                      solo
+                      :hint="$t('reference')"
+                      :placeholder="$t('reference')"
+                      prepend-inner-icon="mdi-bulletin-board"
+                      clearable
+                    ></v-text-field>
+                  </v-col>
                 </v-row>
-                <v-row class="mt-n2">
+                <v-row class="mt-n5">
                   <v-col cols="6" sm="6">
+                    <span class="title_input"> {{ $t("quantity") }} </span>
+
                     <v-text-field
                       v-model="stockobj.quantity"
-                      placeholder="أدخل الكمية"
-                      hint="الكمية"
+                      :placeholder="$t('quantity')"
+                      :hint="$t('quantity')"
                       required
                       flat
                       solo
@@ -57,11 +71,12 @@
                     ></v-text-field>
                   </v-col>
                   <v-col cols="6" sm="6">
+                    <span class="title_input"> {{ $t("prix_achat") }} </span>
                     <v-text-field
                       v-model="stockobj.price"
-                      placeholder="أدخل سعر الشراء"
-                      hint="سعر الشراء"
-                      label="سعر الشراء"
+                      :placeholder="$t('prix_achat')"
+                      :hint="$t('prix_achat')"
+                      :label="$t('prix_achat')"
                       required
                       prepend-inner-icon="mdi-cash"
                       flat
@@ -74,13 +89,15 @@
                     ></v-text-field>
                   </v-col>
                 </v-row>
-                <v-row class="mt-n2">
-                  <v-col cols="6">
+                <v-row class="mt-n5">
+                  <v-col cols="4">
+                    <span class="title_input"> {{ $t("prix_vente") }} </span>
                     <v-text-field
                       v-model="stockobj.sell_price"
-                      placeholder="أدخل سعر البيع"
+                      :placeholder="$t('prix_vente')"
+                      :hint="$t('prix_vente')"
+                      :label="$t('prix_vente')"
                       required
-                      hint="سعر البيع"
                       prepend-inner-icon="mdi-cash"
                       flat
                       solo
@@ -92,30 +109,106 @@
                       @input="sellPrice"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="6">
+                  <v-col cols="2">
+                    <span class="title_input"> {{ $t("marge_benifit") }} </span>
                     <v-text-field
                       v-model="stockobj.Percentage"
-                      placeholder="أدخل  نسبة الربح"
+                      :placeholder="$t('marge_benifit')"
+                      :hint="$t('marge_benifit')"
+                      :label="$t('marge_benifit')"
                       required
-                      hint=" نسبة الربح"
+                      hide-spin-buttons
                       flat
                       solo
                       prepend-inner-icon="mdi-percent"
                       type="number"
-                      clearable
-                      :rules="vuser.price"
                       @input="Percentage"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="4">
+                    <span class="title_input">{{
+                      $t("prix_vente") + " 2"
+                    }}</span>
+                    <v-text-field
+                      v-model="stockobj.sell_price2"
+                      :placeholder="$t('prix_vente') + ' 2'"
+                      :hint="$t('prix_vente') + ' 2'"
+                      :label="$t('prix_vente') + ' 2'"
+                      prepend-inner-icon="mdi-cash"
+                      flat
+                      solo
+                      suffix="DA"
+                      hide-spin-buttons
+                      type="number"
+                      clearable
+                      @input="sellPrice2"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="2">
+                    <span class="title_input">
+                      {{ $t("marge_benifit") + " 2" }}</span
+                    >
+                    <v-text-field
+                      v-model="stockobj.percentage2"
+                      :placeholder="$t('marge_benifit')"
+                      :hint="$t('marge_benifit')"
+                      hide-spin-buttons
+                      flat
+                      solo
+                      prepend-inner-icon="mdi-percent"
+                      type="number"
+                      @input="Percentage2"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+                <v-row class="mt-n5">
+                  <v-col cols="6">
+                    <span class="title_input">
+                      {{ $t("taille_emballage") }}
+                    </span>
+                    <v-text-field
+                      v-model="stockobj.packing_size"
+                      :placeholder="$t('taille_emballage')"
+                      :hint="$t('taille_emballage')"
+                      prepend-inner-icon="mdi-cube-outline"
+                      flat
+                      solo
+                      hide-spin-buttons
+                      type="number"
+                      clearable
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="6">
+                    <span class="title_input">
+                      {{ $t("prix_emballage") }}
+                    </span>
+                    <v-text-field
+                      v-model="stockobj.packing_price"
+                      :placeholder="$t('prix_emballage')"
+                      :hint="$t('prix_emballage')"
+                      flat
+                      solo
+                      prepend-inner-icon="mdi-cash"
+                      type="number"
+                      clearable
                     ></v-text-field>
                   </v-col>
                 </v-row>
               </v-col>
               <v-col>
-                <v-card width="250" height="250" class="ma-3 pa-1" outlined>
-                  <v-img
-                    eager
-                    aspect-ratio="1"
-                    :src="base64 != '' ? base64 : resolveImage"
-                  >
+                <v-row justify="end">
+                  <v-card width="280" height="280" class="mt-7" outlined>
+                    <img
+                      height="275"
+                      width="275"
+                      style="position: absolute"
+                      :src="base64 != '' ? base64 : resolveImage"
+                    />
+                    <!-- <v-img
+                      eager
+                      aspect-ratio="1"
+                      :src="base64 != '' ? base64 : resolveImage"
+                    > -->
                     <v-row class="ma-1">
                       <v-btn
                         class="ma-2"
@@ -135,7 +228,7 @@
 
                       <v-btn fab small class="ma-2" elevation="1">
                         <v-file-input
-                          class="pr-2 pb-4"
+                          class="ps-2 pb-4"
                           hide-input
                           id="file_cam"
                           accept="image/png, image/jpeg, image/bmp,image/webp"
@@ -144,21 +237,35 @@
                         ></v-file-input
                       ></v-btn>
                     </v-row>
-                  </v-img>
-                </v-card>
+                    <!-- </v-img> -->
+                  </v-card></v-row
+                >
               </v-col>
             </v-row>
             <v-tabs v-model="tab" background-color="transparent">
               <v-tab :key="0">
-                <h3>الباركود <v-icon class="mx-2">mdi-barcode</v-icon></h3>
+                <h3>
+                  {{ $t("barcode") }}<v-icon class="mx-2">mdi-barcode</v-icon>
+                </h3>
               </v-tab>
               <v-tab :key="1">
-                <h3>معلومات إضافية <v-icon class="mx-2">mdi-plus</v-icon></h3>
+                <h3>
+                  {{ $t("alert") }}
+                  <v-icon class="mx-2">mdi-bell-outline</v-icon>
+                </h3>
               </v-tab>
               <v-tab :key="2">
-                <h3>التنبيه <v-icon class="mx-2">mdi-bell-outline</v-icon></h3>
+                <h3>
+                  {{ $t("additional_information") }}
+                  <v-icon class="mx-2">mdi-plus</v-icon>
+                </h3>
               </v-tab>
-              <!--    <v-tab :key="2"> التعويض </v-tab>-->
+              <v-tab :key="3">
+                <h3>
+                  {{ $t("description") }}
+                  <v-icon class="mx-2">mdi-comment-text-outline</v-icon>
+                </h3>
+              </v-tab>
               <v-tabs-items v-model="tab">
                 <v-tab-item key="0" class="pa-4">
                   <v-row class="mt-3" justify="space-between">
@@ -182,8 +289,8 @@
                           <v-text-field
                             color="blue darken-2"
                             prepend-inner-icon="mdi-barcode"
-                            hint="الباركود"
-                            placeholder="أدخل الباركود"
+                            :hint="$t('barcode')"
+                            :placeholder="$t('barcode')"
                             required
                             flat
                             solo
@@ -192,6 +299,29 @@
                             :value="selectedBarcode.name"
                           ></v-text-field>
                         </v-col>
+                        <v-text-field
+                          class="mx-2"
+                          style="max-width: 100px"
+                          :hint="$t('quantity')"
+                          :placeholder="$t('quantity')"
+                          flat
+                          solo
+                          type="number"
+                          hide-details
+                          hide-spin-buttons
+                          :value="selectedBarcode.quantity"
+                        >
+                          <template v-slot:append>
+                            <v-icon @click="selectedBarcode.quantity++"
+                              >mdi-plus</v-icon
+                            >
+                          </template>
+                          <template v-slot:prepend-inner>
+                            <v-icon @click="selectedBarcode.quantity--"
+                              >mdi-minus</v-icon
+                            >
+                          </template>
+                        </v-text-field>
                         <v-btn
                           @click="addBarcode()"
                           class="ms-2"
@@ -233,24 +363,32 @@
                     </v-col>
                     <v-col>
                       <v-row justify="end">
-                        <h3 class="primary--text pt-5 mx-2">طباعة</h3>
-                        <span class="mx-2">
-                          <v-switch
-                            v-model="setting.printBarcodePrice"
-                            inset
-                            @change="changeSetting()"
-                            label=" السعر"
-                          ></v-switch
-                        ></span>
-                        <span class="mx-2">
-                          <v-switch
-                            v-model="setting.printBarcodeName"
-                            inset
-                            label="الاسم"
-                          ></v-switch
-                        ></span>
+                        <v-card outlined height="45" width="292">
+                          <v-row justify="center">
+                            <span class="me-4">
+                              <v-switch
+                                v-model="setting.printBarcodePrice"
+                                inset
+                                @change="changeSetting()"
+                                :label="$t('price')"
+                              ></v-switch
+                            ></span>
+                            <span class="ms-4">
+                              <v-switch
+                                v-model="setting.printBarcodeName"
+                                inset
+                                @change="changeSetting()"
+                                :label="$t('name')"
+                              ></v-switch
+                            ></span>
+                          </v-row>
+                        </v-card>
                       </v-row>
-                      <v-row justify="end" v-if="selectedBarcode.name">
+                      <v-row
+                        justify="end"
+                        class="mt-4"
+                        v-if="barcodeToPrint.name"
+                      >
                         <v-card
                           outlined
                           :color="$vuetify.theme.dark ? 'white' : undefined"
@@ -262,10 +400,17 @@
                               justify="center"
                               class="mb-0 mt-2"
                             >
-                              <h3 style="letter-spacing: normal; color: black">
+                              <h3
+                                style="
+                                  letter-spacing: normal;
+                                  color: black;
+                                  text-align: center;
+                                  width: 255px;
+                                "
+                              >
                                 {{
                                   stockobj.name != undefined
-                                    ? stockobj.name.substring(0, 30)
+                                    ? stockobj.name
                                     : ""
                                 }}
                               </h3>
@@ -273,7 +418,7 @@
                             <v-row
                               v-if="setting.printBarcodePrice"
                               justify="center"
-                              class="my-1"
+                              class="my-0"
                             >
                               <h3 style="letter-spacing: normal; color: black">
                                 {{
@@ -284,12 +429,13 @@
                               </h3>
                             </v-row>
                             <barcode
+                              class="mt-1"
                               displayValue="false"
                               format="CODE128"
-                              :value="selectedBarcode.name"
+                              :value="barcodeToPrint.name"
                               font-options="bold"
                               width="2"
-                              height="80"
+                              height="70"
                               margin-bottom="1"
                               margin-top="1"
                             >
@@ -302,14 +448,38 @@
                           </div>
                         </v-card>
                       </v-row>
-                      <v-row v-if="selectedBarcode.name" justify="end">
+                      <v-row
+                        v-if="barcodeToPrint.name"
+                        no-gutters
+                        justify="end"
+                        class="mt-5 me-n3"
+                      >
+                        <v-text-field
+                          class="mx-2"
+                          style="max-width: 100px"
+                          hint="عدد النسخ"
+                          placeholder="أدخل عدد النسخ"
+                          flat
+                          solo
+                          type="number"
+                          hide-details
+                          hide-spin-buttons
+                          v-model="numberCopies"
+                        >
+                          <template v-slot:append>
+                            <v-icon @click="numberCopies++">mdi-plus</v-icon>
+                          </template>
+                          <template v-slot:prepend-inner>
+                            <v-icon @click="numberCopies--">mdi-minus</v-icon>
+                          </template>
+                        </v-text-field>
                         <v-btn
                           large
                           color="primary"
                           outlined
                           text
-                          class="my-2"
-                          width="292"
+                          height="47"
+                          width="180"
                           @click="createPdf()"
                         >
                           <v-icon color="primary" class="mx-2">
@@ -321,9 +491,44 @@
                     </v-col>
                   </v-row>
                 </v-tab-item>
+
                 <v-tab-item key="1">
                   <v-row class="mt-3">
+                    <v-col cols="6" sm="6">
+                      <span class="title_input"> {{ $t("expire") }} </span>
+                      <c-date-picker
+                        v-model="stockobj.date_expire"
+                        :hint="$t('expire')"
+                        :placeholder="$t('expire')"
+                        clearable
+                        @eventname="clearDateExpire"
+                      ></c-date-picker>
+                    </v-col>
+                    <v-col cols="6" sm="6">
+                      <span class="title_input">
+                        {{ $t("alert_quantity") }}
+                      </span>
+                      <v-text-field
+                        v-model="stockobj.quantity_alert"
+                        :placeholder="$t('alert_quantity')"
+                        :hint="$t('alert_quantity')"
+                        required
+                        flat
+                        solo
+                        prepend-inner-icon="mdi-bell-outline"
+                        type="number"
+                        clearable
+                        :rules="vuser.quantity"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-tab-item>
+                <v-tab-item key="2">
+                  <v-row class="mt-3">
                     <v-col>
+                      <span class="title_input">
+                        {{ $t("select_category") }}
+                      </span>
                       <v-autocomplete
                         :items="listCategories"
                         v-model="stockobj.category_id"
@@ -331,16 +536,18 @@
                         item-value="id"
                         flat
                         solo
-                        placeholder="اختر الفئة"
-                        label="الفئة"
-                        hint="الفئة"
+                        :placeholder="$t('select_category')"
+                        :hint="$t('select_category')"
                         clearable
                         prepend-inner-icon="mdi-filter-outline"
                       ></v-autocomplete>
                     </v-col>
                   </v-row>
-                  <v-row>
+                  <v-row class="mt-n4">
                     <v-col cols="6" sm="6">
+                      <span class="title_input">
+                        {{ $t("complementary_products") }}
+                      </span>
                       <v-autocomplete
                         :items="listAllProducts"
                         v-model="stockobj.accessoires"
@@ -350,9 +557,8 @@
                         flat
                         solo
                         return-object
-                        placeholder="ملحقات الصنف"
-                        label="ملحقات"
-                        hint="ملحقات"
+                        :placeholder="$t('complementary_products')"
+                        :hint="$t('complementary_products')"
                         chips
                         clearable
                         deletable-chips
@@ -360,7 +566,9 @@
                       ></v-autocomplete>
                     </v-col>
                     <v-col cols="6">
-                      الاصناف البديلة في حالة انتهاء الكمية
+                      <span class="title_input">
+                        {{ $t("alternative_products") }}
+                      </span>
                       <v-autocomplete
                         :items="listAllProducts"
                         v-model="stockobj.alternatives"
@@ -373,38 +581,27 @@
                         deletable-chips
                         flat
                         solo
-                        placeholder="اختر الاصناف البديلة في حالة انتهاء الكمية"
-                        label="الاصناف البديلة في حالة انتهاء الكمية"
-                        hint="الاصناف البديلة في حالة انتهاء الكمية"
+                        :placeholder="$t('alternative_products')"
+                        :label="$t('alternative_products')"
+                        :hint="$t('alternative_products')"
                         prepend-inner-icon="mdi-directions-fork"
                       ></v-autocomplete>
                     </v-col>
                   </v-row>
                 </v-tab-item>
-                <v-tab-item key="2">
+                <v-tab-item key="3">
                   <v-row class="mt-3">
-                    <v-col cols="6" sm="6">
-                      <c-date-picker
-                        v-model="stockobj.date_expire"
-                        hint="تاريخ نهاية الصلاحية"
-                        placeholder="تاريخ نهاية الصلاحية"
-                        clearable
-                        @eventname="clearDateExpire"
-                      ></c-date-picker>
-                    </v-col>
-                    <v-col cols="6" sm="6">
-                      <v-text-field
-                        v-model="stockobj.quantity_alert"
-                        placeholder="أدخل كمية التنبيه"
-                        hint="كمية التنبيه"
-                        required
+                    <v-col>
+                      <span class="title_input"> {{ $t("description") }} </span>
+                      <v-textarea
+                        :placeholder="$t('description')"
+                        :hint="$t('description')"
                         flat
+                        v-model="stockobj.note"
                         solo
-                        prepend-inner-icon="mdi-bell-outline"
-                        type="number"
+                        prepend-inner-icon="mdi-comment-text-outline"
                         clearable
-                        :rules="vuser.quantity"
-                      ></v-text-field>
+                      ></v-textarea>
                     </v-col>
                   </v-row>
                 </v-tab-item>
@@ -417,14 +614,16 @@
 
       <v-card-actions class="justify-end">
         <v-spacer></v-spacer>
-        <v-btn large outlined color=" red darken-1" @click="close">إلغاء</v-btn>
+        <v-btn large outlined color=" red darken-1" @click="close">{{
+          $t("cancel")
+        }}</v-btn>
         <v-btn
           :loading="loading"
           large
           color="primary"
           class="mx-5"
           @click="manage"
-          >{{ mutableStockAction == 1 ? "حفظ" : "تعديل" }}
+          >{{ mutableStockAction == 1 ? $t("save") : $t("edit") }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -460,20 +659,35 @@ export default class Manageexp extends Vue {
   mutableStockAction = 1;
   tab = 0;
   selectedBarcode = { name: "", quantity: 1 } as Barcode;
-
+  barcodeToPrint = { name: "", quantity: 1 } as Barcode;
+  numberCopies = 1;
   @Ref() form: any;
+  valid = true;
+
   createPdf(): void {
-    PrintImage.printBarcode(document.getElementById("barcodePrint"));
+    PrintImage.printBarcode(
+      document.getElementById("barcodePrint"),
+      this.setting,
+      this.numberCopies
+    );
+    this.numberCopies = 1;
   }
 
   onChangeBarcode(text: any): void {
+    this.selectedBarcode.name = Decoded.DecodedBarcode(text.target.value);
     this.stockobj.barcode = Decoded.DecodedBarcode(text.target.value);
   }
 
   public dialog = false;
-  valid = true;
 
-  stockobj = { barcode: "", barcodes: [] } as Stock;
+  stockobj = {
+    barcode: "",
+    barcodes: [],
+    quantity_alert: 1,
+    quantity: 0,
+    accessoires: [],
+    alternatives: [],
+  } as Stock;
   vuser = new VUser();
   original = {} as Stock;
 
@@ -521,13 +735,14 @@ export default class Manageexp extends Vue {
 
     this.$root.$on("editstock", (selectstock: Stock) => {
       if (selectstock.barcodes.length > 0) {
-        this.selectedBarcode = selectstock.barcodes[0];
+        this.barcodeToPrint = selectstock.barcodes[0];
       }
       this.stockobj = Object.assign({}, selectstock);
       this.mutableStockAction = 2;
       this.dialog = true;
       this.original = selectstock;
       this.sellPrice();
+      this.sellPrice2();
     });
 
     this.$root.$on("deletedBarcodeId", (id: number) => {
@@ -536,6 +751,9 @@ export default class Manageexp extends Vue {
         this.stockobj.barcodes.findIndex((e) => e.id == id),
         1
       );
+    });
+    this.$root.$on("categoryAdded", (category: Category) => {
+      this.listCategories.push(category);
     });
   }
 
@@ -547,6 +765,15 @@ export default class Manageexp extends Vue {
       ).toFixed(2)
     );
   }
+
+  Percentage2() {
+    this.stockobj.sell_price2 = Number(
+      (
+        Number((this.stockobj.percentage2 * this.stockobj.price) / 100) +
+        Number(this.stockobj.price)
+      ).toFixed(2)
+    );
+  }
   sellPrice() {
     this.stockobj.Percentage = Number(
       (
@@ -554,9 +781,21 @@ export default class Manageexp extends Vue {
       ).toFixed(2)
     );
   }
+  sellPrice2() {
+    this.stockobj.percentage2 = Number(
+      (
+        Number((this.stockobj.sell_price2 * 100) / this.stockobj.price) - 100
+      ).toFixed(2)
+    );
+  }
 
   newStock() {
-    this.stockobj = { barcode: "", barcodes: [] } as Stock;
+    this.stockobj = {
+      barcode: "",
+      barcodes: [],
+      quantity_alert: 1,
+      quantity: 0,
+    } as Stock;
   }
   newBarcode(): void {
     this.selectedBarcode = { name: "", quantity: 1 } as Barcode;
@@ -589,6 +828,7 @@ export default class Manageexp extends Vue {
     if (image != null && image != undefined) {
       this.selectedImage = image;
       this.base64 = await this.convert(this.selectedImage);
+      this.stockobj.path = (image as any).path;
     }
   }
   async convert(file: File): Promise<string> {
@@ -613,7 +853,7 @@ export default class Manageexp extends Vue {
 
   base64 = "";
   get resolveImage(): string {
-    return resolveImage(this.stockobj.photo);
+    return resolveImage(this.stockobj, this.setting.host);
   }
 
   upload(id: number, original: Stock): void {
@@ -639,9 +879,10 @@ export default class Manageexp extends Vue {
   }
 
   loading = false;
-  manage() {
-    this.loading = true;
+  manage(): void {
     if (this.form.validate()) {
+      this.loading = true;
+
       if (this.mutableStockAction == 1) {
         stockApi
           .saveStock(this.stockobj)
@@ -663,6 +904,8 @@ export default class Manageexp extends Vue {
             });
           })
           .catch((error) => {
+            this.loading = false;
+
             SnackBarModule.setSnackbar({
               text: error,
               color: "error",
@@ -699,7 +942,9 @@ export default class Manageexp extends Vue {
             });
           })
           .catch((error) => {
-            this.close();
+            // this.close();
+            this.loading = false;
+
             SnackBarModule.setSnackbar({
               text: error,
               color: "error",
@@ -720,13 +965,14 @@ export default class Manageexp extends Vue {
   }
   clearImage(): void {
     this.stockobj.photo = null;
+    this.stockobj.path = null;
   }
 
   rowClick(item: any, row: any): void {
     if (!row.isSelected) {
       row.select(true);
     }
-    this.selectedBarcode = item;
+    this.barcodeToPrint = item;
   }
 }
 </script>

@@ -96,11 +96,7 @@
             >
               <v-icon>mdi-pencil-outline</v-icon>
             </v-btn>
-            <DeleteDialog
-              :id="item.id"
-              :disabled="false"
-              :source="'ExpenseView.vue'"
-            />
+            <DeleteDialog :id="item.id" :disabled="false" :source="'Depots'" />
           </v-row>
         </template> </v-data-table
     ></v-card>

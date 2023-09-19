@@ -40,42 +40,47 @@
       <!-- <printeDeatail :data="DataSales" :name="nameclient" :FactureNumber="FactureNumber"/> -->
       <!--      <printeDeatail :data="facture" :name="nameclient" />-->
     </v-row>
-    <v-data-table
-      :headers="FactureHeaders"
-      :items="listFacture"
-      single-select
-      item-key="id"
-      @click:row="rowClick"
-      show-expand
-      single-expand
-      :server-items-length="count"
-      @update:options="paginate"
-      class="elevation-1 mt-3"
-      :footer-props="{
-        'items-per-page-options': [10, 10],
-        'show-current-page': true,
-        'show-first-last-page': true,
-        'page-text': 'رقم الصفحة',
-        'items-per-page-text': 'عدد الأسطر',
-      }"
-    >
-      <template v-slot:[`item.actions`]="{ item }">
-        <v-row>
-          <v-btn
-            color="green"
-            small
-            class="ml-2"
-            outlined
-            fab
-            elevation="0"
-            @click="editFacture(item)"
-          >
-            <v-icon>mdi-pencil-outline</v-icon>
-          </v-btn>
-          <delete-dialog :id="item.id" :disabled="false" :source="'Facture'" />
+    <v-card outlined>
+      <v-data-table
+        :headers="FactureHeaders"
+        :items="listFacture"
+        single-select
+        item-key="id"
+        @click:row="rowClick"
+        show-expand
+        single-expand
+        :server-items-length="count"
+        @update:options="paginate"
+        class="elevation-0"
+        :footer-props="{
+          'items-per-page-options': [10, 10],
+          'show-current-page': true,
+          'show-first-last-page': true,
+          'page-text': 'رقم الصفحة',
+          'items-per-page-text': 'عدد الأسطر',
+        }"
+      >
+        <template v-slot:[`item.actions`]="{ item }">
+          <v-row>
+            <v-btn
+              color="green"
+              small
+              class="ml-2"
+              outlined
+              fab
+              elevation="0"
+              @click="editFacture(item)"
+            >
+              <v-icon>mdi-pencil-outline</v-icon>
+            </v-btn>
+            <delete-dialog
+              :id="item.id"
+              :disabled="false"
+              :source="'Facture'"
+            />
 
-          <print-component :item="item" type="زبون"></print-component>
-          <!-- <v-menu offset-y>
+            <print-component :item="item" type="زبون"></print-component>
+            <!-- <v-menu offset-y>
             <template v-slot:activator="{ on, attrs }">
               <v-btn
                 class="mr-2"
@@ -117,34 +122,56 @@
               </v-list-item>
             </v-list>
           </v-menu> -->
-        </v-row>
-      </template>
+          </v-row>
+        </template>
 
-      <template v-slot:expanded-item="{ headers, item }">
-        <td :colspan="headers.length">
-          <div class="mt-3">
-            <v-alert color="primary" dense type="info" border="left" text>{{
-              item.remark ? item.remark : "لا توجد ملاحظة"
-            }}</v-alert>
-            <v-data-table
-              :headers="SaleHeaders"
-              :items="item.sales"
-              item-key="id"
-              class="elevation-1 headers-grey mb-3"
-              color="red"
-              single-select
-              hide-default-footer
-            >
-              <template v-slot:[`item.actions`]="{ item }">
-                <v-row>
-                  <ReturnDialog source="sale" :original="item"></ReturnDialog>
-                </v-row>
-              </template>
-            </v-data-table>
-          </div>
-        </td>
-      </template>
-    </v-data-table>
+        <template v-slot:expanded-item="{ headers, item }">
+          <td :colspan="headers.length">
+            <div class="mt-3">
+              <v-alert color="primary" dense type="info" border="left" text>{{
+                item.remark ? item.remark : "لا توجد ملاحظة"
+              }}</v-alert>
+              <v-alert
+                v-if="item.point > 0"
+                :color="item.gift ? 'green' : 'red'"
+                dense
+                type="error"
+                icon="mdi-gift"
+                border="left"
+                text
+                >{{ item.point + " نقطة " }}
+                <span class="mx-6"
+                  ><v-icon :color="item.gift ? 'green' : 'red'">{{
+                    item.gift ? "mdi-check-circle" : "mdi-close-circle"
+                  }}</v-icon>
+                  {{
+                    item.gift
+                      ? " تم تفعيل النقاط     "
+                      : "لم يتم تفعيل النقاط    "
+                  }}</span
+                ></v-alert
+              >
+              <v-data-table
+                :headers="SaleHeaders"
+                :items="item.sales"
+                item-key="id"
+                class="elevation-1 headers-grey mb-3"
+                color="red"
+                :items-per-page="-1"
+                single-select
+                hide-default-footer
+              >
+                <template v-slot:[`item.actions`]="{ item }">
+                  <v-row>
+                    <ReturnDialog source="sale" :original="item"></ReturnDialog>
+                  </v-row>
+                </template>
+              </v-data-table>
+            </div>
+          </td>
+        </template>
+      </v-data-table>
+    </v-card>
 
     <!-- <div id="facture" class="pa-3" style="width: 1000px">
       <v-row no-gutters class="mt-6">
@@ -251,6 +278,7 @@ import PrintImage from "@/print/print_image";
 import Decoded from "@/helper/decode";
 import { Setting } from "@/classes/setting";
 import PrintComponent from "@/components/PrintComponent.vue";
+import { Debounce } from "vue-debounce-decorator";
 
 @Component({
   components: {
@@ -370,7 +398,7 @@ export default class FactureClientView extends Vue {
     }
   }
 
-  @Watch("search", { deep: true, immediate: true })
+  @Watch("search", { deep: true })
   filterData(): void {
     this.getFactures(this.search);
   }
@@ -387,6 +415,7 @@ export default class FactureClientView extends Vue {
     }
   }
 
+  @Debounce(50)
   getFactures(search: any) {
     this.listFacture = [];
     this.listFacture.length = 0;

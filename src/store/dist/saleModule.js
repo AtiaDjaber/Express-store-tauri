@@ -23,6 +23,7 @@ var vuex_class_modules_1 = require("vuex-class-modules");
 var _1 = require(".");
 var saleApi_1 = require("@/api/saleApi");
 var snackBarModule_1 = require("@/store/snackBarModule");
+var settingModule_1 = require("./settingModule");
 var SaleModule = /** @class */ (function (_super) {
     __extends(SaleModule, _super);
     function SaleModule() {
@@ -74,21 +75,42 @@ var SaleModule = /** @class */ (function (_super) {
         this.cartList = cartList;
     };
     SaleModule.prototype.addItem = function (productNew) {
-        // const productNew = Object.assign({}, sale);
-        productNew.count = this.cartList[this.currentCart].sales.length + 1;
         var index = this.cartList[this.currentCart].sales.findIndex(function (e) { return e.product_id == productNew.product_id; });
-        if (index >= 0)
-            this.cartList[this.currentCart].sales[index].quantity =
-                this.cartList[this.currentCart].sales[index].quantity + 1;
+        if (index >= 0) {
+            // eslint-disable-next-line prefer-const
+            var saleItem = this.cartList[this.currentCart].sales[index];
+            var available = this.checkQuantity(saleItem);
+            if (available || saleItem.product.name == "DIVERS") {
+                saleItem.quantity = saleItem.quantity + productNew.quantity;
+            }
+            else {
+                if (settingModule_1["default"].setting.negative_stock) {
+                    saleItem.quantity = saleItem.quantity + productNew.quantity;
+                }
+            }
+            this.checkPackagePrice(saleItem);
+        }
         else {
             if (productNew.name != undefined) {
-                this.cartList[this.currentCart].sales.splice(0, 0, productNew);
+                productNew.quantity = 0;
+                var available = this.checkQuantity(productNew);
+                productNew.quantity = 1;
+                if (available) {
+                    this.cartList[this.currentCart].sales.splice(0, 0, productNew);
+                }
+                else {
+                    if (settingModule_1["default"].setting.negative_stock) {
+                        this.cartList[this.currentCart].sales.splice(0, 0, productNew);
+                    }
+                }
             }
-            this.checkQuantity(productNew);
         }
     };
     SaleModule.prototype.checkQuantity = function (sale) {
-        if (sale.product.quantity < 1) {
+        var avail = sale.product.quantity > sale.quantity ||
+            sale.product.name == "DIVERS" ||
+            sale.product.name == undefined;
+        if (!avail) {
             snackBarModule_1["default"].setSnackbar({
                 text: "الكمية غير متوفرة",
                 color: "error",
@@ -110,6 +132,18 @@ var SaleModule = /** @class */ (function (_super) {
                 x: "left",
                 y: "top"
             });
+        }
+        return avail;
+    };
+    SaleModule.prototype.checkPackagePrice = function (sale) {
+        var _a;
+        if (sale.product.packing_size != null) {
+            if (sale.product.packing_size <= sale.quantity) {
+                sale.sell_price = (_a = sale.product.packing_price) !== null && _a !== void 0 ? _a : sale.product.sell_price;
+            }
+            else {
+                sale.sell_price = sale.product.sell_price;
+            }
         }
     };
     SaleModule.prototype.clearCart = function () {

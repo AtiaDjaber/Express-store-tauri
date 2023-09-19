@@ -36,7 +36,9 @@ var LoginModule = /** @class */ (function (_super) {
     }
     LoginModule.prototype.login = function (user) {
         var _this = this;
-        return this._service.login(user).then(function (x) {
+        return this._service
+            .login(user)
+            .then(function (x) {
             if (x) {
                 x.chart = x.chart + "" === "1";
                 x.facture = x.facture + "" === "1";
@@ -50,11 +52,15 @@ var LoginModule = /** @class */ (function (_super) {
                 x.product = x.product + "" === "1";
                 x.transfer = x.transfer + "" === "1";
                 x.password = undefined;
+                // if (remember) {
                 _this.setUser(JSON.stringify(x));
+                // }
                 axiosModule_1["default"].setAxiosToken();
                 return x;
             }
             return null;
+        })["catch"](function (error) {
+            console.log(error);
         });
     };
     LoginModule.prototype.setUser = function (x) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-3">
+  <div>
     <v-row class="mr-1 my-2">
       <!--      <printe :data="FactureData" :name="namefournisseur" />-->
       <v-col cols="5">
@@ -254,6 +254,7 @@ import ReturnDialog from "@/components/custom_dialogs/ReturnDialog.vue";
 import historyApi from "@/api/historyApi";
 import Decoded from "@/helper/decode";
 import PrintComponent from "@/components/PrintComponent.vue";
+import { Debounce } from "vue-debounce-decorator";
 
 @Component({
   components: {
@@ -379,6 +380,8 @@ export default class FactureFournisseurView extends Vue {
   filterData(): void {
     this.getFacturesFournisseur();
   }
+
+  @Debounce(50)
   getFacturesFournisseur(): void {
     this.FactureData = [];
     this.FactureData.length = 0;

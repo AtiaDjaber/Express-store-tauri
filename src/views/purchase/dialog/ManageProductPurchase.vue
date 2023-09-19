@@ -29,6 +29,7 @@
               append-icon="fa-search"
               solo
               flat
+              @keyup="onChangeBarcode"
               v-model="search.name"
               clearable
             ></v-text-field>
@@ -93,6 +94,10 @@ import purchaseModule from "@/store/purchaseModule";
 import Stock from "@/classes/stock";
 import Purchase from "@/classes/purchase";
 import Search from "@/classes/search";
+import Decoded from "@/helper/decode";
+import { Debounce } from "vue-debounce-decorator";
+import commandFournisseurModule from "@/store/commandFournisseurModule";
+import ItemCommandFournisseur from "@/classes/ItemCommandFournisseur";
 
 @Component({ components: {} })
 export default class ManageProductPurchase extends Vue {
@@ -103,16 +108,14 @@ export default class ManageProductPurchase extends Vue {
   menuState = false;
   date = "";
 
+  @Prop({ default: "purchaseFournisseur" }) typeFacture!: string;
+
   save(date: string) {
     this.menu.save(date);
   }
 
-  @Ref() bdayMenu!: any;
-  bdayMenuState = false;
-  bdayDate = "";
-
-  saveBday(date: string) {
-    this.menu.save(date);
+  onChangeBarcode(text: any): void {
+    this.search.name = Decoded.DecodedBarcode(text.target.value);
   }
 
   public dialog = false;
@@ -120,38 +123,43 @@ export default class ManageProductPurchase extends Vue {
   vexpense = new VExpense();
 
   Apiexpense = new expenseApi();
-  expenseobj = {} as Expense;
-  // vexpense = new VExpense();
-  original = {} as Expense;
 
   created() {
     // this.getProducts("1");
+    this.$root.$on("searchManagePurchase", (search: string) => {
+      this.search.name = search;
 
-    this.mutableExpenseAction = this.expenseAction;
-
-    this.$root.$on("editexpense", (selectexpense: expense) => {
-      // selectexpense.date = TimeFormatService.format_date(new Date(selectexpense.date));
-      this.expenseobj = Object.assign({}, selectexpense);
-
-      this.mutableExpenseAction = 2;
       this.dialog = true;
-      this.original = selectexpense;
     });
+    this.mutableExpenseAction = this.expenseAction;
   }
 
   addToCart(stock: Stock) {
-    let purchase = Object.assign({}, {
-      quantity: 1,
-      product_id: stock.id,
-      name: stock.name,
-      purchase_price: stock.price,
-      barcode: stock.barcode,
-      total: 0,
-      price: stock.sell_price,
-    } as Purchase);
+    console.log(this.typeFacture);
+    if (this.typeFacture == "purchaseFournisseur") {
+      let purchase = Object.assign({}, {
+        quantity: 1,
+        product_id: stock.id,
+        name: stock.name,
+        purchase_price: stock.price,
+        barcode: stock.barcode,
+        total: 0,
+        price: stock.sell_price,
+      } as Purchase);
 
-    // this.$root.$emit("addItem",  purchase);
-    purchaseModule.addItem(purchase);
+      // this.$root.$emit("addItem",  purchase);
+      purchaseModule.addItem(purchase);
+    } else {
+      let purchase = Object.assign({}, {
+        quantity: 1,
+        product_id: stock.id,
+        name: stock.name,
+        price: stock.sell_price,
+      } as ItemCommandFournisseur);
+
+      // this.$root.$emit("addItem",  purchase);
+      commandFournisseurModule.addItem(purchase);
+    }
   }
 
   close() {
@@ -161,10 +169,10 @@ export default class ManageProductPurchase extends Vue {
 
   liststock = [] as Stocks[];
   count = 0;
-  private apiStock = new stockApi();
   headersProducts = [
     // { text: "الباركود", value: "barcode" },
     { text: "الاسم", value: "name" },
+    { text: "المرجع", value: "reference" },
     { text: " الكمية", value: "quantity" },
     { text: "السعر", value: "price" },
     { text: "سعر البيع", value: "sell_price" },
@@ -178,6 +186,7 @@ export default class ManageProductPurchase extends Vue {
     this.getProducts(this.search);
   }
 
+  @Debounce(120)
   getProducts(search?: Search): void {
     stockApi
       .getStock(search)

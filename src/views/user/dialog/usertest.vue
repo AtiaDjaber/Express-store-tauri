@@ -137,7 +137,7 @@
               <v-col>
                 <v-switch
                   inset
-                  label="الفواتير"
+                  :label="$t('factures')"
                   v-model="userobj.facture"
                 ></v-switch>
               </v-col>

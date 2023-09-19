@@ -1,5 +1,5 @@
 export class Notification {
-  text: string;
+  text: any;
   color: string;
   timeout: number;
   show = false;

@@ -41,7 +41,7 @@
                 <v-btn
                   color="green"
                   small
-                  class="ml-2"
+                  class="me-2"
                   outlined
                   fab
                   elevation="0"
@@ -80,11 +80,12 @@
                   class="ma-1"
                   style="cursor: pointer"
                 >
-                  <v-img
-                    :src="getFullPath(product.photo)"
-                    contain
-                    height="110px"
-                  >
+                  <img
+                    height="110"
+                    style="position: absolute; width: 100%; object-fit: contain"
+                    :src="getFullPath(product)"
+                  />
+                  <v-img height="110px">
                     <div class="ribbon-1">
                       <span style="color: white" class="prevent-select">
                         {{ product.sell_price }}</span
@@ -187,6 +188,7 @@ import settingModule from "@/store/settingModule";
 import ManageProductFav from "@/views/stock/dialog/ManageProductFav.vue";
 import Stock from "@/classes/stock";
 import HelperFunctions from "@/helper/helper_functions";
+import { resolveImage } from "@/helper/global_function";
 
 @Component({ components: { FavManage, DeleteDialog, ManageProductFav } })
 export default class FavoriteView extends Vue {
@@ -299,9 +301,7 @@ export default class FavoriteView extends Vue {
     return settingModule.getSetting;
   }
 
-  host: string;
   created() {
-    this.host = process.env.VUE_APP_API_URL;
     this.getFavorites();
     this.$root.$on("addProductToFav", (stock: Stock) => {
       this.selectedFav.products.unshift(stock);
@@ -309,6 +309,7 @@ export default class FavoriteView extends Vue {
     this.$root.$on("createdFav", (favorite: Favorite) => {
       favorite.products = [];
       this.listFavorites.unshift(favorite);
+
       // this.selectedFav = favorite;
     });
     this.$root.$on("deletedFavoriteId", (deletedFavoriteId: number) => {
@@ -323,8 +324,8 @@ export default class FavoriteView extends Vue {
       }
     });
   }
-  getFullPath(photo: string) {
-    return this.host + "storage/attachments/" + photo;
+  getFullPath(stock: Stock): string {
+    return resolveImage(stock, this.setting.host);
   }
   rowClick(item: any, row: any) {
     if (!row.isSelected) {

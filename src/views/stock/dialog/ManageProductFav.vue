@@ -9,8 +9,7 @@
           large
           elevation="0"
         >
-          إضافة صنف
-          <v-icon>mdi-plus</v-icon>
+          {{ $t("ajoute") }} <v-icon>mdi-plus</v-icon>
         </v-btn>
       </div>
     </template>
@@ -21,55 +20,110 @@
       <v-divider></v-divider>
       <v-card-text>
         <v-container>
-          <v-row class="mt-1">
-            <v-text-field
-              label="الصنف"
-              placeholder="البحث باسم الصنف"
-              required
-              append-icon="fa-search"
-              flat
-              solo
-              :value="search.name"
-              @keyup="onChangeBarcode"
-              @click:clear="clearInput"
-              clearable
-            ></v-text-field>
-          </v-row>
-
-          <v-data-table
-            class="mb-n3"
-            :headers="headersProducts"
-            :items="liststock"
-            single-select
-            dense
-            @click:row="rowClick"
-            :server-items-length="count"
-            :items-per-page="10"
-            @update:options="paginate"
-            :footer-props="{
-              'items-per-page-options': [10, 10],
-              'show-current-page': true,
-              'show-first-last-page': true,
-              'page-text': 'رقم الصفحة',
-              'items-per-page-text': 'عدد الأسطر',
-            }"
-          >
-            <template v-slot:[`item.actions`]="{ item }">
-              <v-row class="my-1">
-                <v-btn
-                  color="green"
-                  class="mr-2"
-                  small
-                  outlined
-                  fab
-                  elevation="0"
-                  @click="addToFav(item)"
-                >
-                  <v-icon>mdi-plus</v-icon>
-                </v-btn>
+          <v-row>
+            <v-col>
+              <v-row class="mt-1">
+                <v-text-field
+                  label="الصنف"
+                  placeholder="البحث باسم الصنف"
+                  required
+                  append-icon="fa-search"
+                  flat
+                  solo
+                  :value="search.name"
+                  @keyup="onChangeBarcode"
+                  @click:clear="clearInput"
+                  clearable
+                ></v-text-field>
               </v-row>
-            </template>
-          </v-data-table>
+
+              <v-data-table
+                class="mb-n3"
+                :headers="headersProducts"
+                :items="liststock"
+                single-select
+                @click:row="rowClick"
+                :server-items-length="count"
+                :items-per-page="10"
+                @update:options="paginate"
+                :footer-props="{
+                  'items-per-page-options': [10, 10],
+                  'show-current-page': true,
+                  'show-first-last-page': true,
+                  'page-text': 'رقم الصفحة',
+                  'items-per-page-text': 'عدد الأسطر',
+                }"
+              >
+              </v-data-table>
+            </v-col>
+            <v-col
+              cols="5"
+              align-center
+              align-self="center"
+              v-show="selectedItem.id != null"
+            >
+              <v-card outlined>
+                <v-footer height="55" color="transparent" elevation="0">
+                  <h3>معلومات الصنف</h3>
+                </v-footer>
+                <v-divider></v-divider>
+                <v-footer class="mx-2 mt-3" height="47" rounded>
+                  <v-col class="text-center" cols="12">
+                    {{ selectedItem.name }}
+                  </v-col>
+                </v-footer>
+                <v-col class="mt-2">
+                  <v-text-field
+                    placeholder="أدخل الكمية "
+                    hint="الكمية "
+                    required
+                    flat
+                    class="centered-input"
+                    style="text-align: center"
+                    v-model="selectedItem.quantity"
+                    solo
+                    hide-details
+                    hide-spin-buttons
+                    prepend-inner-icon="mdi-cart-minus"
+                    type="number"
+                  >
+                    <template v-slot:append>
+                      <v-icon @click="selectedItem.quantity++">mdi-plus</v-icon>
+                    </template>
+                    <template v-slot:prepend-inner>
+                      <v-icon @click="selectedItem.quantity--"
+                        >mdi-minus</v-icon
+                      >
+                    </template></v-text-field
+                  >
+                </v-col>
+                <v-col>
+                  <v-select
+                    v-model="favorite.depot_id"
+                    :items="listDepots"
+                    item-text="name"
+                    item-value="id"
+                    hide-details
+                    solo
+                    flat
+                    label="المخزن"
+                    placeholder="اختر المخزن "
+                    prepend-inner-icon="mdi-store-outline"
+                    clearable
+                  ></v-select>
+                </v-col>
+                <v-col justify-center>
+                  <v-btn
+                    large
+                    color="primary darken-1"
+                    class="my-3"
+                    @click="addToFav(selectedItem)"
+                    >إضافة الصنف</v-btn
+                  >
+                </v-col>
+              </v-card>
+            </v-col>
+          </v-row>
         </v-container>
       </v-card-text>
       <v-divider></v-divider>
@@ -82,10 +136,7 @@
 </template>
 <script lang="ts">
 import { Vue, Component, Ref, Prop, Watch } from "vue-property-decorator";
-import expense from "@/classes/expense";
-import Expense from "@/classes/expense";
-import VExpense from "@/validation/vExpense";
-import expenseApi from "@/api/expenseApi";
+
 import SnackBarModule from "@/store/snackBarModule";
 import Stocks from "@/classes/stock";
 import stockApi from "@/api/stockApi";
@@ -95,37 +146,28 @@ import Sale from "@/classes/sale";
 import Search from "@/classes/search";
 import Decoded from "@/helper/decode";
 import Favorite from "@/classes/favorite";
+import DepotApi from "@/api/depotApi";
+import Depot from "@/classes/depot";
 
 @Component({ components: {} })
 export default class ManageProductFav extends Vue {
   @Prop({ default: 0 }) expenseAction!: number;
   mutableExpenseAction = 0;
   @Ref() form: any;
-  @Ref() menu!: any;
-  menuState = false;
-  date = "";
   favorite = {} as Favorite;
-
-  save(date: string) {
-    this.menu.save(date);
-  }
-
-  @Ref() bdayMenu!: any;
-  bdayMenuState = false;
-  bdayDate = "";
-
-  saveBday(date: string) {
-    this.menu.save(date);
-  }
 
   public dialog = false;
   valid = true;
-  //  TODO :disabled="mutableExpenseAction == 2 && !expenseobj.id"
-  // expenseobj = {} as Expense;
-
-  // vexpense = new VExpense();
-
+  private api = new DepotApi();
+  listDepots = [] as Depot[];
   created() {
+    this.api.getDepots(this.search).then((data) => {
+      this.listDepots = (data as any).data;
+      this.listDepots.push({
+        id: null,
+        name: "المخزن الرئيسي",
+      });
+    });
     this.mutableExpenseAction = this.expenseAction;
 
     this.$root.$on("selectedFavorite", (favorite: Favorite) => {
@@ -143,7 +185,6 @@ export default class ManageProductFav extends Vue {
   }
 
   onChangeBarcode(text: any): void {
-    //  &'èèàààéà&&à"
     this.search.name = Decoded.DecodedBarcode(text.target.value);
   }
   clearInput(): void {
@@ -185,7 +226,6 @@ export default class ManageProductFav extends Vue {
   headersProducts = [
     // { text: "الباركود", value: "barcode" },
     { text: "الاسم", value: "name" },
-    { text: " الكمية", value: "quantity" },
     { text: "سعر البيع", value: "sell_price" },
     { text: "", value: "actions" },
   ];
@@ -229,11 +269,10 @@ export default class ManageProductFav extends Vue {
   selectedItem = {} as Stock;
 
   rowClick(item: any, row: any) {
-    console.log("one CLick");
-
     if (!row.isSelected) {
       row.select(true);
       this.selectedItem = item;
+      this.selectedItem.quantity = 1;
     } else {
       row.select(false);
       this.selectedItem = {} as Stock;

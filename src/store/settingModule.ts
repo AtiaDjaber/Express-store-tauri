@@ -19,8 +19,20 @@ class settingModule extends VuexModule {
       email: "",
       remark: "",
       tel: "",
+      locale: "ar",
+      negative_stock: true,
+      priceSell: "السعر 1",
       warning: "",
+      server: 0,
+      remember: false,
+      host: "http://localhost:8000/",
       name_store: "اسم المحل",
+      pointFromPrice: 0,
+      pointToPrice: 0,
+      priceFromPoint: 0,
+      priceToPoint: 0,
+      printBarcodeName: true,
+      printBarcodePrice: true,
     } as Setting;
   }
   @Action

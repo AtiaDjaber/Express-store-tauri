@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row class="mt-6" justify="center">
-      <v-btn large @click="updateSetting()" color="blue darken-3 white--text">
+      <v-btn large @click="updateSetting()" color="primary ">
         حفظ
         <v-icon class="ma-2" large>mdi-content-save</v-icon>
       </v-btn>
@@ -31,63 +31,107 @@
         <h2 class="ma-2">الزبائن الأوفياء</h2>
       </v-tab>
       <v-tab-item>
-        <v-row justify="center" class="mx-8 mt-8">
-          <v-col cols="4">
-            <h3 class="ma-2 primary--text">اختر تاريخ الزكاة</h3>
-            <c-date-picker
-              placeholder="اختر تاريخ الزكاة"
-              label="اختر تاريخ الزكاة"
-              hint="اختر تاريخ الزكاة"
-              clearable
-              v-model="setting.zakat"
-              flat
-              solo
-            ></c-date-picker>
-          </v-col>
-          <v-col cols="4"></v-col>
-        </v-row>
-        <v-row justify="center" class="mx-8">
-          <v-col cols="4">
-            <h3 class="ma-2 primary--text">اختر مخزن البيع</h3>
-            <v-select
-              v-model="setting.depot_id"
-              :items="listDepots"
-              item-text="name"
-              item-value="id"
-              flat
-              solo
-              hint="اختر مخزن البيع"
-              label="اختر مخزن البيع"
-              placeholder="اختر مخزن البيع"
-              prepend-inner-icon="mdi-store-outline"
-            ></v-select>
-          </v-col>
-          <v-col cols="4"></v-col>
-        </v-row>
-        <v-row justify="center">
-          <v-col cols="5">
-            <h3 class="ma-2 primary--text">عرض المفضلة</h3>
+        <v-container>
+          <v-row class="mt-6">
+            <v-col cols="4">
+              <h3 class="ma-2 primary--text">اختر تاريخ الزكاة</h3>
+              <c-date-picker
+                placeholder="اختر تاريخ الزكاة"
+                label="اختر تاريخ الزكاة"
+                hint="اختر تاريخ الزكاة"
+                clearable
+                v-model="setting.zakat"
+                flat
+                solo
+              ></c-date-picker>
+            </v-col>
+          </v-row>
+          <v-row class="mt-n6">
+            <v-col cols="4">
+              <h3 class="ma-2 primary--text">اختر مخزن البيع</h3>
+              <v-select
+                v-model="setting.depot_id"
+                :items="listDepots"
+                item-text="name"
+                item-value="id"
+                flat
+                solo
+                hint="اختر مخزن البيع"
+                label="اختر مخزن البيع"
+                placeholder="اختر مخزن البيع"
+                prepend-inner-icon="mdi-store-outline"
+              ></v-select>
+            </v-col>
+            <v-col cols="4"></v-col>
+          </v-row>
+          <v-row class="mt-n3">
+            <v-col cols="6">
+              <h3 class="ma-2 primary--text">عرض المفضلة</h3>
 
-            <v-btn-toggle
-              v-model="setting.isImage"
-              mandatory
-              class="mt-3"
-              group
-              background-color="red"
-              color="primary"
-            >
-              <v-btn text>
-                <v-icon class="mx-2">mdi-image-outline</v-icon>
-                صور
-              </v-btn>
-              <v-btn text>
-                ازرار
-                <v-icon class="mx-2">mdi-image-off-outline</v-icon>
-              </v-btn>
-            </v-btn-toggle>
-          </v-col>
-        </v-row>
-        <v-row class="my-6"></v-row>
+              <v-btn-toggle
+                v-model="setting.isImage"
+                mandatory
+                class="mt-1"
+                group
+                background-color="red"
+                color="primary"
+              >
+                <v-btn text>
+                  <v-icon class="mx-2">mdi-image-outline</v-icon>
+                  صور
+                </v-btn>
+                <v-btn text>
+                  ازرار
+                  <v-icon class="mx-2">mdi-image-off-outline</v-icon>
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+            <v-col cols="6">
+              <h3 class="ma-2 primary--text">البيع بالكميات السالبة</h3>
+
+              <v-btn-toggle
+                v-model="setting.negative_stock"
+                mandatory
+                class="mt-1"
+                group
+                background-color="red"
+                color="primary"
+              >
+                <v-btn text>
+                  مرفوض
+                  <v-icon class="mx-2">mdi-cancel</v-icon>
+                </v-btn>
+                <v-btn text>
+                  <v-icon class="mx-2">mdi-check-circle-outline</v-icon>
+                  مقبول
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row>
+          <v-row class="mt-n3">
+            <v-col cols="6">
+              <h3 class="ma-2 primary--text">اختيار السيرفر</h3>
+
+              <v-btn-toggle
+                v-model="setting.server"
+                mandatory
+                class="mt-3"
+                group
+                background-color="red"
+                color="primary"
+              >
+                <v-btn @click="changeServer(0)" text>
+                  <v-icon class="mx-2">mdi-server</v-icon>
+                  السيرفر الرئيسي
+                </v-btn>
+                <v-btn @click="changeServer(1)" text>
+                  السيرفر الإحتياطي
+                  <v-icon class="mx-2">mdi-server</v-icon>
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-tab-item>
 
       <v-tab-item class="ma-16">
@@ -122,10 +166,9 @@
                 </v-text-field>
               </v-col>
             </v-row>
-            <v-row justify="center" class="mt-n3">
+            <v-row justify="center" class="mt-n6">
               <v-col cols="6">
                 <h3 class="ma-2 primary--text">العنوان</h3>
-
                 <v-text-field
                   v-model="setting.address"
                   flat
@@ -151,10 +194,74 @@
                 ></v-text-field>
               </v-col>
             </v-row>
-            <v-row>
+            <v-row justify="center" class="mt-n6">
+              <v-col cols="6">
+                <h3 class="ma-2 primary--text">NºRC</h3>
+                <v-text-field
+                  v-model="setting.n_rc"
+                  flat
+                  solo
+                  clearable
+                  prepend-inner-icon="mdi-file-document-outline"
+                  label="NºRC"
+                  hint="NºRC"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <h3 class="ma-2 primary--text">RIP</h3>
+
+                <v-text-field
+                  v-model="setting.rip"
+                  clearable
+                  flat
+                  solo
+                  prepend-inner-icon="mdi-file-document-outline"
+                  hint="RIP"
+                  placeholder="RIP"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row justify="center" class="mt-n6">
+              <v-col cols="6">
+                <h3 class="ma-2 primary--text">NIS</h3>
+                <v-text-field
+                  v-model="setting.nis"
+                  flat
+                  solo
+                  clearable
+                  prepend-inner-icon="mdi-file-document-outline"
+                  label="NIS"
+                  hint="NIS"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <h3 class="ma-2 primary--text">NIF</h3>
+                <v-text-field
+                  v-model="setting.nif"
+                  clearable
+                  flat
+                  solo
+                  prepend-inner-icon="mdi-file-document-outline"
+                  hint="NIF"
+                  placeholder=" NIF"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row class="mt-n6">
+              <v-col cols="6">
+                <h3 class="ma-2 primary--text">NºAI</h3>
+                <v-text-field
+                  v-model="setting.n_ai"
+                  clearable
+                  flat
+                  solo
+                  prepend-inner-icon="mdi-file-document-outline"
+                  hint="NºAI"
+                  placeholder=" NºAI"
+                ></v-text-field>
+              </v-col>
               <v-col>
                 <h3 class="ma-2 primary--text">ملاحظة أسفل الفاتورة</h3>
-
                 <v-text-field
                   v-model="setting.remark"
                   clearable
@@ -171,33 +278,39 @@
             <v-row class="mb-2">
               <h3 class="ma-2 primary--text">شعار المحل</h3>
             </v-row>
-            <v-card flat elevation="1" width="250" height="250" outlined>
+            <v-card flat elevation="0" width="250" height="250" outlined>
               <v-img
                 eager
                 aspect-ratio="1"
                 :src="
                   setting.logo == null
-                    ? 'require(../src/assets/no-image.png)'
+                    ? require('@/assets/no-image.png')
                     : setting.logo
                 "
               >
                 <v-row class="ma-1">
-                  <v-icon
-                    class="ma-1"
-                    color="red"
+                  <v-btn
                     v-if="setting.logo != null"
-                    size="30"
+                    fab
+                    small
                     @click="clearImage"
-                    >mdi-delete
-                  </v-icon>
-                  <v-file-input
-                    class="mr-1"
-                    hide-input
-                    id="file_cam"
-                    accept="image/png, image/jpeg, image/bmp"
-                    prepend-icon="fa-camera"
-                    @change="selectImage"
-                  ></v-file-input>
+                    class="ma-2"
+                    elevation="1"
+                  >
+                    <v-icon class="ma-1" color="red" size="30"
+                      >mdi-delete
+                    </v-icon>
+                  </v-btn>
+                  <v-btn fab small class="ma-2" elevation="1">
+                    <v-file-input
+                      class="ps-2 pb-4"
+                      hide-input
+                      id="file_cam"
+                      accept="image/png, image/jpeg, image/bmp,image/webp"
+                      prepend-icon="fa-camera"
+                      @change="selectImage"
+                    ></v-file-input
+                  ></v-btn>
                 </v-row>
               </v-img>
             </v-card>
@@ -206,58 +319,79 @@
       </v-tab-item>
 
       <v-tab-item class="ma-16">
-        <v-col justify="center" class="mb-6">
-          <v-row class="mt-n3">
-            <v-col cols="6">
-              <h3 class="ma-2 primary--text">طابعة الباركود</h3>
+        <v-row class="mt-n8">
+          <v-col>
+            <h3 class="ma-2 primary--text">الطابعة الإفتراضية للبيع</h3>
 
-              <v-select
-                v-model="setting.barcode"
-                :items="listPrinter"
-                item-text="name"
-                flat
-                solo
-                label="طابعة الباركود"
-                placeholder="إختيار اسم طابعة الباركود"
-                prepend-inner-icon="mdi-printer-outline"
-              ></v-select>
-            </v-col>
-            <v-col cols="4"></v-col>
-          </v-row>
-          <v-row class="mt-n3">
-            <v-col cols="6">
-              <h3 class="ma-2 primary--text">طابعة الفاتورة</h3>
-              <v-select
-                v-model="setting.facture"
-                :items="listPrinter"
-                item-text="name"
-                flat
-                solo
-                label="طابعة الفاتورة"
-                placeholder="إختيار اسم طابعة الفاتورة"
-                prepend-inner-icon="mdi-printer-outline"
-              ></v-select>
-            </v-col>
-            <v-col cols="4"></v-col>
-          </v-row>
-          <v-row class="mt-n3">
-            <v-col cols="6">
-              <h3 class="ma-2 primary--text">طابعة الوصل</h3>
+            <v-btn-toggle
+              v-model="setting.isReceiptDefault"
+              mandatory
+              class="mt-3"
+              group
+              background-color="red"
+              color="primary"
+            >
+              <v-btn text>
+                الفاتورة (A4)
+                <v-icon class="mx-2">mdi-printer-outline</v-icon>
+              </v-btn>
+              <v-btn text>
+                <v-icon class="mx-2">mdi-script</v-icon>
+                الوصل
+              </v-btn>
+            </v-btn-toggle>
+          </v-col>
+        </v-row>
+        <v-row class="mt-n3">
+          <v-col cols="6">
+            <h3 class="ma-2 primary--text">طابعة الباركود</h3>
 
-              <v-select
-                v-model="setting.receipt"
-                :items="listPrinter"
-                item-text="name"
-                flat
-                solo
-                label="طابعة الوصل"
-                placeholder="إختيار اسم طابعة الوصل"
-                prepend-inner-icon="mdi-printer-outline"
-              ></v-select>
-            </v-col>
-            <v-col cols="4"></v-col>
-          </v-row>
-        </v-col>
+            <v-select
+              v-model="setting.barcode"
+              :items="listPrinter"
+              item-text="name"
+              flat
+              solo
+              label="طابعة الباركود"
+              placeholder="إختيار اسم طابعة الباركود"
+              prepend-inner-icon="mdi-printer-outline"
+            ></v-select>
+          </v-col>
+          <v-col cols="4"></v-col>
+        </v-row>
+        <v-row class="mt-n3">
+          <v-col cols="6">
+            <h3 class="ma-2 primary--text">طابعة الفاتورة</h3>
+            <v-select
+              v-model="setting.facture"
+              :items="listPrinter"
+              item-text="name"
+              flat
+              solo
+              label="طابعة الفاتورة"
+              placeholder="إختيار اسم طابعة الفاتورة"
+              prepend-inner-icon="mdi-printer-outline"
+            ></v-select>
+          </v-col>
+          <v-col cols="4"></v-col>
+        </v-row>
+        <v-row class="mt-n3">
+          <v-col cols="6">
+            <h3 class="ma-2 primary--text">طابعة الوصل</h3>
+
+            <v-select
+              v-model="setting.receipt"
+              :items="listPrinter"
+              item-text="name"
+              flat
+              solo
+              label="طابعة الوصل"
+              placeholder="إختيار اسم طابعة الوصل"
+              prepend-inner-icon="mdi-printer-outline"
+            ></v-select>
+          </v-col>
+          <v-col cols="4"></v-col>
+        </v-row>
       </v-tab-item>
 
       <v-tab-item class="ma-16">
@@ -289,7 +423,7 @@
         <v-col justify="center" class="mb-6">
           <v-card outlined elevation="0">
             <div class="plain pa-1">
-              <h3 class="green--text pa-5">
+              <h3 class="green--text pa-4">
                 <v-icon color="green" class="mx-2">mdi-arrow-up</v-icon>اكتساب
                 النقاط
               </h3>
@@ -334,7 +468,7 @@
           </v-card>
           <v-card class="mt-8" outlined elevation="0">
             <div class="plain pa-1">
-              <h3 class="secondary--text pa-5">
+              <h3 class="secondary--text pa-4">
                 <v-icon color="secondary" class="mx-2">mdi-arrow-down</v-icon
                 >استبدال النقاط
               </h3>
@@ -392,7 +526,6 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-// import * as electron from "electron";
 import CDatePicker from "@/components/CDatePicker.vue";
 import SettingApi from "@/api/setting_api";
 import { Setting } from "@/classes/setting";
@@ -401,8 +534,6 @@ import settingModule from "@/store/settingModule";
 import DepotApi from "@/api/depotApi";
 import Depot from "@/classes/depot";
 import Search from "@/classes/search";
-import PrintImage from "@/print/print_image";
-// import { exec } from "child_process";
 
 @Component({ components: { CDatePicker } })
 export default class SettingView extends Vue {
@@ -432,6 +563,15 @@ export default class SettingView extends Vue {
     //     });
     //   });
   }
+
+  changeServer(server: number): void {
+    // if (server == 0) {
+    //   execFile("start.bat");
+    // } else {
+    //   execFile("start2.bat");
+    // }
+  }
+
   convertToBase64(file: File): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -471,27 +611,12 @@ export default class SettingView extends Vue {
     SnackBarModule.setSnackbar({
       text: "تمت عملية التعديل بنجاح",
       color: "success",
-      timeout: 3000,
+      timeout: 1000,
       show: true,
       icon: "mdi-checkbox-marked-circle-outline",
       x: "right",
       y: "top",
     });
-    // this.settingApi.updateSetting(this.setting).then((res) => {
-    //   localStorage.setItem("depot_id", this.setting.depot_id?.toString());
-    //   if (res.status == 200) {
-    //     settingModule.getSettings();
-    //     SnackBarModule.setSnackbar({
-    //       text: "تمت عملية التعديل بنجاح",
-    //       color: "success",
-    //       timeout: 3000,
-    //       show: true,
-    //       icon: "mdi-checkbox-marked-circle-outline",
-    //       x: "right",
-    //       y: "top",
-    //     });
-    //   }
-    // });
   }
 
   get setting() {
@@ -513,25 +638,33 @@ export default class SettingView extends Vue {
   }
 
   async getPrinters(): Promise<void> {
-    this.listPrinter = await PrintImage.getPrinters();
+    // let win = new electron.remote.BrowserWindow({ show: false });
+    // this.listPrinter = win.webContents.getPrinters();
   }
   loading = false;
-  restoreDB(file: File): void {
-    if (file != null) {
-      this.loading = true;
-      // const printCmd = exec(
-      //   "mysql -u root express_store < backup\\" + file.name
-      // );
 
-      // printCmd.stdout.on("data", (data) => {
-      //   this.loading = false;
-      //   console.log(`print data: ${data}`);
-      // });
-      // printCmd.stderr.on("data", (data) => {
-      //   console.error(`child stderr:\n${data}`);
-      //   this.loading = false;
-      // });
-    }
+  // must file name not contains any spaces
+  restoreDB(file: File): void {
+    // console.log(file);
+    // if (file != null) {
+    //   this.loading = true;
+    //   let command = "mysql -u root express_store < " + '"' + file.path + '"';
+    //   console.log(command);
+    //   const printCmd = exec(command);
+    //   printCmd.stdout.on("data", (data) => {
+    //     this.loading = false;
+    //     console.log(`print data: ${data}`);
+    //   });
+    //   printCmd.stdout.on("end", () => {
+    //     this.loading = false;
+    //   });
+    //   printCmd.stdout.on("close", () => {
+    //     this.loading = false;
+    //   });
+    //   printCmd.stderr.on("data", (data) => {
+    //     console.error(`child stderr:\n${data}`);
+    //     this.loading = false;
+    //   });
   }
 }
 </script>

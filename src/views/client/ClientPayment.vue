@@ -1,6 +1,6 @@
 <template>
-  <v-col>
-    <v-row>
+  <div>
+    <v-row class="mt-3">
       <v-col>
         <c-date-picker
           placeholder="التاريخ"
@@ -35,9 +35,10 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-col>
+
+    <v-card outlined>
       <v-data-table
-        elevation="3"
+        elevation="0"
         :headers="paymentHeaders"
         :items="paymentData"
         @click:row="rowClick"
@@ -53,15 +54,27 @@
         }"
       >
         <template v-slot:[`item.actions`]="{ item }">
-          <delete-dialog
-            :id="item.id"
-            :disabled="false"
-            :source="'CLIENTPAYMENT'"
-          />
+          <v-row>
+            <delete-dialog
+              :id="item.id"
+              :disabled="false"
+              :source="'CLIENTPAYMENT'"
+            />
+            <v-btn
+              class="ms-2"
+              fab
+              outlined
+              small
+              @click="print(item)"
+              color="primary"
+            >
+              <v-icon>mdi-printer-outline</v-icon>
+            </v-btn>
+          </v-row>
         </template>
       </v-data-table>
-    </v-col>
-  </v-col>
+    </v-card>
+  </div>
 </template>
 
 <script lang="ts">
@@ -72,6 +85,11 @@ import SnackBarModule from "@/store/snackBarModule";
 import CDatePicker from "@/components/CDatePicker.vue";
 import DeleteDialog from "@/components/custom_dialogs/DeleteDialog.vue";
 import client from "@/classes/client";
+import { AxiosError } from "axios";
+import PrintImage from "@/print/print_image";
+import settingModule from "@/store/settingModule";
+import { Debounce } from "vue-debounce-decorator";
+import { formatCurrency } from "@/helper/global_function";
 
 @Component({
   components: { CDatePicker, DeleteDialog },
@@ -80,34 +98,23 @@ export default class ClientPaymentView extends Vue {
   paymentHeaders = [
     { text: "#", value: "id" },
     { text: "التاريخ", value: "date" },
-    { text: "السعر", value: "price" },
+    { text: "المبلغ", value: "price" },
     { text: "", value: "actions" },
   ];
   paymentData = [] as clientPayment[];
 
   payment = {} as clientPayment;
-  dataPrint: any = 0;
-  @Ref() menu!: any;
-  menuState = false;
-  date = "";
-
-  save(date: string) {
-    this.menu.save(date);
-  }
 
   count = 0;
-  clientId = 0;
   rest: number;
-  nameClient: any = "";
-  dayn: number = 0;
-  index: any;
+  selectedClient = {} as client;
 
   created() {
     this.$root.$on("clientId", (item: client) => {
-      this.clientId = item.id;
-      this.nameClient = item.name;
-      this.dayn = item.montant;
-      this.count++;
+      this.selectedClient = item;
+      // this.count++;
+      this.payment.client_id = item.id;
+      this.getClientPayments(this.selectedClient.id, "");
     });
 
     this.$root.$on("deletedClientPayment", (id: number) => {
@@ -122,38 +129,21 @@ export default class ClientPaymentView extends Vue {
     });
   }
 
-  datawasel = {} as clientPayment;
-
   rowClick(item: any, row: any) {
     if (!row.isSelected) {
       row.select(true);
-      this.index = row.index;
-      this.$root.$emit("index1", this.index);
-      console.log(item);
-      this.datawasel = item;
     } else {
-      this.index = -1;
-      this.$root.$emit("index1", this.index);
       row.select(false);
     }
   }
 
-  @Watch("clientId", { immediate: true, deep: true })
-  changedClientId() {
-    this.payment.client_id = this.clientId;
-    this.getClientPayments(this.clientId, "");
-  }
-
+  @Debounce(80)
   getClientPayments(ClientIdnumber: any, page: any) {
-    this.paymentData = [];
-    this.paymentData.length = 0;
-    if (this.clientId) {
+    if (this.selectedClient.id) {
       clientModule
         .getClientPaymentsById(ClientIdnumber, page)
         .then((data) => {
-          ((data as any).data as clientPayment[]).forEach((p) => {
-            this.paymentData.push(p);
-          });
+          this.paymentData = (data as any).data;
           this.count = (data as any).total;
         })
         .catch((error) => {
@@ -170,16 +160,18 @@ export default class ClientPaymentView extends Vue {
     }
   }
 
-  manage() {
+  manage(): void {
     clientModule
       .addPayment(this.payment)
       .then((result) => {
-        this.dayn = result.montant;
-        // console.log(result.montant);
+        this.selectedClient.montant = result.montant;
         let savedPayment = result.data as clientPayment;
-        this.dataPrint = savedPayment;
         this.paymentData.unshift(savedPayment);
+        this.count++;
         clientModule.client.montant = result.montant;
+        // this.$set(this.paymentData, 0, savedPayment);
+        // this.getClientPayments(this.clientId, 1);
+
         SnackBarModule.setSnackbar({
           text: "تمت العملية بنجاح",
           color: "success",
@@ -189,10 +181,11 @@ export default class ClientPaymentView extends Vue {
           x: "right",
           y: "top",
         });
-        this.payment = { client_id: this.clientId } as clientPayment;
+        this.payment = { client_id: this.selectedClient.id } as clientPayment;
         return savedPayment.id;
       })
-      .catch((error) => {
+      .catch((error: AxiosError) => {
+        console.log(error);
         SnackBarModule.setSnackbar({
           text: error,
           color: "error",
@@ -206,7 +199,42 @@ export default class ClientPaymentView extends Vue {
   }
 
   paginate(obj: any) {
-    this.getClientPayments(this.clientId, obj.page);
+    this.getClientPayments(this.selectedClient.id, obj.page);
+  }
+
+  print(payment): void {
+    // console.log(this.selected);
+    let printHeader = [
+      {
+        dataKey: "date",
+        header: "تاريخ الدفع",
+      },
+      {
+        dataKey: "price",
+        header: "المبلغ",
+      },
+
+      {
+        dataKey: "id",
+        header: "رقم الوصل",
+      },
+    ];
+
+    PrintImage.printGenericFacturePdf(
+      printHeader,
+      [payment],
+      "وصل دفع",
+      [
+        ["الزبون : " + " " + this.selectedClient.name],
+        [
+          formatCurrency(this.selectedClient.montant) +
+            " DA" +
+            " : " +
+            "الباقي ",
+        ],
+      ],
+      settingModule.getSetting
+    );
   }
 }
 </script>

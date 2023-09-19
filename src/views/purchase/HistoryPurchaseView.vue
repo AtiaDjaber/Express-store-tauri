@@ -8,6 +8,7 @@
           hint="البحث باسم الصنف او الباركود"
           append-icon="fa-search"
           clearable
+          @keyup="onChangeBarcode"
           label="البحث باسم الصنف او الباركود"
           v-model="search.name"
         ></v-text-field>
@@ -75,6 +76,9 @@
           'items-per-page-text': 'عدد الأسطر',
         }"
       >
+        <template v-slot:[`item.montant`]="{ item }">
+          {{ formatCurrency(item.montant) }}
+        </template>
         <template v-slot:expanded-item="{ headers, item }">
           <td :colspan="headers.length">
             <div class="mt-3">
@@ -90,13 +94,6 @@
                 color="red"
                 :items-per-page="-1"
                 hide-default-footer
-                :footer-props="{
-                  'items-per-page-options': [10, 10],
-                  'show-current-page': true,
-                  'show-first-last-page': true,
-                  'page-text': 'رقم الصفحة',
-                  'items-per-page-text': 'عدد الأسطر',
-                }"
               >
                 <template v-slot:[`item.actions`]="{ item }">
                   <v-row>
@@ -115,7 +112,7 @@
             <v-btn
               color="green"
               small
-              class="ml-2"
+              class="me-2"
               outlined
               fab
               elevation="0"
@@ -150,6 +147,8 @@ import purchaseModule from "@/store/purchaseModule";
 import ReturnDialog from "@/components/custom_dialogs/ReturnDialog.vue";
 import fournisseurModule from "@/store/fournisseurModule";
 import PrintComponent from "@/components/PrintComponent.vue";
+import Decoded from "@/helper/decode";
+import { Debounce } from "vue-debounce-decorator";
 
 @Component({
   components: { PrintComponent, DeleteDialog, CDatePicker, ReturnDialog },
@@ -163,18 +162,16 @@ export default class HistoryPurchaseView extends Vue {
     { text: "الدفع", value: "pay" },
     { text: "الباقي", value: "rest" },
     { text: "تخفيض", value: "remise" },
-    // { text: "ملاحظة", value: "remark" },
     { text: "تاريخ", value: "created_at" },
     { text: "المستخدم", value: "user.name" },
-
     { text: "", value: "actions" },
     { text: "", value: "data-table-expand" },
   ];
 
   SaleHeaders = [
     { text: "#", value: "id" },
-    { text: "الباركود", value: "barcode" },
     { text: "الصنف", value: "name" },
+    { text: "المرجع", value: "product.reference" },
     { text: "الكمية", value: "quantity" },
     { text: "السعر", value: "purchase_price" },
     { text: "المبلغ الاجمالي", value: "total" },
@@ -189,7 +186,6 @@ export default class HistoryPurchaseView extends Vue {
   selectHistory = {} as FournisseurFacture;
   selectedFournisseur = {} as Fournisseur;
   listFournisseurs = [] as Fournisseur[];
-  findfacture: any;
 
   getFournisseurs(url?: string): void {
     FournisseurApi.getAllFournisseurs(url).then((data) => {
@@ -197,12 +193,16 @@ export default class HistoryPurchaseView extends Vue {
     });
   }
 
+  onChangeBarcode(text: any): void {
+    this.search.name = Decoded.DecodedBarcode(text.target.value);
+  }
+
+  @Debounce(80)
   getApi(): void {
     historyApi.getFourinsseurFactures(this.search).then((data) => {
-      this.listFactures.length = 0;
       this.count = 0;
-      this.listFactures = (data as any).data as FournisseurFacture[];
-      if (this.listFactures.length > 0) this.count = (data as any).total;
+      this.listFactures = data.data as FournisseurFacture[];
+      this.count = data.total;
     });
   }
 

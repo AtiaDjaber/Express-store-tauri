@@ -108,7 +108,6 @@ var ExportModule = /** @class */ (function (_super) {
     // }
     // @Mutation
     // setClient(client: Client) {
-    //     // debugger
     //     // this.facture.client = client;
     //     this.facture = {montant: 0, pay: 0, rest: 0, remise: 0, sales: [],client:client} as Facture;
     // }

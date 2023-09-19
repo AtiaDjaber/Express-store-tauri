@@ -2,17 +2,25 @@ import Stock from "@/classes/stock";
 import Search from "@/classes/search";
 import axiosModule from "@/store/axiosModule";
 import Favorite from "@/classes/favorite";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import Damage from "@/classes/damage";
 
 export default class stockApi {
   static async getStock(search?: Search): Promise<any> {
     return await axiosModule.instance.get("api/products?" + search.toFilter());
   }
-  static async getAllStock(search?: Search): Promise<any> {
+
+  static async getDiver(): Promise<any> {
+    return await axiosModule.instance.get("api/divers");
+  }
+  static async getAllStock(search?: Search): Promise<AxiosResponse> {
     return await axiosModule.instance.get(
       "api/products/all?" + search.toFilter()
     );
+  }
+
+  static async getAllStockExport(): Promise<AxiosResponse> {
+    return await axiosModule.instance.get("api/products/export");
   }
 
   static async getProductsDepot(search?: Search): Promise<any> {
@@ -60,7 +68,7 @@ export default class stockApi {
   static async attachProductToFavorite(favorite: Favorite, stock: Stock) {
     return axiosModule.instance.post(
       "api/favorite/add-product/" + favorite.id + "/" + stock.id,
-      {}
+      stock
     );
   }
 
@@ -72,18 +80,13 @@ export default class stockApi {
   }
 
   static async uploadImage(formData: FormData) {
-    console.log(formData);
-    const res = await axios
-      .post(
-        (process.env.VUE_APP_API_URL as string) + "api/product/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
-      )
+    const res = await axiosModule.instance
+      .post("api/product/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      })
       .catch((e) => {
         console.log(e);
       });

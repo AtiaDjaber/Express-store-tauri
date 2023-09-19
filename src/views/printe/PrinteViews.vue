@@ -160,7 +160,7 @@ export default class PrinteViews extends Vue {
   year: any;
   date: any;
   timeToday: any;
-  created() {
+  created(): void {
     this.month = this.today.getMonth() + 1;
     this.year = this.today.getFullYear();
     this.date = this.today.getDate();
@@ -168,20 +168,10 @@ export default class PrinteViews extends Vue {
     this.$root.$on("setting", (setting: any) => {
       this.printInformation = setting;
     });
-
-    this.getSettingData();
   }
 
   previewImage = null;
   setting = {} as Setting;
   settingApi = new SettingApi();
-
-  getSettingData() {
-    // this.settingApi.getSetting().then((res) => {
-    //   this.setting = res.data;
-    //   if (this.setting.logo != null)
-    //     this.previewImage = (process.env.VUE_APP_API_URL as string) + (res.data as Setting).logo;
-    // });
-  }
 }
 </script>

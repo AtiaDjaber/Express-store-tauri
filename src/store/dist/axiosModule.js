@@ -11,6 +11,8 @@ var axiosModule = /** @class */ (function () {
                 "Content-type": "application/json"
             }
         });
+        console.log(baseURL);
+        console.log(axiosModule.instance.defaults.baseURL);
     }
     // add token to axios instance
     axiosModule.setAxiosToken = function () {

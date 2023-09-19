@@ -1,51 +1,60 @@
 <!-- eslint-disable vue/no-unused-vars -->
 <template>
   <v-navigation-drawer
-    right
+    :right="$i18n.locale == 'ar'"
     permanent
     app
     v-model="drawer"
     mini-variant
     mini-variant-width="90"
   >
-    <lottie-animation
+    <!-- <lottie-animation
       class="mt-1"
-      path="load.json"
+      path="load1.json"
       :width="60"
       :height="50"
       :loop="false"
       :speed="0.6"
-    />
-    <v-list width="72px" flat class="mt-1">
-      <v-list-item-group mandatory v-model="selectedItem">
-        <v-tooltip
-          v-for="(page, index) in pages"
-          :key="index"
-          left
-          color="secondary"
-        >
-          <template v-slot:activator="{ on }">
-            <v-row no-gutters>
-              <v-col>
-                <div v-if="selectedItem == index" class="div_menu"></div>
-              </v-col>
-              <v-col cols="11">
-                <router-link class="linkCss" :to="page.route">
-                  <v-list-item
-                    :active-class="selectedItem == index ? 'border' : ''"
-                  >
-                    <v-list-item-content v-on="on">
-                      <v-icon>{{ page.icon }}</v-icon>
-                    </v-list-item-content>
-                  </v-list-item>
-                </router-link>
-              </v-col>
-            </v-row>
-          </template>
-          <span>{{ page.title }}</span>
-        </v-tooltip>
-      </v-list-item-group>
-    </v-list>
+    /> -->
+    <perfect-scrollbar>
+      <v-list width="72px" flat class="mt-1">
+        <v-list-item-group mandatory v-model="selectedItem">
+          <v-tooltip
+            v-for="(page, index) in pages"
+            :key="index"
+            :left="$i18n.locale == 'ar'"
+            :right="$i18n.locale != 'ar'"
+            color="secondary"
+          >
+            <template v-slot:activator="{ on }">
+              <v-row no-gutters>
+                <v-col>
+                  <div v-if="selectedItem == index" class="div_menu"></div>
+                </v-col>
+                <v-col cols="11">
+                  <router-link class="linkCss" :to="page.route">
+                    <v-list-item
+                      :active-class="
+                        selectedItem == index
+                          ? $i18n.locale == 'ar'
+                            ? 'borderAr'
+                            : 'borderEn'
+                          : ''
+                      "
+                    >
+                      <v-list-item-content v-on="on">
+                        <v-icon>{{ page.icon }}</v-icon>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </router-link>
+                </v-col>
+              </v-row>
+            </template>
+            <span>{{ $t(page.title) }}</span>
+          </v-tooltip>
+        </v-list-item-group>
+      </v-list>
+    </perfect-scrollbar>
   </v-navigation-drawer>
 </template>
 
@@ -68,64 +77,70 @@ export default class Sidebar extends Vue {
   }
   pages = [
     {
-      title: "نقطة البيع",
+      title: "point_vente",
       icon: "mdi-home",
       route: "/sale",
     },
     {
-      title: "المنتجات",
+      title: "produites",
       icon: "mdi-shape-outline",
       route: "/product",
     },
 
     {
-      title: "زبائن",
+      title: "clients",
       icon: "mdi-account-multiple-outline",
       route: "/client",
     },
     {
-      title: "أرشيف المبيعات",
+      title: "archives_ventes",
       icon: "mdi-history",
       route: "/history",
     },
 
     {
-      title: "مصاريف",
+      title: "depenses",
       icon: "mdi-cash-multiple",
       route: "/expense",
     },
     {
-      title: "مخازن",
+      title: "magasins",
       icon: "mdi-storefront",
       route: "/depot",
     },
     {
-      title: "نقل سلعة",
+      title: "conversion_produits",
       icon: "mdi-swap-vertical-circle",
       route: "/export",
     },
     {
-      title: "موردين",
+      title: "fournisseurs",
       icon: "mdi-account-multiple-outline",
       route: "/fournisseur",
     },
+
     {
-      title: "مشتريات",
+      title: "achats",
       icon: "mdi-cart-variant",
       route: "/purchase",
     },
     {
-      title: "إحصائيات",
+      title: "purchase_order",
+      icon: "mdi-playlist-edit",
+      route: "/add_command",
+    },
+    {
+      title: "statistiques",
       icon: "mdi-chart-bar",
       route: "/chart",
     },
     {
-      title: "مستخدمين",
+      title: "utilisateurs",
       icon: "mdi-security",
       route: "/user",
     },
     {
-      title: "صناديق",
+      title: "boites",
       icon: "mdi-cash-register",
       route: "/box",
     },
@@ -138,22 +153,42 @@ export default class Sidebar extends Vue {
 </script>
 
 <style scoped>
-.border {
+/* .scroll-list {
+  overflow-y: hidden;
+  height: 600px; 
+  transition: overflow-y 0.2s ease-in-out; 
+}
+
+.scroll-list:hover {
+  overflow-y: auto; 
+} */
+.borderEn {
   background: #f54c14;
   margin-bottom: 4px;
-  margin-left: 2px;
+  margin-top: 2px;
   border-radius: 30%;
-  height: 55px;
-  margin-right: 8px;
+  margin-left: 10px;
 
+  height: 55px;
+  transition-duration: 400ms;
+}
+.borderAr {
+  background: #f54c14;
+  margin-bottom: 4px;
+  margin-top: 2px;
+  border-radius: 30%;
+  margin-right: 10px;
+  height: 55px;
   transition-duration: 400ms;
 }
 
-.theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled) {
+.theme--light.v-list-item:not(.v-list-item--active):not(
+    .v-list-item--disabled
+  ) {
   color: rgba(0, 0, 0, 0.87);
   background-color: #eeeeee;
   margin: 4px;
-  margin-right: 10px;
+  margin-inline: 10px;
   border-radius: 50%;
   height: 55px;
   width: 55px;
@@ -164,7 +199,7 @@ export default class Sidebar extends Vue {
   color: rgba(0, 0, 0, 0.87);
   background-color: #414141;
   margin: 4px;
-  margin-right: 10px;
+  margin-inline: 10px;
   border-radius: 50%;
   height: 55px;
   width: 55px;

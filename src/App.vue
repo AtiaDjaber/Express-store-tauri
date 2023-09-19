@@ -1,28 +1,42 @@
 <template>
   <v-app class="app">
-    <v-app-bar v-if="isLoggedIn" clipped-left app elevation="1">
-      <h3 class="mx-6 text-primary">{{ title }}</h3>
-      <div class="mx-6"></div>
-      <v-snackbar
-        v-for="item in notificationList"
-        v-model="item.show"
-        :timeout="item.timeout"
-        :key="item.show"
-        :color="item.color"
-        :top="item.y === 'top'"
-        :bottom="item.y === 'bottom'"
-        :right="item.x === 'right'"
-        :left="item.x === 'left'"
-        elevation="3"
-        multi-line
-        :value="true"
+    <v-snackbar
+      v-for="item in notificationList"
+      v-model="item.show"
+      :timeout="item.timeout"
+      :key="item.show"
+      :color="item.color"
+      :top="item.y === 'top'"
+      :bottom="item.y === 'bottom'"
+      :right="item.x === 'right'"
+      :left="item.x === 'left'"
+      elevation="3"
+      multi-line
+      :value="true"
+    >
+      <h3 style="color: white">
+        <v-icon>{{ item.icon }}</v-icon>
+        {{ item.text }}
+      </h3>
+      <div style="height: 3px; width: 300px; color: deeppink"></div>
+    </v-snackbar>
+    <v-app-bar
+      v-if="isLoggedIn"
+      :clipped-left="$i18n.locale == 'ar'"
+      app
+      elevation="1"
+    >
+      <v-img
+        width="35"
+        height="30"
+        max-height="30"
+        max-width="35"
+        :src="require('@/assets/logo.png')"
       >
-        <h3 style="color: white">
-          <v-icon>{{ item.icon }}</v-icon>
-          {{ item.text }}
-        </h3>
-        <div style="height: 3px; width: 300px; color: deeppink"></div>
-      </v-snackbar>
+      </v-img>
+
+      <h3 class="mx-6 text-primary">{{ $t(title) }}</h3>
+      <div class="mx-6"></div>
 
       <v-spacer></v-spacer>
       <!-- <h3>
@@ -34,71 +48,102 @@
         <v-icon class="px-1">mdi-cash-register</v-icon>
       </v-btn>
 
-      <v-divider vertical inset></v-divider>
-      <v-menu left bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn large class="mx-5 px-2" icon v-bind="attrs" v-on="on">
-            <v-icon class="px-3">mdi-chevron-down</v-icon>العربية
+      <v-divider vertical inset class="me-2"></v-divider>
+      <locale-component></locale-component>
+
+      <v-divider vertical inset class="ms-2"></v-divider>
+      <v-tooltip bottom color="secondary">
+        <template v-slot:activator="{ on }">
+          <v-btn v-on="on" large class="mx-2" icon @click="screenMode">
+            <v-icon>
+              {{ frame ? "mdi-fullscreen" : "mdi-fullscreen-exit" }}
+            </v-icon>
           </v-btn>
         </template>
+        <span>{{ !frame ? "تصغير" : "ملء الشاشة" }}</span>
+      </v-tooltip>
 
-        <v-list class="px-3">
-          <v-list-item @click="() => {}">
-            <v-list-item-title>العربية </v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="() => {}">
-            <v-list-item-title>English</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-
-      <v-btn large class="mx-2" icon @click="changeTheme()">
-        <v-icon>mdi-brightness-6</v-icon>
-      </v-btn>
-      <!-- 
-      <v-switch
-        class="mx-2"
-        v-model="$vuetify.theme.dark"
-        append-icon="mdi-brightness-6"
-        prepend-icon="mdi-brightness-6"
-        color="red"
-        inset
-        value="red"
-        hide-details
-      ></v-switch> -->
-      <v-divider vertical inset></v-divider>
-
+      <v-tooltip bottom color="secondary">
+        <template v-slot:activator="{ on }">
+          <v-btn v-on="on" large class="mx-2" icon @click="changeTheme()">
+            <v-icon>mdi-brightness-6</v-icon>
+          </v-btn>
+        </template>
+        <span>تغيير المظهر</span>
+      </v-tooltip>
       <router-link class="linkCss" to="/notification">
-        <v-btn large class="mx-2" icon>
-          <v-icon> mdi-bell-outline </v-icon>
-        </v-btn>
+        <v-tooltip bottom color="secondary">
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on" large class="mx-2" icon>
+              <v-icon> mdi-bell-outline </v-icon>
+            </v-btn>
+          </template>
+          <span>الإشعارات</span>
+        </v-tooltip>
       </router-link>
-      <v-btn to="/setting" large class="mx-1" icon>
-        <v-icon> mdi-cog-outline </v-icon>
-      </v-btn>
-      <!-- {
-      title: "إعدادات",
-      icon: "mdi-cog-outline",
-      route: "/setting",
-    }, -->
+
+      <v-tooltip bottom color="secondary">
+        <template v-slot:activator="{ on }">
+          <v-btn
+            :loading="saveDB"
+            v-on="on"
+            @click="backup"
+            large
+            class="mx-1"
+            icon
+          >
+            <v-icon> mdi-database-settings-outline </v-icon>
+          </v-btn>
+        </template>
+        <span> حفظ نسخة احتياطية من قاعدة البيانات </span>
+      </v-tooltip>
+      <v-tooltip bottom color="secondary">
+        <template v-slot:activator="{ on }">
+          <v-btn v-on="on" @click="checkForUpdate" large class="mx-1" icon>
+            <v-icon> mdi-update </v-icon>
+          </v-btn>
+        </template>
+        <span>التحقق من وجود تحديثات</span>
+      </v-tooltip>
+      <v-tooltip bottom color="secondary">
+        <template v-slot:activator="{ on }">
+          <v-btn
+            :loading="restarting"
+            v-on="on"
+            @click="restartServer"
+            large
+            class="mx-1"
+            icon
+          >
+            <v-icon> mdi-server </v-icon>
+          </v-btn>
+        </template>
+        <span>إعادة تشغيل السرفر</span>
+      </v-tooltip>
+      <v-tooltip bottom color="secondary">
+        <template v-slot:activator="{ on }">
+          <v-btn v-on="on" to="/setting" large class="mx-1" icon>
+            <v-icon> mdi-cog-outline </v-icon>
+          </v-btn>
+        </template>
+        <span>الإعدادات</span>
+      </v-tooltip>
       <div class="pa-3 mx-2">
         <user-info></user-info>
       </div>
-      <!-- <v-divider vertical inset></v-divider> -->
-      <!-- <span class="mx-3">V{{ appVersion }}</span> -->
     </v-app-bar>
     <Sidebar v-if="isLoggedIn"></Sidebar>
     <v-main>
       <v-progress-linear
-        id="v-progress-linear"
         v-show="progress > 0 && progress < 100"
         color="deep-orange"
         height="6"
         :value="progress"
         striped
       ></v-progress-linear>
-
+      <!-- <perfect-scrollbar> -->
       <router-view />
+      <!-- </perfect-scrollbar> -->
     </v-main>
     <v-bottom-sheet v-model="sheet" inset>
       <v-sheet class="text-center" height="160px">
@@ -123,9 +168,124 @@
         </h3>
       </v-sheet>
     </v-bottom-sheet>
+    <v-overlay :value="appMessage">
+      <v-row justify="center">
+        <v-progress-circular
+          indeterminate
+          color="secondary"
+          size="64"
+        ></v-progress-circular>
+      </v-row>
+      <v-row justify="center" class="mt-6">
+        <h3 class="mt-3">{{ appMessage }}</h3>
+      </v-row>
+    </v-overlay>
+    <!-- <v-btn @click="print"></v-btn>
+    <div id="pdf" style="font-family: amiri" hidden>
+      <div class="invoice-box">
+        <table cellpadding="0" cellspacing="0">
+          <tr class="top">
+            <td colspan="2">
+              <table>
+                <tr>
+                  <td class="title">
+                    <img
+                      :src="setting.logo"
+                      style="
+                        width: 100%;
+                        max-width: 200px;
+                        max-height: 200px;
+                        margin-top: -30px;
+                      "
+                    />
+                  </td>
+
+                  <td>
+                    Invoice #: 123<br />
+                    التاريخ: January 1, 2023<br />
+                    Due: February 1, 2023
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <hr />
+          <tr class="information">
+            <td colspan="2">
+              <table>
+                <tr>
+                  <td>
+                    Sparksuite, Inc.<br />
+                    12345 Sunny Road<br />
+                    Sunnyville, CA 12345
+                  </td>
+
+                  <td>
+                    Acme Corp.<br />
+                    John Doe<br />
+                    john@example.com
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr class="heading">
+            <td>Payment Method</td>
+
+            <td>Check #</td>
+          </tr>
+
+          <tr class="details">
+            <td>Check</td>
+
+            <td>1000</td>
+          </tr>
+
+          <tr class="heading">
+            <td>الصنف</td>
+            <td>الكمية</td>
+            <td>السعر</td>
+            <td>الإجمالي</td>
+          </tr>
+
+          <tr class="item">
+            <td>Website design</td>
+            <td>2</td>
+            <td>150.00</td>
+
+            <td>$300.00</td>
+          </tr>
+
+          <tr class="item">
+            <td>صابون</td>
+            <td>2</td>
+            <td>150.00</td>
+            <td>$75.00</td>
+          </tr>
+          <tr class="item">
+            <td>صابون</td>
+            <td>2</td>
+            <td>60.00</td>
+            <td>$120.00</td>
+          </tr>
+
+          <tr class="item last">
+            <td>Domain name (1 year)</td>
+
+            <td>$10.00</td>
+          </tr>
+
+          <tr class="total">
+            <td></td>
+
+            <td>Total: $385.00</td>
+          </tr>
+        </table>
+      </div>
+    </div> -->
   </v-app>
 </template>
-<!-- style="display: none" -->
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
@@ -138,13 +298,21 @@ import loginModule from "@/store/loginModule";
 import settingModule from "./store/settingModule";
 // import { ipcRenderer } from "electron";
 import axiosModule from "./store/axiosModule";
+import LocaleComponent from "./components/LocaleComponent.vue";
 // import Echo from "laravel-echo";
+// import { execFile } from "child_process";
 
-@Component({ components: { Sidebar, UserInfo, Client } })
+import { getPid } from "./helper/global_function";
+import { createBackup } from "./service/db_manager";
+import { getHardDiskSerialNumber } from "./helper/helper_functions";
+import PrintImage from "./print/print_image";
+@Component({ components: { Sidebar, UserInfo, Client, LocaleComponent } })
 export default class App extends Vue {
   drawer = null;
   progress = 0;
   appVersion = "";
+  restarting = false;
+  saveDB = false;
 
   get isLoggedIn(): boolean {
     return loginModule.isLogin;
@@ -161,12 +329,18 @@ export default class App extends Vue {
   }
 
   changeTheme() {
-    (this as any).$vuetify.theme.dark = !(this as any).$vuetify.theme.dark;
-    localStorage.setItem("isDark", "" + (this as any).$vuetify.theme.dark);
+    this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+    localStorage.setItem("isDark", "" + this.$vuetify.theme.dark);
   }
 
+  async backup(): Promise<void> {
+    this.saveDB = true;
+
+    await createBackup();
+    this.saveDB = false;
+  }
   created(): void {
-    (this as any).$vuetify.theme.dark =
+    this.$vuetify.theme.dark =
       (localStorage.getItem("isDark") ?? "false") == "true" ? true : false;
 
     // ((window as any).Echo as Echo).connect();
@@ -175,25 +349,50 @@ export default class App extends Vue {
     //   .listen(".Test", (e) => {
     //     console.log("t" + e["data"]);
     //   });
-
-    new axiosModule(process.env.VUE_APP_API_URL);
-    axiosModule.setAxiosToken();
     settingModule.getSettings();
+    this.isUserRemember();
+    new axiosModule(this.setting.host);
+
+    axiosModule.setAxiosToken();
+  }
+
+  isUserRemember() {
+    if (!(this.setting.remember ?? true)) {
+      loginModule.logout();
+      (this as any).$router.push("/login");
+    }
   }
 
   get setting() {
     return settingModule.getSetting;
   }
 
+  appMessage = "";
+
+  print() {
+    // PrintImage.testPdf(this.setting);
+  }
+
+  frame = true;
+  screenMode(): void {
+    // ipcRenderer.send("frame", "_");
+    this.frame = !this.frame;
+  }
   mounted(): void {
+    // getHardDiskSerialNumber();
     // ipcRenderer.on("download-progress", (evt, message) => {
     //   this.progress = message;
+    // });
+
+    // ipcRenderer.on("closing-app", (evt, message) => {
+    //   this.appMessage = message;
     // });
     this.changeTitle();
     this.displayAlmsMessage();
   }
   sheet = false;
   daysAlmsRest = 0;
+
   // display El Zakat message
   displayAlmsMessage(): void {
     var diff = new Date(this.setting.zakat).getTime() - new Date().getTime();
@@ -206,8 +405,36 @@ export default class App extends Vue {
   }
 
   changeTitle(): void {
-    // document.title =
-    //   "Express Store V" + window.require("electron").remote.app.getVersion();
+    document.title =
+      "Express Store V" + window.require("electron").remote.app.getVersion();
+  }
+
+  checkForUpdate(): void {
+    console.log("Render");
+    // ipcRenderer.send("checkUpdate", "_");
+  }
+
+  restartServer(restart = true): void {
+    this.restarting = true;
+    getPid()
+      .then(function (pid) {
+        // if (pid) {
+        //   process.kill(pid, "SIGKILL");
+        //   if (restart) {
+        //     execFile("start.bat", (error, stdout, stderr) => {
+        //       console.log(error);
+        //     });
+        //   }
+        // } else {
+        //   execFile("start.bat", (error, stdout, stderr) => {
+        //     console.log(error);
+        //   });
+        // }
+        this.restarting = false;
+      })
+      .catch((e) => {
+        this.restarting = false;
+      });
   }
 }
 </script>
@@ -216,6 +443,8 @@ export default class App extends Vue {
 
 .app {
   font-family: "Almarai";
+  /* direction: rtl; */
+
   /* background: #ffffff !important; */
   /* old grey #fbfafc */
   /* overflow: auto; */
@@ -233,26 +462,36 @@ export default class App extends Vue {
 .theme--light.v-data-table tbody tr.v-data-table__selected {
   background: #ebe8ea !important;
 }
-/* ::-webkit-scrollbar {
-  width: 10px;
+
+.ps {
+  height: 100vh;
 }
+::-webkit-scrollbar {
+  width: 14px;
+}
+
+html {
+  overflow-y: auto;
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background-color: black;
+  background-color: rgb(126, 126, 126);
   background-clip: border-box;
   -webkit-background-clip: border-box;
 }
 
 ::-webkit-scrollbar-track {
   box-shadow: inset 0 0 5px grey;
-  border-radius: 6px;
-} */
-html {
-  overflow-y: auto;
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #c2c2c2;
   border-radius: 6px;
+}
+
+.v-date-picker-table .v-btn {
+  font-size: 14px !important;
 }
 
 /* .theme--light.v-text-field--filled > .v-input__control > .v-input__slot {
@@ -293,6 +532,11 @@ v-data-table > .v-data-table__wrapper > table > tbody > tr > th,
 .v-dialog dialog-border-radius {
   border-radius: 10px;
 }
+
+.v-sheet.v-card {
+  border-radius: 8px;
+}
+
 .v-list-item--dense .v-list-item__title,
 .v-list-item--dense .v-list-item__subtitle,
 .v-list--dense .v-list-item .v-list-item__title,
@@ -403,5 +647,103 @@ v-data-table > .v-data-table__wrapper > table > tbody > tr > th,
 
 .theme--light.v-data-table tbody tr.v-data-table__selected {
   background: #ffeafc !important;
+}
+
+.title_input {
+  font-size: 1rem;
+  color: var(--primar);
+}
+</style>
+<style>
+.invoice-box {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #eee;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  font-size: 16px;
+  line-height: 24px;
+  font-family: "amiri";
+  color: #555;
+}
+
+.invoice-box table {
+  width: 100%;
+  line-height: inherit;
+  text-align: left;
+}
+
+.invoice-box table td {
+  padding: 5px;
+  vertical-align: top;
+}
+
+.invoice-box table tr td:nth-child(2) {
+  text-align: right;
+}
+
+.invoice-box table tr.top table td {
+  padding-bottom: 20px;
+}
+
+.invoice-box table tr.top table td.title {
+  font-size: 45px;
+  line-height: 45px;
+  color: #333;
+}
+
+.invoice-box table tr.information table td {
+  padding-bottom: 40px;
+}
+
+.invoice-box table tr.heading td {
+  background: #eee;
+  border-bottom: 1px solid #ddd;
+  font-weight: bold;
+}
+
+.invoice-box table tr.details td {
+  padding-bottom: 20px;
+}
+
+.invoice-box table tr.item td {
+  border-bottom: 1px solid #eee;
+}
+
+.invoice-box table tr.item.last td {
+  border-bottom: none;
+}
+
+.invoice-box table tr.total td:nth-child(2) {
+  border-top: 2px solid #eee;
+  font-weight: bold;
+}
+
+@media only screen and (max-width: 600px) {
+  .invoice-box table tr.top table td {
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+
+  .invoice-box table tr.information table td {
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+}
+
+/** RTL **/
+.invoice-box.rtl {
+  direction: rtl;
+  font-family: "amiri";
+}
+
+.invoice-box.rtl table {
+  text-align: right;
+}
+
+.invoice-box.rtl table tr td:nth-child(2) {
+  text-align: left;
 }
 </style>

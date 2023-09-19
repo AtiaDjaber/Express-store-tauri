@@ -1,13 +1,10 @@
 import Fournisseur from "@/classes/fournisseur";
 import FournisseurPayment from "@/classes/fournisseurPayment";
 import axiosModule from "@/store/axiosModule";
-import HttpClient from "./httpClient";
 import Search from "@/classes/search";
 
 export default class FournisseurApi {
-  // public constructor() {
-  //   super(process.env.VUE_APP_API_URL);
-  // }
+
 
   public getFournisseurs(url?: string): Promise<Fournisseur[]> {
     return axiosModule.instance

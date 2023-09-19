@@ -1,19 +1,18 @@
 <template>
   <v-dialog v-model="dialog" scrollable max-width="600">
     <template v-slot:activator="{ on, attrs }">
-      <div class="mr-2" v-bind="attrs" v-on="on">
+      <div class="me-2" v-bind="attrs" v-on="on">
         <v-btn
           :disabled="mutableTeacherAction == 2 && !fournisseur.id"
-          dark
-          large
           :fab="isFab"
-          class="mx-3"
-          color="primary"
+          :class="isFab ? 'mx-2 mt-4' : 'me-2'"
+          :color="!isFab ? 'primary' : ''"
+          :large="!isFab"
           :small="isFab"
-          elevation="3"
+          :elevation="!isFab ? 1 : 0"
         >
           {{ !isFab ? "إضافة مورد" : "" }}
-          <v-icon>mdi-plus</v-icon>
+          <v-icon class="ms-2">mdi-account-plus-outline</v-icon>
         </v-btn>
       </div>
     </template>

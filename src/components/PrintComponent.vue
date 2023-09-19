@@ -2,7 +2,7 @@
   <v-menu offset-y>
     <template v-slot:activator="{ on, attrs }">
       <v-btn
-        class="mr-2"
+        class="ms-2"
         fab
         outlined
         small
@@ -16,18 +16,18 @@
     <v-list>
       <v-list-item class="px-2" @click="printSelectedFacture(item, false)" link>
         <v-list-item-avatar>
-          <v-avatar size="36" color="primary lighten-4">
-            <v-icon color="primary lighten-1">mdi-script</v-icon>
-          </v-avatar>
+          <!-- <v-avatar size="36" color="primary lighten-4"> -->
+          <v-icon color="primary lighten-1">mdi-script</v-icon>
+          <!-- </v-avatar> -->
         </v-list-item-avatar>
         <v-list-item-title>طباعة وصل</v-list-item-title>
       </v-list-item>
       <v-divider></v-divider>
       <v-list-item class="px-2" @click="printSelectedFacture(item, true)" link>
         <v-list-item-avatar>
-          <v-avatar size="36" color="primary lighten-4">
-            <v-icon color="primary lighten-1">mdi-file</v-icon>
-          </v-avatar>
+          <!-- <v-avatar size="36" color="primary lighten-4"> -->
+          <v-icon color="primary lighten-1">mdi-file</v-icon>
+          <!-- </v-avatar> -->
         </v-list-item-avatar>
         <v-list-item-title>طباعة فاتورة</v-list-item-title>
       </v-list-item>

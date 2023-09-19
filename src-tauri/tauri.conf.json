@@ -22,7 +22,7 @@
           {
             "name": "print",
             "cmd": ".\\PDFToPrinter.exe",
-                "args": true
+            "args": true
           },
           {
             "name": "printers",

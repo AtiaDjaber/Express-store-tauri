@@ -2,15 +2,15 @@
   <v-tabs v-model="tab" centered fixed-tabs>
     <v-tab :key="0">
       <v-icon class="mx-2">mdi-shape-outline</v-icon>
-      <h3>الأصناف</h3>
+      <h3>{{ $t("produites") }}</h3>
     </v-tab>
     <v-tab :key="1">
       <v-icon class="mx-2">mdi-heart-multiple-outline</v-icon>
-      <h3>المفضلة</h3>
+      <h3>{{ $t("favorites") }}</h3>
     </v-tab>
     <v-tab :key="2">
       <v-icon class="mx-2">mdi-glass-fragile</v-icon>
-      <h3>الأصناف التالفة</h3>
+      <h3>{{ $t("produits_endommagés") }}</h3>
     </v-tab>
     <v-tabs-items v-model="tab">
       <v-tab-item key="0">
@@ -19,14 +19,11 @@
         <!-- </v-card> -->
       </v-tab-item>
       <v-tab-item key="1">
-        <!-- <v-card color="#fbfafc" flat>  -->
         <FavoriteView></FavoriteView>
-        <!-- </v-card> -->
       </v-tab-item>
+
       <v-tab-item key="2">
-        <!-- <v-card color="#fbfafc" flat>  -->
         <DamageView></DamageView>
-        <!-- </v-card> -->
       </v-tab-item>
     </v-tabs-items>
   </v-tabs>
